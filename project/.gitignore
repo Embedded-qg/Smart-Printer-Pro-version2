@@ -1,0 +1,9 @@
+/OUTPUT
+/Project/*.bak
+/Project/*.htm
+/Project/*.dep
+
+*.[oad]
+*.crf
+*.hex
+*.htm
