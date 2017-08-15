@@ -36,10 +36,10 @@
 #define OS_EVENT_MULTI_EN         0u   /* Include code for OSEventPendMulti()                          */
 #define OS_EVENT_NAME_EN          0u   /* Enable names for Sem, Mutex, Mbox and Q                      */
 
-#define OS_LOWEST_PRIO           63u   /* Defines the lowest priority that can be assigned ...         */
+#define OS_LOWEST_PRIO           25u   /* Defines the lowest priority that can be assigned ...         */
                                        /* ... MUST NEVER be higher than 254!                           */
 
-#define OS_MAX_EVENTS            32u   /* Max. number of event control blocks in your application      */
+#define OS_MAX_EVENTS            30u   /* Max. number of event control blocks in your application      */
 #define OS_MAX_FLAGS              20u   /* Max. number of Event Flag Groups    in your application      */
 #define OS_MAX_MEM_PART           5u   /* Max. number of memory partitions                             */
 #define OS_MAX_QS                 10u   /* Max. number of queue control blocks in your application      */

@@ -24,7 +24,7 @@ extern OS_EVENT *Print_Queue_Sem;
 *	Function Define Section
 **************************************************************/
 
-void USART3_Hook(u8_t ch)//将从串口4读取到的数据放入缓冲区
+void USART3_Hook(u8_t ch)//将从串口3读取到的数据放入缓冲区
 {
 	extern OS_EVENT *Local_Rec_Data_Sem;
 	if((usart_buf.write + 1) % usart_buf.MAX == usart_buf.read)

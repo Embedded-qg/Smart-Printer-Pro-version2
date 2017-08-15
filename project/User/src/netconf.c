@@ -309,7 +309,7 @@ void write_connection(struct netconn *conn, req_type type, u8_t symbol, u32_t pr
 
 #endif
 	
-	while(ERR_OK != (err = netconn_write(conn, sent_data, SEND_DATA_SIZE, NETCONN_COPY))){
+	while(0 != (err = netconn_write(conn, sent_data, SEND_DATA_SIZE, NETCONN_COPY))){
 		if(ERR_IS_FATAL(err))//致命错误，表示没有连接
 			break;
 		
@@ -321,6 +321,7 @@ void write_connection(struct netconn *conn, req_type type, u8_t symbol, u32_t pr
 			if(i > 3) break;
 		}else if(i > 10) break;//但等待多次后是无意义的
 	}
+		
 }
 
 /**
@@ -341,6 +342,8 @@ void con_to_server(void)
 	
 #ifdef REMOTE//设置服务器ip地址
 	IP4_ADDR(&server_ip,192,168,1,116);//云服务器
+//	IP4_ADDR(&server_ip,10,21,56,143);
+//	IP4_ADDR(&server_ip,192,168,1,110);  //用肥虫电脑的IP
 	netconn_connect(order_netconn,&server_ip,8086);
 #else	
 	IP4_ADDR(&server_ip,192,168,1,116);
@@ -377,8 +380,10 @@ void LwIP_Init(void)
   ipaddr.addr = 0;
   netmask.addr = 0;
   gw.addr = 0;
+
+	//printf("DHCP can be choosed !!!\n");
 #else
-  IP4_ADDR(&ipaddr, 192,168,1,160);
+  IP4_ADDR(&ipaddr, 192,168,1,134);
   IP4_ADDR(&netmask, 255, 255, 255, 0);
   IP4_ADDR(&gw, 192, 168, 1, 1);	
 #endif
