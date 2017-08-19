@@ -350,9 +350,9 @@ void con_to_server(void)
 	netconn_connect(order_netconn,&server_ip,8086);
 #endif	
 	
-	write_connection(order_netconn, first_req, REQ_LINK_OK, 0);//初次请求建立
+	write_connection(order_netconn, first_req, REQ_LINK_OK, 0);//初次请求建立发送主控板ID
 	OSTimeDlyHMSM(0,0,1,0);
-	write_connection(order_netconn, order_req, ORDER_REQUEST, 0);//请求订单
+	write_connection(order_netconn, order_req, ORDER_REQUEST, 0);//请求订单			此处可以修改为需要请求的内容
 	DEBUG_PRINT("Order req.\n");
 	
 	//发多次测试
@@ -399,3 +399,6 @@ void LwIP_Init(void)
   /*  When the netif is fully configured this function must be called.*/
   netif_set_up(&DM9161_netif);
 }
+
+
+	

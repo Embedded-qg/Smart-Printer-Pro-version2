@@ -233,6 +233,7 @@ int main(void)
 	OSStart();	 	/* 启动UCOSII操作系统 */
 
 	while(1);  //一般不会到这里，到这里表明错误
+
 }
 
 
