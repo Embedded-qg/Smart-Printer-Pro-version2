@@ -501,6 +501,11 @@
               <FileType>1</FileType>
               <FilePath>..\User\src\agent_tcp.c</FilePath>
             </File>
+            <File>
+              <FileName>agent_udp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\src\agent_udp.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

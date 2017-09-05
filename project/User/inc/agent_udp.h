@@ -1,19 +1,19 @@
 /***************************************************************************************
- *	File Name				: agent_tcp.h
+ *	File Name				: agent_udp.h
  *	CopyRight				: JockJo
- *	ModuleName			:	agent_tcp
+ *	ModuleName			:	agent_udp
  *
  *	CPU						: 
  *	RTOS					:
  *
- *	Create Data				:	2017-8-19
+ *	Create Data				:	2017-9-5
  *	Author/Corportation		: JockJo
  *
- *	Abstract Description	:	agent_tcp
+ *	Abstract Description	:	agent_udp
  *
  *--------------------------------Revision History--------------------------------------
  *	No	version		Data			Revised By			Item			Description
- *	1    1.0      2017-8-19    JockJo   
+ *	1    1.0      2017-9-5    JockJo   
  *
  ***************************************************************************************/
 
@@ -21,8 +21,8 @@
 /**************************************************************
 *	Multi-Include-Prevent Section
 **************************************************************/
-#ifndef __AGENTTCP_H
-#define __AGENTTCP_H
+#ifndef __AGENTUDP_H
+#define __AGENTUDP_H
 
 
 /**************************************************************
@@ -71,7 +71,6 @@
 #include "app_cfg.h"
 #include "data_form.h"
 #include "more_infomation.h"
-#include "agent_udp.h"
 
 /**************************************************************
 *	Macro Define Section
@@ -80,22 +79,14 @@
 /**************************************************************
 *	Struct Define Section
 **************************************************************/
-struct netconn *agent_tcp_client_netconn;		//本地客户端，用于向peer发送数据
-struct netconn *agent_tcp_server_netconn;		//本地服务器，用于监听peer连接
-u8_t agent_tcp_backlog = 10;			//最大监听数
+struct netconn *agent_udp_client_netconn;		//本地客户端，用于向peer发送数据
+struct netconn *agent_udp_server_netconn;		//本地服务器，用于监听peer连接
 
 /**************************************************************
 *	Prototype Declare Section
 **************************************************************/
-void con_to_agent(void);  //与对等的agent建立TCP连接
-
-void agent_tcp_server(void);	//本地服务器，监听peer连接
-
-void send_to_peer(void);	 //向对等的ageng发送信息
-
-void rec_from_peer(struct netconn *agent_newconn);		//从对等的agent接收数据
 
 /**************************************************************
 *	End-Multi-Include-Prevent Section
 **************************************Tpro************************/
-#endif  //__AGENTTCP_H
+#endif  //__AGENTUDP_H
