@@ -79,8 +79,6 @@
 /**************************************************************
 *	Struct Define Section
 **************************************************************/
-struct netconn *agent_udp_client_netconn;		//本地客户端，用于向peer发送数据
-struct netconn *agent_udp_server_netconn;		//本地服务器，用于监听peer连接
 
 /**************************************************************
 *	Prototype Declare Section

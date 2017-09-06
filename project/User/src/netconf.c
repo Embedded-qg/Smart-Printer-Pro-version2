@@ -390,7 +390,7 @@ void LwIP_Init(void)
 
 
   netif_add(&DM9161_netif, &ipaddr, &netmask, &gw, NULL, &ethernetif_init, &tcpip_input);
-
+	
   netif_set_default(&DM9161_netif);
 
 #if LWIP_DHCP

@@ -43,10 +43,13 @@
 *	Prototype Declare Section
 **************************************************************/
 
+
 /**************************************************************
 *	Global Variable Declare Section
 **************************************************************/
-
+struct netconn *agent_tcp_client_netconn;		//本地客户端，用于向peer发送数据
+struct netconn *agent_tcp_server_netconn;		//本地服务器，用于监听peer连接
+u8_t agent_tcp_backlog = 10;			//最大监听数
 
 /**************************************************************
 *	File Static Variable Define Section
@@ -78,8 +81,8 @@ void con_to_agent(void)
 	}else{
 		DEBUG_PRINT("Fail to build netconn.\n");
 	}
+	netconn_set_recvtimeout(agent_tcp_client_netconn,10000);//设置接收延时时间 		
 	
-	netconn_set_recvtimeout(order_netconn,10000);//设置接收延时时间 		
 	/*这里需要调用UDP广播获取peer的IP地址*/
 	IP4_ADDR(&peer_ip, 192,168,1,116);//IP of peer
 	if( (con_err = netconn_connect(agent_tcp_client_netconn, &peer_ip, 8000)) == ERR_OK )	
@@ -115,6 +118,13 @@ void agent_tcp_server(void)
 	struct netconn *peer_newconn;	
 	err_t err_tcp;
 	
+	if((agent_tcp_server_netconn = netconn_new(NETCONN_TCP)) != NULL){
+		DEBUG_PRINT("TCP netconn build.\n");
+	}else{
+		DEBUG_PRINT("Fail to build netconn.\n");
+	}	
+	netconn_set_recvtimeout(agent_tcp_server_netconn,10000);//设置接收延时时间 		
+
 	netconn_bind(agent_tcp_server_netconn, IP_ADDR_ANY, 8000);		//绑定到本地所有IP，全部进行监听
 	netconn_listen_with_backlog(agent_tcp_server_netconn, agent_tcp_backlog);	//开启TCP监听，最多监听10个
 	
