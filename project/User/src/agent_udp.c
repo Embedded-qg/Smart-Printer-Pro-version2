@@ -49,7 +49,7 @@ struct netconn *agent_udp_client_netconn;		//本地客户端，用于向peer发送数据
 struct netconn *agent_udp_server_netconn;		//本地服务器，用于监听peer连接
 const static u8_t UDPASKDATA_FREE[] = "Who is free?";
 const static u8_t UDPASKDATA_WISF[] = "WISF";
-
+	
 /**************************************************************
 *	File Static Variable Define Section
 **************************************************************/
@@ -81,14 +81,14 @@ void reply_to_peer()
  *	@return		  none
  *  @notice
  */
-void  broadcast_to_localLAN()
+void  broadcast_to_localLAN(void)
 {
-/*你发送信息的创建*/
-//	struct netbuf *buf;
-//	
-//	pbuf = pbuf_alloc(PBUF_RAW, sizeof(UDPASKDATA_WISF), PBUF_RAM);
-//	buf->p = UDPASKDATA_WISF;
-//	
+	struct netbuf *buf_send;
+	struct pbuf *pbuf_send;
+	
+	create_buf_pbuf(buf_send, pbuf_send);
+  add_sned_data(buf_send, (u8_t *)UDPASKDATA_WISF);
+	
 	if((agent_udp_client_netconn = netconn_new(NETCONN_UDP)) != NULL){
 		DEBUG_PRINT("UDP netconn build.\n");
 	}else{
@@ -97,9 +97,36 @@ void  broadcast_to_localLAN()
 	netconn_set_recvtimeout(agent_udp_client_netconn,10000);//设置接收延时时间 		 
 	
 	netconn_bind(agent_udp_client_netconn, IP_ADDR_BROADCAST, 8001);		//绑定到广播端口
-//拟广播内容
-//	netconn_send(agent_udp_client_netconn, buf);			//进行广播
+ 	netconn_send(agent_udp_client_netconn, buf_send);			//进行广播
+}
 
+/**
+ *  @name	    create_buf_pbuf
+ *	@description   创建buf和pbuf
+ *	@param			struct netbuf *newbuf, struct pbuf *newpbuf
+ *	@return		  none
+ *  @notice
+ */
+void create_buf_pbuf(struct netbuf *newbuf, struct pbuf *newpbuf)
+{	
+	newbuf = netbuf_new();
+	newpbuf = pbuf_alloc(PBUF_RAW, sizeof(UDPASKDATA_WISF), PBUF_RAM);
+	
+	newbuf->p = newpbuf;
+	newbuf->addr.addr = IPADDR_BROADCAST;
+	newbuf->port = 8001;
+}
+
+/**
+ *  @name	    add_sned_data
+ *	@description   向buf中添加待发送信息
+ *	@param			struct netbuf *buf, u8_t *data
+ *	@return		  none
+ *  @notice
+ */
+void add_sned_data(struct netbuf *buf, u8_t *data)
+{
+	buf->p->payload = (void *)data;
 }
 
  #ifdef  DEBUG

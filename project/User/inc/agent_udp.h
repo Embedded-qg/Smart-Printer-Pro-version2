@@ -83,6 +83,11 @@
 /**************************************************************
 *	Prototype Declare Section
 **************************************************************/
+void create_buf_pbuf(struct netbuf *newbuf, struct pbuf *newpbuf);
+void add_sned_data(struct netbuf *buf, u8_t *data);
+void  broadcast_to_localLAN(void);
+
+
 
 /**************************************************************
 *	End-Multi-Include-Prevent Section
