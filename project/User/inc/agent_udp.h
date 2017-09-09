@@ -83,11 +83,11 @@
 /**************************************************************
 *	Prototype Declare Section
 **************************************************************/
-void create_buf_pbuf(struct netbuf *newbuf, struct pbuf *newpbuf);
+void create_buf_pbuf(struct netbuf *newbuf, struct pbuf *newpbuf, int sizeOfNewbuf);
 void add_sned_data(struct netbuf *buf, u8_t *data);
-void  broadcast_to_localLAN(void);
-
-
+void multicast_to_localLAN(void);
+static void set_ipaddr(void);
+void init_client_server(void);
 
 /**************************************************************
 *	End-Multi-Include-Prevent Section
