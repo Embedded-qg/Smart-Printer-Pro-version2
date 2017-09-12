@@ -58,6 +58,12 @@
 #include "netif/etharp.h"
 #include "lwip/api.h"
 
+u32_t LWIP_RAND()
+{
+	return 1;
+}
+
+
 /* Compile-time sanity checks for configuration errors.
  * These can be done independently of LWIP_DEBUG, without penalty.
  */
@@ -172,7 +178,7 @@
 #if !LWIP_ETHERNET && (LWIP_ARP || PPPOE_SUPPORT)
   #error "LWIP_ETHERNET needs to be turned on for LWIP_ARP or PPPOE_SUPPORT"
 #endif
-#if LWIP_IGMP && !defined(LWIP_RAND)
+#if 0 && !defined(LWIP_RAND)		//JockJo change LWIP_IGMP to 0
   #error "When using IGMP, LWIP_RAND() needs to be defined to a random-function returning an u32_t random value"
 #endif
 #if LWIP_TCPIP_CORE_LOCKING_INPUT && !LWIP_TCPIP_CORE_LOCKING

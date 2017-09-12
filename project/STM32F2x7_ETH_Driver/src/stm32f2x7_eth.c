@@ -201,7 +201,7 @@ void ETH_StructInit(ETH_InitTypeDef* ETH_InitStruct)
   /* Do not forward control frames that do not pass the address filtering */
   ETH_InitStruct->ETH_PassControlFrames = ETH_PassControlFrames_BlockAll;   
   /* Disable reception of Broadcast frames */
-  ETH_InitStruct->ETH_BroadcastFramesReception = ETH_BroadcastFramesReception_Disable;
+  ETH_InitStruct->ETH_BroadcastFramesReception = ETH_BroadcastFramesReception_Enable;		//JockJo change
   /* Normal Destination address filtering (not reverse addressing) */
   ETH_InitStruct->ETH_DestinationAddrFilter = ETH_DestinationAddrFilter_Normal;
   /* Promiscuous address filtering mode disabled */

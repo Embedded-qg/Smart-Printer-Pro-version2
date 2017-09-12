@@ -8,6 +8,11 @@ struct netconn *order_netconn;	//全局TCP链接
 extern OS_EVENT *Print_Sem;
 extern batch_info batch_info_table[];	//批次表
 extern OS_EVENT *Batch_Rec_Sem;			//完成一次批次读取的二值信号量
+
+struct ip_addr localhost_ip;
+struct ip_addr localhost_netmask;
+struct ip_addr localhost_gw;
+
 //#define TCPSEVER
 #define TCPCLIENT
 #define REMOTE
@@ -370,33 +375,32 @@ void con_to_server(void)
   */
 void LwIP_Init(void)
 {
-	struct ip_addr ipaddr;
-	struct ip_addr netmask;
-	struct ip_addr gw;
-
 	tcpip_init(NULL,NULL);
 
 #if LWIP_DHCP
-  ipaddr.addr = 0;
-  netmask.addr = 0;
-  gw.addr = 0;
+  localhost_ip.addr = 0;
+  localhost_netmask.addr = 0;
+  localhost_gw.addr = 0;
 
 	//printf("DHCP can be choosed !!!\n");
 #else
-  IP4_ADDR(&ipaddr, 192,168,1,134);
-  IP4_ADDR(&netmask, 255, 255, 255, 0);
-  IP4_ADDR(&gw, 192, 168, 1, 1);	
+  IP4_ADDR(&localhost_ip, 192,168,1,134);
+  IP4_ADDR(&localhost_netmask, 255, 255, 255, 0);
+  IP4_ADDR(&localhost_gw, 192, 168, 1, 1);	
 #endif
 
+#if LWIP_DHCP
+  dhcp_start(&DM9161_netif);
+	localhost_ip.addr = DM9161_netif.ip_addr.addr;	
+	localhost_netmask.addr = DM9161_netif.netmask.addr;
+	localhost_gw.addr = DM9161_netif.gw.addr;
+#endif
 
-  netif_add(&DM9161_netif, &ipaddr, &netmask, &gw, NULL, &ethernetif_init, &tcpip_input);
+  netif_add(&DM9161_netif, &localhost_ip, &localhost_netmask, &localhost_gw, NULL, &ethernetif_init, &tcpip_input);
 	
   netif_set_default(&DM9161_netif);
 
-#if LWIP_DHCP
-  dhcp_start(&netif);
-#endif
-  /*  When the netif is fully configured this function must be called.*/
+/*  When the netif is fully configured this function must be called.*/
   netif_set_up(&DM9161_netif);
 }
 

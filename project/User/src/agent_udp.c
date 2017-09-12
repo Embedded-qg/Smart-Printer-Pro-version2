@@ -58,10 +58,11 @@ struct netconn *agent_udp_client_netconn = (void*)0;		//本地客户端，用于向peer发
 struct netconn *agent_udp_server_netconn = (void*)0;		//本地服务器，用于监听peer连接
 const static u8_t UDPASKDATA_FREE[] = "Who is free?";
 const static u8_t UDPASKDATA_WISF[] = "WISF";
+const static u8_t UDPREPLYDATA_IAMF[] = "IAMF";
 struct netbuf *buf_send = (void*)0;
 struct pbuf *pbuf_send = (void*)0;
 struct ip_addr multicast_ip;	
-struct ip_addr localhost_ip;
+extern struct ip_addr localhost_ip;
 /**************************************************************
 *	File Static Variable Define Section
 **************************************************************/
@@ -86,6 +87,8 @@ void reply_to_peer()
 	struct netbuf *receive_buf = (void*)0;
 	receive_buf = netbuf_new();
 	netconn_recv(agent_udp_server_netconn, &receive_buf);
+	/*此处需要一个解析程序，得出目标地址*/
+	add_sned_data(buf_send, (u8_t *)UDPREPLYDATA_IAMF);
 	netconn_sendto(agent_udp_server_netconn, buf_send, &peer_ip, UDP_SERVER_PORT);			//进行单播
 }
  
@@ -98,20 +101,19 @@ void reply_to_peer()
  */
 void  multicast_to_localLAN(void)
 {
- 	/*此处需要获得*/
 	netconn_sendto(agent_udp_client_netconn, buf_send, &multicast_ip, UDP_SERVER_PORT);			//进行多播
 }
 
 /**
- *  @name	    init_UDP_bufs
+ *  @name	    init_UDP
  *	@description   初始化UDP使用到的bufs
  *	@param			none
  *	@return		  none
  *  @notice
  */
-void init_UDP_bufs(void)
+void init_UDP(void)
 {
-	create_buf_pbuf(buf_send, pbuf_send, sizeof(UDPASKDATA_WISF));
+	create_buf_pbuf(buf_send, pbuf_send, sizeof(UDPASKDATA_WISF)+20);
   add_sned_data(buf_send, (u8_t *)UDPASKDATA_WISF);
 	set_ipaddr();
 	init_client_server();
@@ -131,6 +133,15 @@ void create_buf_pbuf(struct netbuf *newbuf, struct pbuf *newpbuf, int sizeOfNewb
 	newbuf->p = newpbuf;
 }
 
+void add_localhostIP_to_sendData()
+{
+ 	static char *str_ipaddr = (void*)0;
+	static struct pbuf *str_ipaddr_pbuf = (void*)0;		
+	str_ipaddr_pbuf = pbuf_alloc(PBUF_RAW, 20, PBUF_RAM);
+	str_ipaddr = ipaddr_ntoa(&localhost_ip);
+	str_ipaddr_pbuf->payload = (void*)str_ipaddr;;
+	pbuf_chain(pbuf_send, str_ipaddr_pbuf);	
+}
 /**
  *  @name	    add_sned_data
  *	@description   向buf中添加待发送信息
@@ -145,7 +156,7 @@ void add_sned_data(struct netbuf *buf, u8_t *data)
 
 /**
  *  @name	    set_ipaddr
- *	@description   设置IP地址，报告多播地址，本机地址
+ *	@description   设置多播地址
  *	@param			none
  *	@return		  none
  *  @notice
@@ -159,8 +170,6 @@ static void set_ipaddr()
 	#else
 	IP4_ADDR(&multicast_ip, 239,255,255,255);		//private
 	#endif
-	
-	IP4_ADDR(&localhost_ip, 192,168,1,134);
 }
 
 /**

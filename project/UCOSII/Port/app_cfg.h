@@ -14,6 +14,7 @@
 #define  WIFI_REC_TASK_PRIO       	 7
 #define  REQ_BATCH_TASK_PRIO         10
 #define  PRINT_QUEUE_TASK_PRIO       11
+#define  UDP_TASK_PRIO                2
 // 优先级区间[TRANSMITTER_TASK_PRIO, TRANSMITTER_TASK_PRIO + MAX_CELL_NUM]被传输线程占用
 #define  TRANSMITTER_TASK_PRIO		 12
 #define  MIN_TASK_PRIO 				 15	//最低任务优先级
@@ -38,6 +39,7 @@
 #define  WIFI_REC_REQ_STK_SIZE   		256
 #define  MESG_QUE_STK_SIZE   		 	256
 #define  TRANSMITTER_STK_SIZE   		256
+#define  UDP_STK_SIZE 256
 
 #define APP_DEBUG 0
 

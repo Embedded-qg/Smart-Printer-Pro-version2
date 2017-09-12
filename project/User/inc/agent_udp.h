@@ -88,6 +88,8 @@ void add_sned_data(struct netbuf *buf, u8_t *data);
 void multicast_to_localLAN(void);
 static void set_ipaddr(void);
 void init_client_server(void);
+void init_UDP(void);
+
 
 /**************************************************************
 *	End-Multi-Include-Prevent Section
