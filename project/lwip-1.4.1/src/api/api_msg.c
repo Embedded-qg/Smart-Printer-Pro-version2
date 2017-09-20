@@ -576,6 +576,7 @@ netconn_alloc(enum netconn_type t, netconn_callback callback)
 
   conn = (struct netconn *)memp_malloc(MEMP_NETCONN);
   if (conn == NULL) {
+		DEBUG_PRINT("conn bulid failed.\n");
     return NULL;
   }
 
@@ -611,9 +612,11 @@ netconn_alloc(enum netconn_type t, netconn_callback callback)
 
   if (sys_sem_new(&conn->op_completed, 0) != ERR_OK) {
     goto free_and_return;
+		DEBUG_PRINT("sys_sem_new conn->op_completed failed.\n");
   }
   if (sys_mbox_new(&conn->recvmbox, size) != ERR_OK) {
-    sys_sem_free(&conn->op_completed);
+		DEBUG_PRINT("sys_sem_new conn->recvmbox failed.\n"); 
+		sys_sem_free(&conn->op_completed);
     goto free_and_return;
   }
 

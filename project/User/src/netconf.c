@@ -336,18 +336,22 @@ void con_to_server(void)
 {
 	struct ip_addr server_ip;
 	extern struct netconn *order_netconn;	//全局TCP链接
-	
+	extern OS_EVENT *Recon_To_Server_Sem;
+
 	if((order_netconn = netconn_new(NETCONN_TCP)) != NULL){
 		DEBUG_PRINT("Connection build.\n");
 	}else{
 		DEBUG_PRINT("Fail to build connection.\n");
+		OSSemPost(Recon_To_Server_Sem);	
 	}
 	
 	netconn_set_recvtimeout(order_netconn,10000);//设置接收延时时间 
 	
 #ifdef REMOTE//设置服务器ip地址
-	IP4_ADDR(&server_ip,192,168,1,116);//云服务器
-//	IP4_ADDR(&server_ip,10,21,56,143);
+//	IP4_ADDR(&server_ip,10,21,48,11);//云服务器学校
+//		IP4_ADDR(&server_ip,123,207,228,117);		//云服务器_胖子
+//	IP4_ADDR(&server_ip,192,168,1,116);		//JockJo测试机
+	IP4_ADDR(&server_ip, 192,168,1,119);	//工作室测试机
 //	IP4_ADDR(&server_ip,192,168,1,110);  //用肥虫电脑的IP
 	netconn_connect(order_netconn,&server_ip,8086);
 #else	

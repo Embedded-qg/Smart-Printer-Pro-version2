@@ -85,6 +85,7 @@ netconn_new_with_proto_and_callback(enum netconn_type t, u8_t proto, netconn_cal
       sys_sem_free(&conn->op_completed);
       sys_mbox_free(&conn->recvmbox);
       memp_free(MEMP_NETCONN, conn);
+			DEBUG_PRINT("TCPIP_APIMSG IS NOT OK.\n");
       return NULL;
     }
   }
