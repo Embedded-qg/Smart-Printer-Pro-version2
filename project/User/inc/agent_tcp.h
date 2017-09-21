@@ -89,7 +89,7 @@ void con_to_agent(void);  //与对等的agent建立TCP连接
 
 void agent_tcp_server(void);	//本地服务器，监听peer连接
 
-void send_to_peer(void);	 //向对等的ageng发送信息
+void send_to_peer(struct netconn *peer_newconn);	 //向对等的ageng发送信息
 
 void rec_from_peer(struct netconn *agent_newconn);		//从对等的agent接收数据
 

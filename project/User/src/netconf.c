@@ -15,7 +15,7 @@ struct ip_addr localhost_gw;
 
 //#define TCPSEVER
 #define TCPCLIENT
-#define REMOTE
+#define REMOTE  1
 
 
 
@@ -388,7 +388,7 @@ void LwIP_Init(void)
 
 	//printf("DHCP can be choosed !!!\n");
 #else
-  IP4_ADDR(&localhost_ip, 192,168,1,134);
+  IP4_ADDR(&localhost_ip, 192,168,1,135);
   IP4_ADDR(&localhost_netmask, 255, 255, 255, 0);
   IP4_ADDR(&localhost_gw, 192, 168, 1, 1);	
 #endif

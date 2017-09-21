@@ -15,7 +15,7 @@
 #include "wifi_conf.h"
 #include "RequestHeap.h"
 #include "agent_udp.h"
-
+#include "agent_tcp.h"
 
 #define GET_STATUS_01 putchar(0x10);putchar(0x04);putchar(0x01);
 #define GET_STATUS_02 putchar(0x10);putchar(0x04);putchar(0x02);
@@ -56,6 +56,8 @@ static  void Mesg_Queue_Task(void * p_arg);
 static  void Transmit_Task(void * p_arg);
 static  void Deal_Wifi_Req_Task(void* p_arg);
 static  void UDP_Task(void* p_arg);
+static void TCP_Task(void *p_arg);
+
 
 /* Public Functions ---------------------------------------------------------*/
 extern void System_Setup(void);
@@ -158,7 +160,12 @@ int main(void)
 //                          (void *) 0,												 //任务开始执行时，传递给任务的参数的指针
 //               		      (OS_STK *) &LWIP_TaskStartStk[UDP_STK_SIZE - 1],//分配给任务的堆栈的栈顶指针   从顶向下递减
 //                          (INT8U) UDP_TASK_PRIO);								 //分配给任务的优先级		
-													 
+	
+	os_err =  OSTaskCreate((void (*) (void *)) TCP_Task,               		 //指向任务代码的指针
+                          (void *) 0,												 //任务开始执行时，传递给任务的参数的指针
+               		      (OS_STK *) &LWIP_TaskStartStk[TCP_STK_SIZE - 1],//分配给任务的堆栈的栈顶指针   从顶向下递减
+                          (INT8U) TCP_TASK_PRIO);								 //分配给任务的优先级		
+													
 	/*任务功能：建立订单打印*/
 	os_err = OSTaskCreate((void (*) (void *))Print_Task,               		    //指向任务代码的指针
                           (void *) 0,											//任务开始执行时，传递给任务的参数的指针
@@ -461,6 +468,7 @@ static void Transmit_Task(void * p_arg)
 	return ;
 }
 
+
 static void UDP_Task(void *p_arg)
 {
 	(void) p_arg; 
@@ -470,4 +478,16 @@ static void UDP_Task(void *p_arg)
 		multicast_to_localLAN();
 	}
 	return ;
+}
+
+static void TCP_Task(void *p_arg)
+{
+	  u8_t NORMAL = 0;
+
+		(void) p_arg;
+		agent_tcp_server();
+//		if(!NORMAL)		//这里实际上需要一个信号量
+//		{
+//			con_to_agent();
+//		}
 }

@@ -84,7 +84,7 @@ void con_to_agent(void)
 	netconn_set_recvtimeout(agent_tcp_client_netconn,10000);//设置接收延时时间 		
 	
 	/*这里需要调用UDP广播获取peer的IP地址*/
-	IP4_ADDR(&peer_ip, 192,168,1,116);//IP of peer
+	IP4_ADDR(&peer_ip, 192,168,1,135);//IP of peer
 	if( (con_err = netconn_connect(agent_tcp_client_netconn, &peer_ip, 8000)) == ERR_OK )	
 	{
 		con_time = 0;
@@ -130,6 +130,8 @@ void agent_tcp_server(void)
 	
 	while( (err_tcp = netconn_accept(agent_tcp_server_netconn, &peer_newconn)) == ERR_OK ) 		//接收新的连接请求
 	{
+			DEBUG_PRINT("receive from peer.\n");
+			rec_from_peer(peer_newconn);
 			/*开启新的线程，接收数据*/
 			/*接收数据完成，关闭该连接*/
 	}
@@ -142,9 +144,11 @@ void agent_tcp_server(void)
  *	@return		  none
  *  @notice
  */
-void send_to_peer(void)
+void send_to_peer(struct netconn *peer_newconn)
 {
 	/*此处为需要发送的打印信息内容*/
+	write_connection(peer_newconn, order_req, ORDER_REQUEST, 0);//请求订单			此处可以修改为需要请求的内容
+	DEBUG_PRINT("send to peer.\n");
 }
 
 
