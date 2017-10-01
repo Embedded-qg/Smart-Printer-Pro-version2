@@ -161,10 +161,10 @@ int main(void)
 //               		      (OS_STK *) &LWIP_TaskStartStk[UDP_STK_SIZE - 1],//分配给任务的堆栈的栈顶指针   从顶向下递减
 //                          (INT8U) UDP_TASK_PRIO);								 //分配给任务的优先级		
 	
-	os_err =  OSTaskCreate((void (*) (void *)) TCP_Task,               		 //指向任务代码的指针
-                          (void *) 0,												 //任务开始执行时，传递给任务的参数的指针
-               		      (OS_STK *) &LWIP_TaskStartStk[TCP_STK_SIZE - 1],//分配给任务的堆栈的栈顶指针   从顶向下递减
-                          (INT8U) TCP_TASK_PRIO);								 //分配给任务的优先级		
+//	os_err =  OSTaskCreate((void (*) (void *)) TCP_Task,               		 //指向任务代码的指针
+//                          (void *) 0,												 //任务开始执行时，传递给任务的参数的指针
+//               		      (OS_STK *) &LWIP_TaskStartStk[TCP_STK_SIZE - 1],//分配给任务的堆栈的栈顶指针   从顶向下递减
+//                          (INT8U) TCP_TASK_PRIO);								 //分配给任务的优先级		
 													
 	/*任务功能：建立订单打印*/
 	os_err = OSTaskCreate((void (*) (void *))Print_Task,               		    //指向任务代码的指针
@@ -260,6 +260,7 @@ static void Lwip_TaskStart(void* p_arg)
 	OSStatInit(); 	//----统计任务初始化函数                                 
 #endif
 	
+	DEBUG_PRINT("LWIP_Init !!!\n");
 	LwIP_Init();
 	
 	while(1)

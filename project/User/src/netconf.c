@@ -379,30 +379,64 @@ void con_to_server(void)
   */
 void LwIP_Init(void)
 {
+	static char *str_ipaddr = (void*)0;
 	tcpip_init(NULL,NULL);
+
 
 #if LWIP_DHCP
   localhost_ip.addr = 0;
   localhost_netmask.addr = 0;
   localhost_gw.addr = 0;
 
-	//printf("DHCP can be choosed !!!\n");
+	DEBUG_PRINT("DHCP can be choosed !!!\n");
 #else
-  IP4_ADDR(&localhost_ip, 192,168,1,135);
+//  IP4_ADDR(&localhost_ip, 192,168,1,135);
+//  IP4_ADDR(&localhost_netmask, 255, 255, 255, 0);
+//  IP4_ADDR(&localhost_gw, 192, 168, 1, 1);
+//JockJo家中测试
+  IP4_ADDR(&localhost_ip, 192,168,0,135);
   IP4_ADDR(&localhost_netmask, 255, 255, 255, 0);
-  IP4_ADDR(&localhost_gw, 192, 168, 1, 1);	
-#endif
-
-#if LWIP_DHCP
-  dhcp_start(&DM9161_netif);
-	localhost_ip.addr = DM9161_netif.ip_addr.addr;	
-	localhost_netmask.addr = DM9161_netif.netmask.addr;
-	localhost_gw.addr = DM9161_netif.gw.addr;
-#endif
-
-  netif_add(&DM9161_netif, &localhost_ip, &localhost_netmask, &localhost_gw, NULL, &ethernetif_init, &tcpip_input);
+  IP4_ADDR(&localhost_gw, 192, 168, 0, 1);	
 	
+	DEBUG_PRINT("DHCP is not  be choosed !!!\n");	
+#endif
+
+	netif_add(&DM9161_netif, &localhost_ip, &localhost_netmask, &localhost_gw, NULL, &ethernetif_init, &tcpip_input);
   netif_set_default(&DM9161_netif);
+	
+#if LWIP_DHCP
+//	while(localhost_ip.addr == 0)
+//  {
+//		dhcp_stop(&DM9161_netif);
+//		OSTimeDlyHMSM(0, 0, 3, 0);
+		dhcp_start(&DM9161_netif);
+		//缺少dhcp超时处理函数
+		localhost_ip.addr = DM9161_netif.ip_addr.addr;	
+		localhost_netmask.addr = DM9161_netif.netmask.addr;
+		localhost_gw.addr = DM9161_netif.gw.addr;
+		str_ipaddr = ipaddr_ntoa(&localhost_ip);
+//		if(str_ipaddr != (void*)0)
+//		{
+//			DEBUG_PRINT("str_ipaddr is:\n");		
+//			DEBUG_PRINT(str_ipaddr);
+//		}
+//		else
+//		{
+//			DEBUG_PRINT("str_ipaddr is null");		
+//		}	
+//	}
+#endif
+
+	str_ipaddr = ipaddr_ntoa(&localhost_ip);
+	if(str_ipaddr != (void*)0)
+	{
+		DEBUG_PRINT("str_ipaddr is:\n");		
+		DEBUG_PRINT(str_ipaddr);
+	}
+	else
+	{
+		DEBUG_PRINT("str_ipaddr is null");		
+	}	
 
 /*  When the netif is fully configured this function must be called.*/
   netif_set_up(&DM9161_netif);

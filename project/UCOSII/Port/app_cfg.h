@@ -14,8 +14,8 @@
 #define  WIFI_REC_TASK_PRIO       	 7
 #define  REQ_BATCH_TASK_PRIO         10
 #define  PRINT_QUEUE_TASK_PRIO       11
-#define  UDP_TASK_PRIO                2
-#define  TCP_TASK_PRIO                13
+//#define  UDP_TASK_PRIO                2
+//#define  TCP_TASK_PRIO                13
 // 优先级区间[TRANSMITTER_TASK_PRIO, TRANSMITTER_TASK_PRIO + MAX_CELL_NUM]被传输线程占用
 #define  TRANSMITTER_TASK_PRIO		 12
 #define  MIN_TASK_PRIO 				 15	//最低任务优先级
@@ -45,7 +45,7 @@
 
 #define APP_DEBUG 0
 
-#define DEBUG_PRINT_ON 0
+#define DEBUG_PRINT_ON 1
 
 #if DEBUG_PRINT_ON
 	#define DEBUG_PRINT(fmt,args...) printf (fmt ,##args)
