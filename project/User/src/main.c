@@ -156,10 +156,10 @@ int main(void)
                		      (OS_STK *) &LWIP_TaskStartStk[LWIP_TASK_START_STK_SIZE - 1],//分配给任务的堆栈的栈顶指针   从顶向下递减
                           (INT8U) LWIP_TASK_START_PRIO);								 //分配给任务的优先级		
 
-//	os_err = OSTaskCreate((void (*) (void *)) UDP_Task,               		 //指向任务代码的指针
-//                          (void *) 0,												 //任务开始执行时，传递给任务的参数的指针
-//               		      (OS_STK *) &LWIP_TaskStartStk[UDP_STK_SIZE - 1],//分配给任务的堆栈的栈顶指针   从顶向下递减
-//                          (INT8U) UDP_TASK_PRIO);								 //分配给任务的优先级		
+	os_err = OSTaskCreate((void (*) (void *)) UDP_Task,               		 //指向任务代码的指针
+                          (void *) 0,												 //任务开始执行时，传递给任务的参数的指针
+               		      (OS_STK *) &LWIP_TaskStartStk[UDP_STK_SIZE - 1],//分配给任务的堆栈的栈顶指针   从顶向下递减
+                          (INT8U) UDP_TASK_PRIO);								 //分配给任务的优先级		
 	
 //	os_err =  OSTaskCreate((void (*) (void *)) TCP_Task,               		 //指向任务代码的指针
 //                          (void *) 0,												 //任务开始执行时，传递给任务的参数的指针
@@ -477,6 +477,8 @@ static void UDP_Task(void *p_arg)
 	while(1)
 	{
 		multicast_to_localLAN();
+		DEBUG_PRINT("multicast to lacalLan\n");				
+		OSTimeDlyHMSM(0, 0, 1, 0);
 	}
 	return ;
 }

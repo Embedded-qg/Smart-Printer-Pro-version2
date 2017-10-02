@@ -11,10 +11,10 @@
 #define  PRINT_TASK_PRIO             9
 #define  LOCAL_REC_TASK_PRIO       	 8
 #define  WIFI_REC_REQ_TASK_PRIO      6
-#define  WIFI_REC_TASK_PRIO       	 7
+#define  WIFI_REC_TASK_PRIO       	 14
 #define  REQ_BATCH_TASK_PRIO         10
 #define  PRINT_QUEUE_TASK_PRIO       11
-//#define  UDP_TASK_PRIO                2
+#define  UDP_TASK_PRIO                7
 //#define  TCP_TASK_PRIO                13
 // 优先级区间[TRANSMITTER_TASK_PRIO, TRANSMITTER_TASK_PRIO + MAX_CELL_NUM]被传输线程占用
 #define  TRANSMITTER_TASK_PRIO		 12
