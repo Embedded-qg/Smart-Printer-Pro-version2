@@ -7,6 +7,7 @@
 
 #define LWIP_SOCKET  0
 #define LWIP_NETCONN 1
+
 #define LWIP_DHCP 1
 #define DHCP_DOES_ARP_CHECK 1
 

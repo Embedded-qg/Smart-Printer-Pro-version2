@@ -33,7 +33,7 @@
 #ifndef UDP_PORT
 #define UDP_PORT
 #define UDP_CLIENT_PORT 8123
-#define UDP_SERVER_PORT 8124
+#define UDP_SERVER_PORT 65000
 #endif	//UDP_PORT
 
 #ifndef MULTICASTIP
@@ -101,7 +101,8 @@ void reply_to_peer()
  */
 void  multicast_to_localLAN(void)
 {
-	netconn_sendto(agent_udp_client_netconn, buf_send, &multicast_ip, UDP_SERVER_PORT);			//进行多播
+	netconn_sendto(agent_udp_server_netconn, buf_send, &multicast_ip, UDP_SERVER_PORT);			//进行多播
+//		udp_sendto(agent_udp_server_netconn->pcb.udp, pbuf_send, &multicast_ip, UDP_SERVER_PORT);
 }
 
 /**
@@ -194,11 +195,14 @@ void init_client_server(void)
 	netconn_set_recvtimeout(agent_udp_client_netconn,10000);//设置接收延时时间 		 
 	netconn_set_recvtimeout(agent_udp_server_netconn,10000);//设置接收延时时间 		 	
 	
-	netconn_bind(agent_udp_client_netconn, &multicast_ip, UDP_CLIENT_PORT);		//绑定到多客户端端口，多播地址
-	netconn_join_leave_group(agent_udp_client_netconn, &multicast_ip, &localhost_ip, NETCONN_JOIN);
+	netconn_bind(agent_udp_client_netconn, IP_ADDR_ANY, UDP_CLIENT_PORT);		//绑定到到本地所有地址，客户端端口
+	netconn_bind(agent_udp_server_netconn, IP_ADDR_ANY, UDP_SERVER_PORT);		//绑定到本地所有地址，服务器端口
+
+#ifdef LWIP_IGMP
+	netconn_join_leave_group(agent_udp_server_netconn, &multicast_ip, &localhost_ip, NETCONN_JOIN);		//服务器端加入多播组,接受信息
+#endif 	//LWIP_IGMP
 	
-	netconn_bind(agent_udp_server_netconn, &multicast_ip, UDP_SERVER_PORT);		//绑定到服务器端口，多播地址
-	netconn_join_leave_group(agent_udp_server_netconn, &multicast_ip, &localhost_ip, NETCONN_JOIN);		//加入多播组
+	//此处缺少一个server接受的处理函数
 }
 
 

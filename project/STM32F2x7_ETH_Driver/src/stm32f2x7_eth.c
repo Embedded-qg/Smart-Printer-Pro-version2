@@ -207,7 +207,7 @@ void ETH_StructInit(ETH_InitTypeDef* ETH_InitStruct)
   /* Promiscuous address filtering mode disabled */
   ETH_InitStruct->ETH_PromiscuousMode = ETH_PromiscuousMode_Disable;                                                             
   /* Perfect address filtering for multicast addresses */
-  ETH_InitStruct->ETH_MulticastFramesFilter = ETH_MulticastFramesFilter_Perfect;       
+  ETH_InitStruct->ETH_MulticastFramesFilter = ETH_MulticastFramesFilter_None;		//JockJo change       
   /* Perfect address filtering for unicast addresses */
   ETH_InitStruct->ETH_UnicastFramesFilter = ETH_UnicastFramesFilter_Perfect;      
   /* Initialize hash table high and low regs */

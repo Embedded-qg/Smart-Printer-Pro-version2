@@ -379,6 +379,7 @@ void con_to_server(void)
   */
 void LwIP_Init(void)
 {
+	extern OS_EVENT *LWIP_Init_Sem;
 	err_t err_dhcp = ERR_OK;
 	static char *str_ipaddr = (void*)0;
 	tcpip_init(NULL,NULL);
@@ -388,7 +389,6 @@ void LwIP_Init(void)
   localhost_ip.addr = 0;
   localhost_netmask.addr = 0;
   localhost_gw.addr = 0;
-
 	DEBUG_PRINT("DHCP can be choosed !!!\n");
 #else
 //  IP4_ADDR(&localhost_ip, 192,168,1,135);
@@ -398,7 +398,6 @@ void LwIP_Init(void)
   IP4_ADDR(&localhost_ip, 192,168,0,135);
   IP4_ADDR(&localhost_netmask, 255, 255, 255, 0);
   IP4_ADDR(&localhost_gw, 192, 168, 0, 1);	
-	
 	DEBUG_PRINT("DHCP is not  be choosed !!!\n");	
 #endif
 
@@ -408,21 +407,21 @@ void LwIP_Init(void)
 #if LWIP_DHCP
 		while(  (err_dhcp = dhcp_start(&DM9161_netif)) != ERR_OK)
 		{
-				DEBUG_PRINT("DHCP start failed!");				
+				DEBUG_PRINT("DHCP start failed!");
+				//此处应该有不成功的处理函数为佳
 		}
-		//缺少dhcp超时处理函数
-		//等待一会，让IP地址存放近DM9161
 		while(DM9161_netif.ip_addr.addr == 0)
 		{
+			//等待一会，让IP地址存放近DM9161
+				OSTimeDlyHMSM(0, 0, 1, 0);
 				DEBUG_PRINT("DM9161 netif's  is  null!");
-				OSTimeDlyHMSM(0,0,1,0);
 		}
 		localhost_ip.addr = DM9161_netif.ip_addr.addr;	
 		localhost_netmask.addr = DM9161_netif.netmask.addr;
 		localhost_gw.addr = DM9161_netif.gw.addr;
 		str_ipaddr = ipaddr_ntoa(&localhost_ip);
 #endif
-
+		
 	str_ipaddr = ipaddr_ntoa(&localhost_ip);
 	if(str_ipaddr != (void*)0)
 	{
@@ -436,6 +435,7 @@ void LwIP_Init(void)
 
 /*  When the netif is fully configured this function must be called.*/
   netif_set_up(&DM9161_netif);
+	OSSemPost(LWIP_Init_Sem);			//释放成信号
 }
 
 

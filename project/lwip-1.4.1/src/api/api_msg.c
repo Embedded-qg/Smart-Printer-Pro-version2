@@ -1122,6 +1122,7 @@ do_listen(struct api_msg_msg *msg)
 void
 do_send(struct api_msg_msg *msg)
 {
+	DEBUG_PRINT("do_send.\n");
   if (ERR_IS_FATAL(msg->conn->last_err)) {
     msg->err = msg->conn->last_err;
   } else {
@@ -1153,7 +1154,8 @@ do_send(struct api_msg_msg *msg)
           msg->err = udp_send(msg->conn->pcb.udp, msg->msg.b->p);
         } else {
           msg->err = udp_sendto(msg->conn->pcb.udp, msg->msg.b->p, &msg->msg.b->addr, msg->msg.b->port);
-        }
+					DEBUG_PRINT("udp_sendto!\n");        
+				}
 #endif /* LWIP_CHECKSUM_ON_COPY */
         break;
 #endif /* LWIP_UDP */
@@ -1161,6 +1163,10 @@ do_send(struct api_msg_msg *msg)
         break;
       }
     }
+		else
+		{
+			DEBUG_PRINT("con->pcb.tcp == null.\n");
+		}
   }
   TCPIP_APIMSG_ACK(msg);
 }

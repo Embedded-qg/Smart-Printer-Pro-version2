@@ -86,6 +86,8 @@ OS_EVENT *Wifi_Rec_Data_Sem;		//Wifi缓冲区接收到数据
 OS_EVENT *Capacity_Change_Sem;		//wifi缓冲区容量改变信号
 OS_EVENT *Rec_Wifi_Req_Sem;			//获取到wifi订单请求信号
 
+OS_EVENT *LWIP_Init_Sem;		//LWIP初始化成功信号量
+
 OS_EVENT *Mesg_Queue;				//发送状态消息队列信号
 
 INT8U block_1K[BLOCK_1K_NUM][BLOCK_1K_SIZE];   //1K内存块打印队列
@@ -138,6 +140,8 @@ void InitSemAndMutex(void)
 	assert((Block_2K_Sem = OSSemCreate(BLOCK_2K_NUM)), "CREATE 2K SEM FAILED\n"); 
 	assert((Block_4K_Sem = OSSemCreate(BLOCK_4K_NUM)), "CREATE 4K SEM FAILED\n"); 	
 	assert((Block_10K_Sem = OSSemCreate(BLOCK_10K_NUM)), "CREATE 10K SEM FAILED\n");
+
+	assert((LWIP_Init_Sem = OSSemCreate(0)), "CREATE LWIP_Init_Sem FAILED\n");
 }
 	
 int main(void)
@@ -156,10 +160,10 @@ int main(void)
                		      (OS_STK *) &LWIP_TaskStartStk[LWIP_TASK_START_STK_SIZE - 1],//分配给任务的堆栈的栈顶指针   从顶向下递减
                           (INT8U) LWIP_TASK_START_PRIO);								 //分配给任务的优先级		
 
-//	os_err = OSTaskCreate((void (*) (void *)) UDP_Task,               		 //指向任务代码的指针
-//                          (void *) 0,												 //任务开始执行时，传递给任务的参数的指针
-//               		      (OS_STK *) &LWIP_TaskStartStk[UDP_STK_SIZE - 1],//分配给任务的堆栈的栈顶指针   从顶向下递减
-//                          (INT8U) UDP_TASK_PRIO);								 //分配给任务的优先级		
+	os_err = OSTaskCreate((void (*) (void *)) UDP_Task,               		 //指向任务代码的指针
+                          (void *) 0,												 //任务开始执行时，传递给任务的参数的指针
+               		      (OS_STK *) &LWIP_TaskStartStk[UDP_STK_SIZE - 1],//分配给任务的堆栈的栈顶指针   从顶向下递减
+                          (INT8U) UDP_TASK_PRIO);								 //分配给任务的优先级		
 	
 //	os_err =  OSTaskCreate((void (*) (void *)) TCP_Task,               		 //指向任务代码的指针
 //                          (void *) 0,												 //任务开始执行时，传递给任务的参数的指针
@@ -260,9 +264,10 @@ static void Lwip_TaskStart(void* p_arg)
 	OSStatInit(); 	//----统计任务初始化函数                                 
 #endif
 	
-	DEBUG_PRINT("LWIP_Init !!!\n");
+	DEBUG_PRINT("Go to LWIP_Init()!\n");
 	LwIP_Init();
 	
+	//此步骤抽离比较合适
 	while(1)
 	{
 		con_to_server();
@@ -472,13 +477,15 @@ static void Transmit_Task(void * p_arg)
 
 static void UDP_Task(void *p_arg)
 {
+	INT8U err;
 	(void) p_arg; 
+	OSSemPend(LWIP_Init_Sem, 0, &err);
 	init_UDP();
 	while(1)
 	{
 		multicast_to_localLAN();
 		DEBUG_PRINT("multicast to lacalLan\n");				
-		OSTimeDlyHMSM(0, 0, 1, 0);
+		OSTimeDlyHMSM(0, 0, 5, 0);
 	}
 	return ;
 }
