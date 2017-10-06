@@ -32,8 +32,8 @@
 **************************************************************/
 #ifndef UDP_PORT
 #define UDP_PORT
-#define UDP_CLIENT_PORT 8002
-#define UDP_SERVER_PORT 8001
+#define UDP_CLIENT_PORT 8123
+#define UDP_SERVER_PORT 8124
 #endif	//UDP_PORT
 
 #ifndef MULTICASTIP

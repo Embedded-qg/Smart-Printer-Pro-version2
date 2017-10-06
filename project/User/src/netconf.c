@@ -379,6 +379,7 @@ void con_to_server(void)
   */
 void LwIP_Init(void)
 {
+	err_t err_dhcp = ERR_OK;
 	static char *str_ipaddr = (void*)0;
 	tcpip_init(NULL,NULL);
 
@@ -405,26 +406,21 @@ void LwIP_Init(void)
   netif_set_default(&DM9161_netif);
 	
 #if LWIP_DHCP
-//	while(localhost_ip.addr == 0)
-//  {
-//		dhcp_stop(&DM9161_netif);
-//		OSTimeDlyHMSM(0, 0, 3, 0);
-		dhcp_start(&DM9161_netif);
+		while(  (err_dhcp = dhcp_start(&DM9161_netif)) != ERR_OK)
+		{
+				DEBUG_PRINT("DHCP start failed!");				
+		}
 		//缺少dhcp超时处理函数
+		//等待一会，让IP地址存放近DM9161
+		while(DM9161_netif.ip_addr.addr == 0)
+		{
+				DEBUG_PRINT("DM9161 netif's  is  null!");
+				OSTimeDlyHMSM(0,0,1,0);
+		}
 		localhost_ip.addr = DM9161_netif.ip_addr.addr;	
 		localhost_netmask.addr = DM9161_netif.netmask.addr;
 		localhost_gw.addr = DM9161_netif.gw.addr;
 		str_ipaddr = ipaddr_ntoa(&localhost_ip);
-//		if(str_ipaddr != (void*)0)
-//		{
-//			DEBUG_PRINT("str_ipaddr is:\n");		
-//			DEBUG_PRINT(str_ipaddr);
-//		}
-//		else
-//		{
-//			DEBUG_PRINT("str_ipaddr is null");		
-//		}	
-//	}
 #endif
 
 	str_ipaddr = ipaddr_ntoa(&localhost_ip);
