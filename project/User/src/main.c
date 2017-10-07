@@ -481,12 +481,12 @@ static void UDP_Task(void *p_arg)
 	(void) p_arg; 
 	OSSemPend(LWIP_Init_Sem, 0, &err);
 	init_UDP();
-	while(1)
-	{
-		multicast_to_localLAN();
-		DEBUG_PRINT("multicast to lacalLan\n");				
-		OSTimeDlyHMSM(0, 0, 5, 0);
-	}
+//	while(1)
+//	{
+//		multicast_to_localLAN();
+//		DEBUG_PRINT("multicast to lacalLan\n");				
+//		OSTimeDlyHMSM(0, 0, 5, 0);
+//	}
 	return ;
 }
 

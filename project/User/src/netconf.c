@@ -380,7 +380,7 @@ void con_to_server(void)
 void LwIP_Init(void)
 {
 	extern OS_EVENT *LWIP_Init_Sem;
-	err_t err_dhcp = ERR_OK;
+	err_t err_start = ERR_OK;
 	static char *str_ipaddr = (void*)0;
 	tcpip_init(NULL,NULL);
 
@@ -405,7 +405,7 @@ void LwIP_Init(void)
   netif_set_default(&DM9161_netif);
 	
 #if LWIP_DHCP
-		while(  (err_dhcp = dhcp_start(&DM9161_netif)) != ERR_OK)
+		while(  (err_start = dhcp_start(&DM9161_netif)) != ERR_OK)
 		{
 				DEBUG_PRINT("DHCP start failed!");
 				//此处应该有不成功的处理函数为佳
@@ -431,8 +431,16 @@ void LwIP_Init(void)
 	else
 	{
 		DEBUG_PRINT("str_ipaddr is null");		
-	}	
-
+	}
+	
+#ifdef LWIP_IGMP
+	while(  (err_start = igmp_start(&DM9161_netif)) != ERR_OK)
+	{
+			DEBUG_PRINT("igmp start failed!");
+				//此处应该有不成功的处理函数为佳
+	}
+#endif	//LWIP_IGMP
+	
 /*  When the netif is fully configured this function must be called.*/
   netif_set_up(&DM9161_netif);
 	OSSemPost(LWIP_Init_Sem);			//释放成信号

@@ -61,6 +61,7 @@ const static u8_t UDPASKDATA_WISF[] = "WISF";
 const static u8_t UDPREPLYDATA_IAMF[] = "IAMF";
 struct netbuf *buf_send = (void*)0;
 struct pbuf *pbuf_send = (void*)0;
+struct netbuf *buf_receive = (void*)0;
 struct ip_addr multicast_ip;	
 extern struct ip_addr localhost_ip;
 /**************************************************************
@@ -101,7 +102,20 @@ void reply_to_peer()
  */
 void  multicast_to_localLAN(void)
 {
-	netconn_sendto(agent_udp_server_netconn, buf_send, &multicast_ip, UDP_SERVER_PORT);			//进行多播
+#ifdef DEBUG_PRINT_ON
+		static char *str_ipaddr = (void*)0;
+		str_ipaddr = ipaddr_ntoa(&multicast_ip);
+		if(str_ipaddr != (void*)0)
+		{
+			DEBUG_PRINT("\nstr_ipaddr is:");		
+			DEBUG_PRINT(str_ipaddr);
+			str_ipaddr = ipaddr_ntoa(&localhost_ip);
+			DEBUG_PRINT("\nstr_ipaddr is:");		
+			DEBUG_PRINT(str_ipaddr);
+		}
+#endif //	DEBUG_PRINT_ON
+		netconn_sendto(agent_udp_server_netconn, buf_send, &multicast_ip, UDP_SERVER_PORT);			//进行多播
+		
 //		udp_sendto(agent_udp_server_netconn->pcb.udp, pbuf_send, &multicast_ip, UDP_SERVER_PORT);
 }
 
@@ -165,7 +179,8 @@ void add_sned_data(struct netbuf *buf, u8_t *data)
 static void set_ipaddr()
 {
 	#if GLOBAL	
-	IP4_ADDR(&multicast_ip, 238,255,255,255);
+	IP4_ADDR(&multicast_ip, 230,0,0,11);
+//	IP4_ADDR(&multicast_ip, 192,168,1,116);	
 	#elif LOCAL
 	IP4_ADDR(&multicast_ip, 224,0,0,0);
 	#else
@@ -173,6 +188,20 @@ static void set_ipaddr()
 	#endif
 }
 
+void UDP_Receive(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port)
+{
+	struct ip_addr destAddr = *addr;
+	struct pbuf *p_temp = pbuf_alloc(PBUF_TRANSPORT, 20, PBUF_RAM);
+	memcpy(p_temp->payload, "Test", 5);
+	DEBUG_PRINT("got udp multicast");
+	if(p_temp != NULL)
+	{
+		udp_sendto(upcb, p_temp, &destAddr, port);
+//		udp_sendto(upcb, p_temp, &multicast_ip, UDP_SERVER_PORT);
+		pbuf_free(p_temp);
+	}
+
+}
 /**
  *  @name	    init_client_server
  *	@description   初始化UDP客户端和服务器，绑定端口和地址
@@ -182,6 +211,8 @@ static void set_ipaddr()
  */
 void init_client_server(void)
 {
+		static char *str_ipaddr = (void*)0;
+
 	if( ((agent_udp_client_netconn = netconn_new(NETCONN_UDP)) != NULL) &&
 			((agent_udp_server_netconn = netconn_new(NETCONN_UDP)) != NULL)  )
 	{
@@ -192,17 +223,36 @@ void init_client_server(void)
 		DEBUG_PRINT("Fail to build netconn.\n");
 		return ;
 	}
-	netconn_set_recvtimeout(agent_udp_client_netconn,10000);//设置接收延时时间 		 
-	netconn_set_recvtimeout(agent_udp_server_netconn,10000);//设置接收延时时间 		 	
+
+//	netconn_set_recvtimeout(agent_udp_client_netconn,10000);//设置接收延时时间 		 
+//	netconn_set_recvtimeout(agent_udp_server_netconn,10000);//设置接收延时时间 		 	
+//	udp_bind(agent_udp_server_netconn->pcb.udp, IP_ADDR_ANY, UDP_CLIENT_PORT);
+//	udp_bind(agent_udp_server_netconn->pcb.udp, IP_ADDR_ANY, UDP_SERVER_PORT);	
 	
-	netconn_bind(agent_udp_client_netconn, IP_ADDR_ANY, UDP_CLIENT_PORT);		//绑定到到本地所有地址，客户端端口
-	netconn_bind(agent_udp_server_netconn, IP_ADDR_ANY, UDP_SERVER_PORT);		//绑定到本地所有地址，服务器端口
+	netconn_bind(agent_udp_client_netconn, &localhost_ip, UDP_CLIENT_PORT);		//绑定到到本地所有地址，客户端端口
+	netconn_bind(agent_udp_server_netconn, &localhost_ip, UDP_SERVER_PORT);		//绑定到本地所有地址，服务器端口
 
 #ifdef LWIP_IGMP
 	netconn_join_leave_group(agent_udp_server_netconn, &multicast_ip, &localhost_ip, NETCONN_JOIN);		//服务器端加入多播组,接受信息
+//	igmp_joingroup(IP_ADDR_ANY, &multicast_ip);
 #endif 	//LWIP_IGMP
-	
-	//此处缺少一个server接受的处理函数
+//udp_recv(agent_udp_server_netconn->pcb.udp, UDP_Receive, NULL);
+	while(1)
+	{
+		netconn_recv(agent_udp_server_netconn, &buf_receive);
+		if(buf_receive != NULL)
+		{
+			DEBUG_PRINT("\nreceive data!");
+		str_ipaddr = ipaddr_ntoa(&multicast_ip);
+		if(str_ipaddr != (void*)0)
+		{
+			DEBUG_PRINT("\nstr_ipaddr is:");		
+			DEBUG_PRINT(str_ipaddr);
+		}
+			netconn_sendto(agent_udp_server_netconn, buf_receive, &multicast_ip, UDP_SERVER_PORT);
+			netbuf_delete(buf_receive);
+		}
+	}
 }
 
 

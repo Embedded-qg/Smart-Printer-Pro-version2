@@ -61,6 +61,7 @@
 #include "lwip/snmp.h"
 #include "arch/perf.h"
 #include "lwip/dhcp.h"
+#include "main.h"
 
 #include <string.h>
 
@@ -502,7 +503,6 @@ udp_sendto_chksum(struct udp_pcb *pcb, struct pbuf *p, ip_addr_t *dst_ip,
 {
 #endif /* LWIP_CHECKSUM_ON_COPY */
   struct netif *netif;
-
   LWIP_DEBUGF(UDP_DEBUG | LWIP_DBG_TRACE, ("udp_send\n"));
 
   /* find the outgoing network interface for this packet */

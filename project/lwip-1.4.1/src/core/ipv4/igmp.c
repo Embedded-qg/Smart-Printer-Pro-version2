@@ -704,8 +704,10 @@ igmp_start_timer(struct igmp_group *group, u8_t max_time)
     max_time = 1;
   }
   /* ensure the random value is > 0 */
- // group->timer = (LWIP_RAND() % (max_time - 1)) + 1;
-	group->timer = (max_time - 1) + 1;			//JockJo change
+// group->timer = (LWIP_RAND() % (max_time - 1)) + 1;
+//	group->timer = (max_time - 1) + 1;			//JockJo change
+	group->timer = max_time + 1;			//JockJo change
+
 }
 
 /**

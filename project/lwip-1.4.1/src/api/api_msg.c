@@ -900,6 +900,7 @@ do_delconn(struct api_msg_msg *msg)
 void
 do_bind(struct api_msg_msg *msg)
 {
+	DEBUG_PRINT("do bind.\n");
   if (ERR_IS_FATAL(msg->conn->last_err)) {
     msg->err = msg->conn->last_err;
   } else {
@@ -1500,6 +1501,7 @@ do_close(struct api_msg_msg *msg)
 void
 do_join_leave_group(struct api_msg_msg *msg)
 { 
+	DEBUG_PRINT("do join leave group.\n");
   if (ERR_IS_FATAL(msg->conn->last_err)) {
     msg->err = msg->conn->last_err;
   } else {
