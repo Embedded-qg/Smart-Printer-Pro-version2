@@ -92,6 +92,7 @@ Steve Reynolds
 #include "lwip/udp.h"
 #include "lwip/tcp.h"
 #include "lwip/stats.h"
+#include "main.h"
 
 #include "string.h"
 
@@ -562,17 +563,19 @@ igmp_joingroup(ip_addr_t *ifaddr, ip_addr_t *groupaddr)
         group->use++;
         /* Join on this interface */
         err = ERR_OK;
+				DEBUG_PRINT("\ndo join igmp group.");
+
       } else {
         /* Return an error even if some network interfaces are joined */
         /** @todo undo any other netif already joined */
         LWIP_DEBUGF(IGMP_DEBUG, ("igmp_joingroup: Not enought memory to join to group\n"));
-        return ERR_MEM;
+        DEBUG_PRINT("\n join igmp failed.");
+				return ERR_MEM;
       }
     }
     /* proceed to next network interface */
     netif = netif->next;
   }
-
   return err;
 }
 

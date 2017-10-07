@@ -46,6 +46,7 @@
 #include "lwip/igmp.h"
 #include "netif/etharp.h"
 #include "lwip/stats.h"
+#include "main.h"
 #if ENABLE_LOOPBACK
 #include "lwip/sys.h"
 #if LWIP_NETIF_LOOPBACK_MULTITHREADING
@@ -193,8 +194,25 @@ netif_add(struct netif *netif, ip_addr_t *ipaddr, ip_addr_t *netmask,
 #if LWIP_IGMP
   /* start IGMP processing */
   if (netif->flags & NETIF_FLAG_IGMP) {
-    igmp_start(netif);
+#ifdef DEBUG_PRINT_ON
+    if(igmp_start(netif) == ERR_OK)
+		{
+				DEBUG_PRINT("\nigmp_start.");
+		}
+		else
+		{
+				DEBUG_PRINT("\nigmp_start failed.");
+		}
+#elif
+		igmp_start(netif);
+#endif	//DEBUG_PRINT_ON
   }
+#ifdef DEBUG_PRINT_ON
+	else
+	{
+		DEBUG_PRINT("\nigmp_start failed for flags.");
+	}
+#endif //DEBUG_PRINT_ON
 #endif /* LWIP_IGMP */
 
   LWIP_DEBUGF(NETIF_DEBUG, ("netif: added interface %c%c IP addr ",

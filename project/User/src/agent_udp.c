@@ -64,6 +64,7 @@ struct pbuf *pbuf_send = (void*)0;
 struct netbuf *buf_receive = (void*)0;
 struct ip_addr multicast_ip;	
 extern struct ip_addr localhost_ip;
+struct ip_addr peer_ip;
 /**************************************************************
 *	File Static Variable Define Section
 **************************************************************/
@@ -179,8 +180,9 @@ void add_sned_data(struct netbuf *buf, u8_t *data)
 static void set_ipaddr()
 {
 	#if GLOBAL	
-	IP4_ADDR(&multicast_ip, 230,0,0,11);
-//	IP4_ADDR(&multicast_ip, 192,168,1,116);	
+
+//	IP4_ADDR(&multicast_ip, 230,0,0,11);
+	IP4_ADDR(&multicast_ip, 255,255,255,255);	
 	#elif LOCAL
 	IP4_ADDR(&multicast_ip, 224,0,0,0);
 	#else
@@ -191,15 +193,23 @@ static void set_ipaddr()
 void UDP_Receive(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port)
 {
 	struct ip_addr destAddr = *addr;
+	struct netbuf *buf_receive = (void*)0;
 	struct pbuf *p_temp = pbuf_alloc(PBUF_TRANSPORT, 20, PBUF_RAM);
+
+	buf_receive = netbuf_new();
 	memcpy(p_temp->payload, "Test", 5);
+	buf_receive->p->payload = p_temp;
 	DEBUG_PRINT("got udp multicast");
 	if(p_temp != NULL)
 	{
-		udp_sendto(upcb, p_temp, &destAddr, port);
-//		udp_sendto(upcb, p_temp, &multicast_ip, UDP_SERVER_PORT);
+//		netconn_sendto(agent_udp_server_netconn, buf_receive, &destAddr, port);
+//		netconn_sendto(agent_udp_server_netconn, buf_receive, &multicast_ip, UDP_SERVER_PORT);		
+//		udp_sendto(upcb, p_temp, &destAddr, port);
+		udp_sendto(upcb, p_temp, &multicast_ip, UDP_SERVER_PORT);
 		pbuf_free(p_temp);
+		netbuf_delete(buf_receive);
 	}
+	
 
 }
 /**
@@ -211,48 +221,84 @@ void UDP_Receive(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr
  */
 void init_client_server(void)
 {
-		static char *str_ipaddr = (void*)0;
+	static char *str_ipaddr = (void*)0;
 
 	if( ((agent_udp_client_netconn = netconn_new(NETCONN_UDP)) != NULL) &&
 			((agent_udp_server_netconn = netconn_new(NETCONN_UDP)) != NULL)  )
 	{
-		DEBUG_PRINT("UDP netconn build.\n");
+		DEBUG_PRINT("\nUDP netconn build.");
 	}
 	else
 	{
-		DEBUG_PRINT("Fail to build netconn.\n");
+		DEBUG_PRINT("\nFail to build netconn.");
 		return ;
 	}
 
 //	netconn_set_recvtimeout(agent_udp_client_netconn,10000);//设置接收延时时间 		 
 //	netconn_set_recvtimeout(agent_udp_server_netconn,10000);//设置接收延时时间 		 	
-//	udp_bind(agent_udp_server_netconn->pcb.udp, IP_ADDR_ANY, UDP_CLIENT_PORT);
-//	udp_bind(agent_udp_server_netconn->pcb.udp, IP_ADDR_ANY, UDP_SERVER_PORT);	
-	
+
+#if 0
+	udp_bind(agent_udp_client_netconn->pcb.udp, &localhost_ip, UDP_CLIENT_PORT);
+	udp_bind(agent_udp_server_netconn->pcb.udp, &localhost_ip, UDP_SERVER_PORT);	
+#else
 	netconn_bind(agent_udp_client_netconn, &localhost_ip, UDP_CLIENT_PORT);		//绑定到到本地所有地址，客户端端口
 	netconn_bind(agent_udp_server_netconn, &localhost_ip, UDP_SERVER_PORT);		//绑定到本地所有地址，服务器端口
+#endif //
 
-#ifdef LWIP_IGMP
-	netconn_join_leave_group(agent_udp_server_netconn, &multicast_ip, &localhost_ip, NETCONN_JOIN);		//服务器端加入多播组,接受信息
-//	igmp_joingroup(IP_ADDR_ANY, &multicast_ip);
-#endif 	//LWIP_IGMP
-//udp_recv(agent_udp_server_netconn->pcb.udp, UDP_Receive, NULL);
-	while(1)
+//#ifdef LWIP_IGMP
+////	if( netconn_connect(agent_udp_server_netconn, &multicast_ip, UDP_SERVER_PORT) != ERR_OK)
+////	{
+////			DEBUG_PRINT("\nconnect multicast failed.");
+////	}
+////	else
+////	{
+////			DEBUG_PRINT("\nconnect multicast successfully.");
+////	}
+
+//	//服务器端加入多播组,接受信息
+//#if 0
+//	netconn_join_leave_group(agent_udp_server_netconn, &multicast_ip, &localhost_ip, NETCONN_JOIN);
+//#else
+//	igmp_joingroup(&localhost_ip, &multicast_ip);
+//#endif	//
+
+//#endif 	//LWIP_IGMP
+
+#if 1
+  udp_recv(agent_udp_server_netconn->pcb.udp, UDP_Receive, NULL);
+#else
+while(1)
 	{
 		netconn_recv(agent_udp_server_netconn, &buf_receive);
 		if(buf_receive != NULL)
 		{
 			DEBUG_PRINT("\nreceive data!");
-		str_ipaddr = ipaddr_ntoa(&multicast_ip);
-		if(str_ipaddr != (void*)0)
-		{
-			DEBUG_PRINT("\nstr_ipaddr is:");		
-			DEBUG_PRINT(str_ipaddr);
-		}
-			netconn_sendto(agent_udp_server_netconn, buf_receive, &multicast_ip, UDP_SERVER_PORT);
+			str_ipaddr = ipaddr_ntoa(&multicast_ip);
+			IP4_ADDR(&peer_ip, 192,168,1,116);		//private
+
+			if(str_ipaddr != (void*)0)
+			{
+				DEBUG_PRINT("\nmulticast_ipaddr is:");		
+				DEBUG_PRINT(str_ipaddr);
+				str_ipaddr = ipaddr_ntoa(&peer_ip);
+				DEBUG_PRINT("\npeer_ipaddr is:");		
+				DEBUG_PRINT(str_ipaddr);			
+			}
+			
+			netconn_sendto(agent_udp_server_netconn, buf_receive, &peer_ip, UDP_CLIENT_PORT);
+			if(netconn_sendto(agent_udp_server_netconn, buf_receive, &multicast_ip, UDP_SERVER_PORT) !=  ERR_OK)
+			{
+				DEBUG_PRINT("\nMULTICAST FAIL.");
+			}				
+			else
+			{
+				DEBUG_PRINT("\nMULTICAST SUCCESS.");
+			}
+			
 			netbuf_delete(buf_receive);
 		}
 	}
+#endif	//
 }
 
 

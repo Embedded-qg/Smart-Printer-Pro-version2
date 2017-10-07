@@ -11,7 +11,7 @@
 #define LWIP_DHCP 1
 #define DHCP_DOES_ARP_CHECK 1
 
-#define LWIP_IGMP 1
+#define LWIP_IGMP 0
 /* 4×Ö½Ú¶ÔÆë */
 #define MEM_ALIGNMENT                4
 	

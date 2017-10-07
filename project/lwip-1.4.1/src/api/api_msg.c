@@ -1123,7 +1123,6 @@ do_listen(struct api_msg_msg *msg)
 void
 do_send(struct api_msg_msg *msg)
 {
-	DEBUG_PRINT("do_send.\n");
   if (ERR_IS_FATAL(msg->conn->last_err)) {
     msg->err = msg->conn->last_err;
   } else {
@@ -1501,8 +1500,7 @@ do_close(struct api_msg_msg *msg)
 void
 do_join_leave_group(struct api_msg_msg *msg)
 { 
-	DEBUG_PRINT("do join leave group.\n");
-  if (ERR_IS_FATAL(msg->conn->last_err)) {
+	 if (ERR_IS_FATAL(msg->conn->last_err)) {
     msg->err = msg->conn->last_err;
   } else {
     if (msg->conn->pcb.tcp != NULL) {
@@ -1510,7 +1508,13 @@ do_join_leave_group(struct api_msg_msg *msg)
 #if LWIP_UDP
         if (msg->msg.jl.join_or_leave == NETCONN_JOIN) {
           msg->err = igmp_joingroup(msg->msg.jl.netif_addr, msg->msg.jl.multiaddr);
-        } else {
+#ifdef DEBUG_PRINT_ON
+					if(msg->err == ERR_OK)
+					{DEBUG_PRINT("\ndo join  group.");}
+					else
+					{DEBUG_PRINT("\njoin group failed.");}
+#endif	//DEBUG_PRINT_ON
+				} else {
           msg->err = igmp_leavegroup(msg->msg.jl.netif_addr, msg->msg.jl.multiaddr);
         }
 #endif /* LWIP_UDP */

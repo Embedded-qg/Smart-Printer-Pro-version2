@@ -552,8 +552,12 @@ netconn_sendto(struct netconn *conn, struct netbuf *buf, ip_addr_t *addr, u16_t 
   if (buf != NULL) {
     ip_addr_set(&buf->addr, addr);
     buf->port = port;
-    return netconn_send(conn, buf);
-  }
+		return netconn_send(conn, buf);
+	}
+	else
+	{
+		DEBUG_PRINT("\nbuf is bull.");
+	}
   return ERR_VAL;
 }
 

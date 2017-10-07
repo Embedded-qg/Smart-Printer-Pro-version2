@@ -389,7 +389,7 @@ void LwIP_Init(void)
   localhost_ip.addr = 0;
   localhost_netmask.addr = 0;
   localhost_gw.addr = 0;
-	DEBUG_PRINT("DHCP can be choosed !!!\n");
+	DEBUG_PRINT("\nDHCP can be choosed !!!");
 #else
 //  IP4_ADDR(&localhost_ip, 192,168,1,135);
 //  IP4_ADDR(&localhost_netmask, 255, 255, 255, 0);
@@ -398,7 +398,7 @@ void LwIP_Init(void)
   IP4_ADDR(&localhost_ip, 192,168,0,135);
   IP4_ADDR(&localhost_netmask, 255, 255, 255, 0);
   IP4_ADDR(&localhost_gw, 192, 168, 0, 1);	
-	DEBUG_PRINT("DHCP is not  be choosed !!!\n");	
+	DEBUG_PRINT("\nDHCP is not  be choosed !!!\n");	
 #endif
 
 	netif_add(&DM9161_netif, &localhost_ip, &localhost_netmask, &localhost_gw, NULL, &ethernetif_init, &tcpip_input);
@@ -407,14 +407,14 @@ void LwIP_Init(void)
 #if LWIP_DHCP
 		while(  (err_start = dhcp_start(&DM9161_netif)) != ERR_OK)
 		{
-				DEBUG_PRINT("DHCP start failed!");
+				DEBUG_PRINT("\nDHCP start failed!");
 				//此处应该有不成功的处理函数为佳
 		}
 		while(DM9161_netif.ip_addr.addr == 0)
 		{
 			//等待一会，让IP地址存放近DM9161
 				OSTimeDlyHMSM(0, 0, 1, 0);
-				DEBUG_PRINT("DM9161 netif's  is  null!");
+				DEBUG_PRINT("\nDM9161 netif's  is  null!");
 		}
 		localhost_ip.addr = DM9161_netif.ip_addr.addr;	
 		localhost_netmask.addr = DM9161_netif.netmask.addr;
@@ -425,21 +425,21 @@ void LwIP_Init(void)
 	str_ipaddr = ipaddr_ntoa(&localhost_ip);
 	if(str_ipaddr != (void*)0)
 	{
-		DEBUG_PRINT("str_ipaddr is:\n");		
+		DEBUG_PRINT("\nstr_ipaddr is:");		
 		DEBUG_PRINT(str_ipaddr);
 	}
 	else
 	{
-		DEBUG_PRINT("str_ipaddr is null");		
+		DEBUG_PRINT("\nstr_ipaddr is null");		
 	}
 	
-#ifdef LWIP_IGMP
-	while(  (err_start = igmp_start(&DM9161_netif)) != ERR_OK)
-	{
-			DEBUG_PRINT("igmp start failed!");
-				//此处应该有不成功的处理函数为佳
-	}
-#endif	//LWIP_IGMP
+//#ifdef LWIP_IGMP
+//	while(  (err_start = igmp_start(&DM9161_netif)) != ERR_OK)
+//	{
+//			DEBUG_PRINT("igmp start failed!");
+//				//此处应该有不成功的处理函数为佳
+//	}
+//#endif	//LWIP_IGMP
 	
 /*  When the netif is fully configured this function must be called.*/
   netif_set_up(&DM9161_netif);
