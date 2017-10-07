@@ -83,12 +83,14 @@
 /**************************************************************
 *	Prototype Declare Section
 **************************************************************/
-void create_buf_pbuf(struct netbuf *newbuf, struct pbuf *newpbuf, int sizeOfNewbuf);
+void create_buf_pbuf(struct netbuf **newbuf, struct pbuf **newpbuf, int sizeOfNewbuf);
 void add_sned_data(struct netbuf *buf, u8_t *data);
 void multicast_to_localLAN(void);
 static void set_ipaddr(void);
 void init_client_server(void);
 void init_UDP(void);
+void UDP_Receive(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port);
+
 
 
 /**************************************************************
