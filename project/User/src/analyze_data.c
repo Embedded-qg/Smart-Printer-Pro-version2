@@ -4,6 +4,7 @@
 *	Function Define Section
 **************************************************************/
 
+extern contract_info contract_info_table[MAX_CONTRACT_NUM];
 /**
  * @brief 	获取批次序号哈希值
  */
@@ -12,6 +13,13 @@ u8_t get_batch_hash(u16_t batch_number)
 	return (u8_t)(batch_number % MAX_BATCH_NUM);
 }
 
+/**
+*@brief 获取合同序号哈希值
+*/
+u8_t get_contract_hash(u16_t contract_number)
+{
+	return (u8_t)(contract_number % MAX_CONTRACT_NUM);
+}
 /**
  * @brief 	获取批次长度
  */
@@ -49,6 +57,28 @@ void Analyze_Data_With_Diff_Part(u8_t *src1, int len1, u8_t *src2, int len2, u32
 		}
 	}
 }
+
+
+/****************************************************************************************
+*@name.............:Analyze_Contract_Info_Table
+@Description.......:对合同数据报解包
+@Parameters........:contract_data   :存放数据的字节流
+										batch_number:批次编号
+return values.......:void
+****************************************************************************************/
+void Analyze_Contract_Info_Table(char* contract_data,u16_t contract_number)
+{
+	u8_t hash;//批次表哈希值
+	hash = get_contract_hash(contract_number);
+
+	batch_info_table[hash].batch_number = contract_number;
+
+	ANALYZE_DATA_2B((contract_data + CONTRACT_ORDER_NUMBER_OFFSET), contract_info_table[hash].order_number);//设立订单数目
+	ANALYZE_DATA_2B((contract_data + CONTRACT_BATCH_TOTAL_LENGTH_OFFSET), contract_info_table[hash].batch_length);//设立订单数目
+	ANALYZE_DATA_4B((contract_data + CONTRACT_SERVER_SEND_TIME_OFFSET), contract_info_table[hash].sever_send_time);//设立服务器发送时间
+	ANALYZE_DATA_2B((contract_data + CONTRACT_CHECK_SUM_OFFSET), contract_info_table[hash].check_sum);//设立校验和
+	ANALYZE_DATA_4B((contract_data + BATCH_CHECK_SUM_OFFSET), batch_info_table[hash].check_sum);//设立校验和
+}
 /****************************************************************************************
 *@Name............: Analyze_Batch_Info_Table
 *@Description.....: 对批次数据报解包
@@ -72,7 +102,7 @@ void Analyze_Batch_Info_Table(char *batch_data, u16_t batch_number)
 	batch_info_table[hash].num_printed_order = 0;
 }
 
-//寻找批次头，减少从网络缓冲读取的长度
+//寻找批次头，减少从网络缓冲读取的长度   
 void find_substr_head(char **data, char *substr, u16_t *len, u16_t sub_len)
 {		
 	char *sub_data = *data;
@@ -88,4 +118,26 @@ void find_substr_head(char **data, char *substr, u16_t *len, u16_t sub_len)
 	}
 	
 	*len = 0;
+}
+
+//判断数据报文的类型
+void find_order_head(u8_t  *netbuf_type,char **data,u16_t *len)
+{
+	char *sub_data = *data;
+	u16_t i;
+	for(i = 0;i < (*len) - 1;i++,(*len)--)
+	{
+		if(sub_data[i] == '\xbf' && sub_data[i + 1] == '\xfb')
+		{
+			*netbuf_type = NETORDER_CONTRACT;
+			break;
+		}			
+		if(sub_data[i] == '\x3e' && sub_data[i + 1] == '\x11')
+		{
+			*netbuf_type = NETOREDER_ORDER;
+			break;
+		}
+	}
+	*data = sub_data + i;
+	return ;
 }

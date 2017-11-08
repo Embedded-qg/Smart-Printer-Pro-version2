@@ -5,6 +5,22 @@
 *	Include File Section
 **************************************************************/
 #include "cc.h"
+/******************合同头部格式各个字段的偏移量******************/
+#define	CONTRACT_START_SYMBOL_OFFSET 0  //开始偏移值
+#define CONTRACT_TYPE_OFFSET 2 //合同类型偏移值
+#define CONTRACT_PRIORITY_OFFSET 3 //合同优先级偏移值，是否为加急订单
+#define CONTRACT_SERVER_SEND_TIME_OFFSET 4 //服务器下发时间0偏移值
+#define CONTRACT_BATCH_NUMBER_OFFSET 8 //批次编号偏移值
+#define CONTRACT_ORDER_NUMBER_OFFSET 12 //订单个数偏移值
+#define CONTRACT_BATCH_TOTAL_LENGTH_OFFSET 14 //批次长度偏移值
+#define CONTRACT_MCU_ID_OFFSET 16 //主控板id偏移值
+#define CONTRACT_MCU_SPEED_OFFSET 20 //打印速度偏移值
+#define CONTRACT_MCU_HEALTH 22 //打印机健康状态偏移值
+#define CONTRACT_PRESERVATION_OFFSET 24 //保留数据偏移值
+#define CONTRACT_CHECK_SUM_OFFSET 28//校验和偏移值
+#define CONTRACT_TAIL_OFFSET 30//结束偏移值
+/*********************关于合同的一些宏定义*********************/
+#define SEND_CONTRACT_SIZE 32
 
 /******************订单头部格式各个字段的偏移量*****************/
 #define ORDER_START_SYMBOL_OFFET          0  //开始偏移值
@@ -36,6 +52,35 @@
 /**************************************************************
 *	Struct Define Section
 **************************************************************/
+//合同数据表
+typedef struct contract_info{
+#define MAX_CONTRACT_NUM 10
+#define MAX_CONTRACT_HEAD_LENGTH 32
+	u8_t contract_type;//合同类型
+	u8_t priority;//优先级，判断是否为加急订单
+	u32_t sever_send_time;//服务器发送时间
+	u32_t batch_number;//批次编号
+	u16_t order_number;//订单数目
+	u16_t batch_length;//批次长度
+	u32_t mcu_id;//主控板id
+	u16_t mcu_speed;//主控板打印速度
+	u16_t mcu_health;//主控板健康状态
+	u32_t preservation;//保留
+	u16_t check_sum;//校验码
+	u8_t stutas; //状态
+	u8_t next_print_node;//下已打印节点
+}contract_info;
+
+//合同状态表
+typedef enum contract_type{
+	contract_document,
+	contract_mcu_status,
+	contract_sign,
+	contract_sign_confirm,
+	contract_escape,
+	contract_escape_confirm,
+}contract_type;
+
 //订单数据表
 typedef struct order_information {
 	u32_t mcu_id;	 		   //主控板id
@@ -78,6 +123,14 @@ typedef enum Req_Type {
 }req_type;
 
 #define STATUS_TYPE_OFFSET   2	//状态类型偏移值
+/**********************合同类型定义**********************/
+#define CONTRACT_DOCUMENT 0x00 //标书
+#define CONTRACT_STUTAS 0x01 //主控板状态，投标
+#define CONTRACT_SIGN  0x02 //签约
+#define CONTRACT_SIGN_CONFIRM 0x03 //签约确认
+#define CONTRACT_ESCAPE 0x04 //解约
+#define COONTRACT_ESCAPE_CONFIRM 0x05 //解约确认
+
 /**********************状态定义*************************/
 #define BATCH_STATUS 	0x00	//批次状态
 #define ORDER_STATUS	0x20    //订单状态

@@ -264,7 +264,7 @@ static void Lwip_TaskStart(void* p_arg)
 	OSStatInit(); 	//----统计任务初始化函数                                 
 #endif
 	
-	DEBUG_PRINT("Go to LWIP_Init()!\n");
+	DEBUG_PRINT("Go to LWIP_Init()!\r\n");
 	LwIP_Init();
 	
 	//此步骤抽离比较合适

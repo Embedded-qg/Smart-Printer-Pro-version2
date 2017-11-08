@@ -66,12 +66,24 @@ u16_t Check_Sum_With_Diff_Part(u16_t *src1, int len1, u16_t *src2, int len2)
 	return (u16_t)(~sum);
 }
 
+
 //获取主控板id
 u32_t Get_Printer_ID(void)
 {
 	return 1;
 }
 
+//获取主控板速度
+u16_t Get_Printer_Speed(void)
+{
+	return 1;
+}
+
+//获取主控板状态
+u16_t Get_Printer_Status(void)
+{
+	return 10000;
+}
 //获取时间戳
 u32_t Get_Current_Unix_Time(void)
 {

@@ -50,11 +50,11 @@ void put_in_buf(u8_t *data, u16_t len, u16_t urg)
 	}
 }
 
-static u16_t batch_head_current_len = 0;//当前读取到的批次的长度
-static u16_t batch_total_len = 0;//批次总共长度
-static u16_t batch_number = 0;	//批次号
-static u16_t last_batch_number = 0;
-static char batch[21] = {0};
+static u16_t net_head_current_len = 0;//当前读取到的合同的长度
+static u16_t contract_total_len = 0;//批次总共长度
+static u16_t contract_number = 0;	//批次号
+static u16_t last_contract_number = 0;
+static char contract[33] = {0};
 static u16_t len = 0;	//从网络缓冲区读取到的数据的长度
 static u8_t flag = 0;	//1表示已经读取了批次头，否则没有
 static u16_t count = 0;
@@ -63,218 +63,86 @@ static u16_t leave_len = 0;
 /**
  * @brief	开启新的批次头的初始化
  */
-static void begin_new_batch(void)
+static void begin_new_contract(void)
 {
-	batch[0] = '\0';
-	batch_head_current_len = 0;//新的批次
-	batch_total_len = 0;
+	contract[0] = '\0';
+	net_head_current_len = 0;//新的合同
+	contract_total_len = 0;
 	flag = 0;
 	count = 0;
-	last_batch_number = batch_number;
+	last_contract_number = contract_number;
 }
 
 /**
- * @brief	接收报文并解析
- */
+*@brief 接收报文并解析
+*/
 void receive_connection(struct netconn *conn)
 {
-	struct netbuf *order_netbuf = NULL;
-	extern OS_EVENT *Print_Queue_Sem;
-	u8_t hash;//批次哈希值
+	struct netbuf* order_netbuf = NULL;
+	u8_t hash;
 	err_t err;
-
-	extern OS_EVENT *Recon_To_Server_Sem;
-	
-	while((err = netconn_recv(conn, &order_netbuf)) == ERR_OK)
-	{		
-		char *data;
-start:
-		while(batch_head_current_len < MAX_BATCH_HEAD_LENGTH)
-		{
-			netbuf_data(order_netbuf, (void **)&data, &len);//从网络缓冲区读取
-			/*考虑上一个缓冲区读取完一个批次后还剩下一些数据，故需要重新读取这个缓冲区，并加上被读取过后的偏移量，目的是让data指针指向未读的数据*/
-			data += leave_len;
-			len -= leave_len;
-			DEBUG_PRINT("get data ,len is %d\n", len);
-			
-			while(len > 0 && batch_head_current_len < MAX_BATCH_HEAD_LENGTH)
-			{
-				DEBUG_PRINT("len haa is %d\n", len);
-				if(batch[0] != '\xaa')//一直找寻不到批次头，所以一直寻找
-				{
-					find_substr_head(&data, "\xaa\x55", &len, 2);
-					DEBUG_PRINT("len xaa is %d\n", len);
-					if(len == 0)
-					{
-						DEBUG_PRINT("There is no data\n");
-					}
-				}
-				
-				if(len > 0)//len大于0代表检测到批次头并且data指针还指向的缓冲区还有剩余容量
-				{
-					batch[batch_head_current_len++] = *data++;
-					count++;
-					DEBUG_PRINT("batch[0] is %x, *data - 1 is %x, *data is %x, *data + 1 is %x, len is %d, batch_head_current_len is %d\n", batch[0], *(data - 1), *data, *(data + 1), len, batch_head_current_len);
-					
-					if(batch_head_current_len == MAX_BATCH_HEAD_LENGTH)
-					{
-						if(*(batch + BATCH_TAIL_OFFSET) == '\x55' && *(batch + BATCH_TAIL_OFFSET + 1) == '\xaa')//表示是批次尾
-						{
-							flag = 1;
-							ANALYZE_DATA_2B((batch + BATCH_NUMBER_OFFSET), batch_number);//获取批次号
-							
-							DEBUG_PRINT("batch read success ,batch_number is %x %x\n", *(batch + BATCH_NUMBER_OFFSET), *(batch + BATCH_NUMBER_OFFSET + 1));
-							DEBUG_PRINT("batch read success ,batch_length is %x %x\n", *(batch + BATCH_TOTAL_LENGTH_OFFSET), *(batch + BATCH_TOTAL_LENGTH_OFFSET + 1));
-//							printf("batch read success ,batch_number is %d, ascii is %x %x \n", batch_number, *(batch + BATCH_NUMBER_OFFSET), *(batch + BATCH_NUMBER_OFFSET + 1));
-							
-							Analyze_Batch_Info_Table(batch, batch_number);//批次解包
-							
-							hash = get_batch_hash(batch_number);
-//							printf("batch read success ,batch_length is %d ascii is %x %x\n", batch_info_table[hash].batch_length, *(batch + BATCH_TOTAL_LENGTH_OFFSET),  *(batch + BATCH_TOTAL_LENGTH_OFFSET + 1));
-							len -= count;
-//							DEBUG_PRINT("read from netconf1\n");
-
-							batch_total_len = MAX_BATCH_HEAD_LENGTH + len;
-							if (batch_total_len >= batch_info_table[hash].batch_length)
-							{
-								u16_t sub_len;
-								sub_len =  len - (batch_total_len - batch_info_table[hash].batch_length);//从网络缓冲区读取到多于一个批次的数据，则只保留前面的数据
-								
-								if(batch_number != last_batch_number){
-									SqQueue * tempBuf = 0;
-									u32_t oldWritePtr = 0;
-									
-									if(batch_info_table[hash].preservation){
-										tempBuf = &urgent_buf;										
-									}
-									else{
-										tempBuf = &queue_buf;
-									}	
-									if(sub_len)
-										put_in_buf(data, sub_len, batch_info_table[hash].preservation);//保存订单数据至缓冲区
-									
-									oldWritePtr = ((tempBuf->write + tempBuf->MAX - (batch_info_table[hash].batch_length - 20) )%tempBuf->MAX );
-	
-									if(checkBufData(tempBuf,oldWritePtr) == 1){	//订单数据错误											
-										INT8U err = 0;
-										OSMutexPend(tempBuf->mutex,0,&err);			//申请普通缓冲锁
-										tempBuf->write = oldWritePtr;
-										OSMutexPost(tempBuf->mutex);			//申请普通缓冲锁
-									}										
-									else{//订单数据正确																			
-										OSSemPost(Print_Queue_Sem);
-										OSSemPost(Batch_Rec_Sem); 
-										NON_BASE_SEND_STATUS(batch_status, BATCH_ENTER_BUF, batch_number);//发送批次状态，进入缓冲区
-									}
-								}
-								
-								begin_new_batch();
-								//DEBUG_PRINT("batch read enough1!\n");
-//								printf("batch read success ,batch_number is %d\n", batch_number);
-								//DEBUG_PRINT("PRINT_QUEUE_SEM\n");
-								leave_len = len - sub_len;					
-								if(leave_len > 0)
-									goto start;
-								else
-									break;
-								
-							}
-							else
-							{
-								DEBUG_PRINT("Continue put in buf 1\n");
-								if(batch_number != last_batch_number)
-									put_in_buf(data, len, batch_info_table[hash].preservation);//保存订单数据至缓冲区
-								DEBUG_PRINT("Continue put in buf 2\n");
-							}
-							DEBUG_PRINT("batch read success ,len is %d,count is %d, btl is %d\n", len, count, batch_total_len);
-						}
-						else
-						{
-							DEBUG_PRINT("Detect error\n");
-							begin_new_batch();
-						}
-					}
-					if(count == len)//数据读取完，结束操作
-					{
-						count = 0;
-						len = 0;
-						break;
-					}
-				}
-			}
-			if(!(netbuf_next(order_netbuf) > 0))
-			{
-				goto delete;
-			}
-		}
-		
-		DEBUG_PRINT("batch_head_current_len is %d\n", batch_head_current_len);
-		do
-		{
-			if(flag == 0)
-				goto start;
-			
-			DEBUG_PRINT("batch head read finished, bhcl is %d, btl is %d, batch_number is %d, batlen is %d\n", batch_head_current_len, batch_total_len, batch_number, get_batch_length(batch_number));
-			netbuf_data(order_netbuf, (void **)&data, &len);
-			DEBUG_PRINT("we are in new orderbuf, btl is %d, len is %d\n", batch_total_len, len);
-
-			//DEBUG_PRINT("%s, %d\n", data, batch_total_len);
-			
-			batch_total_len += len;
-			
-			if (batch_total_len >= batch_info_table[hash].batch_length)
-			{
-				u16_t sub_len;
-				sub_len =  len - (batch_total_len - batch_info_table[hash].batch_length);//从网络缓冲区读取到多于一个批次的数据，则只保留前面的数据
-				
-				if(batch_number != last_batch_number){					
-					SqQueue * tempBuf = 0;
-					u32_t oldWritePtr = 0;
-					if(batch_info_table[hash].preservation){
-						tempBuf = &urgent_buf;										
-					}
-					else{
-						tempBuf = &queue_buf;
-					}		
-					if(sub_len)
-						put_in_buf(data, sub_len, batch_info_table[hash].preservation);//保存订单数据至缓冲区
-					oldWritePtr = ((tempBuf->write + tempBuf->MAX - (batch_info_table[hash].batch_length - 20) )%tempBuf->MAX );
-			
-					if(checkBufData(tempBuf , oldWritePtr) == 1){	//订单数据错误											
-						INT8U err = 0;
-						OSMutexPend(tempBuf->mutex,0,&err);			//申请普通缓冲锁
-						tempBuf->write = oldWritePtr;
-						OSMutexPost(tempBuf->mutex);			//申请普通缓冲锁
-					}										
-					else{//订单数据正确																			
-						OSSemPost(Print_Queue_Sem);
-						OSSemPost(Batch_Rec_Sem);						
-						NON_BASE_SEND_STATUS(batch_status, BATCH_ENTER_BUF, batch_number);//发送批次状态，进入缓冲区
-					}		
-
-				}
-				
-				begin_new_batch();
-//				printf("batch read success ,batch_number is %d\n", batch_number);
-				//DEBUG_PRINT("PRINT_QUEUE_SEM\n");
-				leave_len = len - sub_len;															
-				if(leave_len > 0)//若有剩余数据则继续返回检测是否是一个新的批次
-					goto start;
-				
-			}
-			else
-			{
-				if(batch_number != last_batch_number)
-					put_in_buf(data, len, batch_info_table[hash].preservation);//保存普通订单数据至缓冲区
-			}
-		}while(netbuf_next(order_netbuf) > 0);
-delete:
-		netbuf_delete(order_netbuf);
-		DEBUG_PRINT("go to delete\n");
+	u8_t netbuf_type,contract_type;
+	u16_t buflength = 0;	
+	u16_t max_length,i;
+	char *data,*netbuf;
+	while((err = netconn_recv(conn,&order_netbuf)) == ERR_OK)
+	{
+			netbuf_data(order_netbuf,(void **)&data,&len);//从网络缓冲区读
+//			find_order_head(&netbuf_type,&data,&len);
+//			if(netbuf_type == NETORDER_CONTRACT) 
+//			{
+//				netbuf = contract;
+//				max_length = SEND_CONTRACT_SIZE;
+//			}
+//			else max_length = SEND_CONTRACT_SIZE;
+//			while(net_head_current_len < max_length)
+//			{
+//				if(len == 0)
+//				{
+//						while((err = netconn_recv(conn,&order_netbuf)) == ERR_OK);
+//						netbuf_data(order_netbuf,(void **)&data,&len);//从网络缓冲区读
+//				}				
+//				netbuf[net_head_current_len++] = *data++;
+//				len--;
+//			}
+//			netbuf_type = NETORDER_CONTRACT;
+//			if(netbuf_type == NETORDER_CONTRACT)
+//			{
+//				contract_type = contract[CONTRACT_TYPE_OFFSET];
+//				DEBUG_PRINT("contract_type = %d\r\n",contract_type);
+//				switch(contract_type)
+//				{
+//					case CONTRACT_DOCUMENT:contract_response(conn,contract_type+1,0);	break;
+//					case CONTRACT_SIGN:  break;
+//					case CONTRACT_ESCAPE:  break;
+//					default: ;
+//				}
+//			}
+//			begin_new_contract();
+		for(i = 0;i < len ;i++)		DEBUG_PRINT("%x ",data[i]);
 	}
-	OSTimeDlyHMSM(0, 0, 0, 50);
 }
+	
 
+void contract_response(struct netconn *conn,contract_type type,u32_t preservation)
+{
+	char sent_data[SEND_CONTRACT_SIZE] = {0};
+	err_t err;
+	u16 i = 0;
+#ifdef REMOTE	
+	Pack_Contract_Message(sent_data,type,Get_Printer_ID(),Get_Current_Unix_Time(),Get_Printer_Speed(),Get_Printer_Status(),preservation);
+	DEBUG_PRINT("type = %d,mcu_id = %d,time = %d,speed = %d,status = %d\r\n",type,(u16_t)Get_Printer_ID(),(u16_t)Get_Current_Unix_Time(),Get_Printer_Speed(),Get_Printer_Status());
+#endif
+	while(0 != (err = netconn_write(conn, sent_data, SEND_CONTRACT_SIZE, NETCONN_COPY))){
+		if(ERR_IS_FATAL(err))//致命错误，表示没有连接
+			break;
+		
+		//当网络写入错误时，需要等待一段时间后继续写入该数据包，否则无法反馈给服务器
+		OSTimeDlyHMSM(0,0,++i,0);
+		DEBUG_PRINT("\n\n\nNETCONN WRITE ERR_T IS %d\n\n\n", err);
+	}	
+
+}
 /****************************************************************************************
 *@Name............: write_connection
 *@Description.....: 发送数据报
@@ -337,7 +205,6 @@ void con_to_server(void)
 	struct ip_addr server_ip;
 	extern struct netconn *order_netconn;	//全局TCP链接
 	extern OS_EVENT *Recon_To_Server_Sem;
-
 	if((order_netconn = netconn_new(NETCONN_TCP)) != NULL){
 		DEBUG_PRINT("Connection build.\n");
 	}else{
@@ -348,10 +215,10 @@ void con_to_server(void)
 	netconn_set_recvtimeout(order_netconn,10000);//设置接收延时时间 
 	
 #ifdef REMOTE//设置服务器ip地址
-//	IP4_ADDR(&server_ip,10,21,48,11);//云服务器学校
+	IP4_ADDR(&server_ip,10,21,48,11);//云服务器学校
 //		IP4_ADDR(&server_ip,123,207,228,117);		//云服务器_胖子
 //	IP4_ADDR(&server_ip,192,168,1,116);		//JockJo测试机
-	IP4_ADDR(&server_ip, 192,168,1,119);	//工作室测试机
+//	IP4_ADDR(&server_ip, 192,168,1,119);	//工作室测试机
 //	IP4_ADDR(&server_ip,192,168,1,110);  //用肥虫电脑的IP
 	netconn_connect(order_netconn,&server_ip,8086);
 #else	
@@ -361,8 +228,8 @@ void con_to_server(void)
 	
 	write_connection(order_netconn, first_req, REQ_LINK_OK, 0);//初次请求建立发送主控板ID
 	OSTimeDlyHMSM(0,0,1,0);
-	write_connection(order_netconn, order_req, ORDER_REQUEST, 0);//请求订单			此处可以修改为需要请求的内容
-	DEBUG_PRINT("Order req.\n");
+//	write_connection(order_netconn, order_req, ORDER_REQUEST, 0);//请求订单			此处可以修改为需要请求的内容
+//	DEBUG_PRINT("Order req.\n");
 	
 	//发多次测试
 #ifdef APP_DEBUG
@@ -385,7 +252,7 @@ void LwIP_Init(void)
 	tcpip_init(NULL,NULL);
 
 
-#if LWIP_DHCP
+#if LWIP_DHCP//动态ip分配
   localhost_ip.addr = 0;
   localhost_netmask.addr = 0;
   localhost_gw.addr = 0;

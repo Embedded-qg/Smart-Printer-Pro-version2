@@ -45,4 +45,7 @@
 
 *****************************************************************************************/
 void Pack_Req_Or_Status_Message(char *message, req_type type, u8_t symbol, u32_t id, u32_t UNIX_time, u32_t preservation);
+
+//封装合同网数据报
+void Pack_Contract_Message(char *message,contract_type type,u32_t mcu_id,u32_t UNIX_time,u16_t mcu_speed,u16_t mcu_health,u32_t preservation);
 #endif
