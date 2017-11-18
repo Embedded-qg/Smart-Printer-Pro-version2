@@ -63,6 +63,6 @@ void Pack_Contract_Message(char *message,contract_type type,u32_t mcu_id,u32_t U
 	message[CONTRACT_TAIL_OFFSET+1] = '\xbf';
 	
 //Ð£ÑéºÍ	
-	check_sum = Check_Sum((u16_t *)message,SEND_CONTRACT_SIZE);
+	check_sum = Check_Sum((u16_t *)message,MAX_CONTRACT_HEAD_LENGTH);
 
 }

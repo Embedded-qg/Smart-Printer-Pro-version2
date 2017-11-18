@@ -5,22 +5,25 @@
 *	Include File Section
 **************************************************************/
 #include "cc.h"
+/******************网络数据报类型******************/
+#define NETORDER_CONTRACT	1 //合同网报文
+#define NETOREDER_BATCH	2	 //批次报文
+#define NETOREDER_ORDER 3 //订单报文
+
 /******************合同头部格式各个字段的偏移量******************/
 #define	CONTRACT_START_SYMBOL_OFFSET 0  //开始偏移值
 #define CONTRACT_TYPE_OFFSET 2 //合同类型偏移值
 #define CONTRACT_PRIORITY_OFFSET 3 //合同优先级偏移值，是否为加急订单
 #define CONTRACT_SERVER_SEND_TIME_OFFSET 4 //服务器下发时间0偏移值
-#define CONTRACT_BATCH_NUMBER_OFFSET 8 //批次编号偏移值
-#define CONTRACT_ORDER_NUMBER_OFFSET 12 //订单个数偏移值
-#define CONTRACT_BATCH_TOTAL_LENGTH_OFFSET 14 //批次长度偏移值
-#define CONTRACT_MCU_ID_OFFSET 16 //主控板id偏移值
-#define CONTRACT_MCU_SPEED_OFFSET 20 //打印速度偏移值
-#define CONTRACT_MCU_HEALTH 22 //打印机健康状态偏移值
-#define CONTRACT_PRESERVATION_OFFSET 24 //保留数据偏移值
-#define CONTRACT_CHECK_SUM_OFFSET 28//校验和偏移值
-#define CONTRACT_TAIL_OFFSET 30//结束偏移值
+#define CONTRACT_CONTRACT_NUMBER_OFFSET 8 //批次编号偏移值
+#define CONTRACT_MCU_ID_OFFSET 12 //主控板id偏移值
+#define CONTRACT_MCU_SPEED_OFFSET 16 //打印速度偏移值
+#define CONTRACT_MCU_HEALTH 18 //打印机健康状态偏移值
+#define CONTRACT_PRESERVATION_OFFSET 20 //保留数据偏移值
+#define CONTRACT_CHECK_SUM_OFFSET 24//校验和偏移值
+#define CONTRACT_TAIL_OFFSET 26//结束偏移值
 /*********************关于合同的一些宏定义*********************/
-#define SEND_CONTRACT_SIZE 32
+
 
 /******************订单头部格式各个字段的偏移量*****************/
 #define ORDER_START_SYMBOL_OFFET          0  //开始偏移值
@@ -29,10 +32,10 @@
 #define ORDER_SEVER_SEND_TIME_OFFSET	  8  //服务器发送时间偏移值
 #define ORDER_SERIAL_NUMBER_OFFSET		  12 //订单序号偏移值
 #define ORDER_BATCH_NUMBER_OFFSET		  16 //所属批次偏移值
-#define ORDER_BATCH_WITHIN_NUMBER_OFFSET  18 //批次内序号偏移值
-#define ORDER_CHECK_SUM_OFFSET			  20 //校验和偏移值
-#define ORDER_PRESERVATION_OFFSET		  22 //保留值偏移值
+#define ORDER_BATCH_WITHIN_NUMBER_OFFSET 20 //批次内序号偏移值
+#define ORDER_CHECK_SUM_OFFSET			  22 //校验和偏移值
 #define ORDER_DATA_OFFSET				  24 //数据域偏移值
+
 
 /******************批次头部格式各个字段的偏移量*****************/
 #define BATCH_START_SYMBOL_OFFSET		  0  //开始偏移值
@@ -59,9 +62,7 @@ typedef struct contract_info{
 	u8_t contract_type;//合同类型
 	u8_t priority;//优先级，判断是否为加急订单
 	u32_t sever_send_time;//服务器发送时间
-	u32_t batch_number;//批次编号
-	u16_t order_number;//订单数目
-	u16_t batch_length;//批次长度
+	u16_t contract_number;//批次编号
 	u32_t mcu_id;//主控板id
 	u16_t mcu_speed;//主控板打印速度
 	u16_t mcu_health;//主控板健康状态
@@ -87,7 +88,7 @@ typedef struct order_information {
 	u32_t sever_send_time;     //服务器发送时间
 	u32_t serial_number;	   //订单序号
 	u16_t size;		  		   //订单长度
-	u16_t batch_number;		   //所属批次
+	u32_t batch_number;		   //所属批次
 	u16_t batch_within_number; //批次内序号
 	u16_t check_sum;		   //校验和
 	u16_t preservation;		   //保留	
@@ -129,7 +130,7 @@ typedef enum Req_Type {
 #define CONTRACT_SIGN  0x02 //签约
 #define CONTRACT_SIGN_CONFIRM 0x03 //签约确认
 #define CONTRACT_ESCAPE 0x04 //解约
-#define COONTRACT_ESCAPE_CONFIRM 0x05 //解约确认
+#define CONTRACT_ESCAPE_CONFIRM 0x05 //解约确认
 
 /**********************状态定义*************************/
 #define BATCH_STATUS 	0x00	//批次状态

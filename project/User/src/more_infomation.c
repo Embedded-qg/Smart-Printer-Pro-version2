@@ -68,19 +68,19 @@ u16_t Check_Sum_With_Diff_Part(u16_t *src1, int len1, u16_t *src2, int len2)
 
 
 //获取主控板id
-u32_t Get_Printer_ID(void)
+u32_t Get_MCU_ID(void)
 {
 	return 1;
 }
 
 //获取主控板速度
-u16_t Get_Printer_Speed(void)
+u16_t Get_MCU_Speed(void)
 {
-	return 1;
+	return MAX_CELL_NUM;
 }
 
 //获取主控板状态
-u16_t Get_Printer_Status(void)
+u16_t Get_MCU_Status(void)
 {
 	return 10000;
 }
