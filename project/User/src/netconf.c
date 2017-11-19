@@ -51,7 +51,7 @@ void put_in_buf(u8_t *data, u16_t len, u16_t urg)
 	}
 }
 
-
+contract_info contract_information;
 static u16_t contract_total_len = 0;//批次总共长度
 static u16_t contract_number = 0;	//合同号
 static u16_t batch_number = 0; //批次号
@@ -62,13 +62,15 @@ static char batch[21] = {0};
 static u16_t len = 0;	//从网络缓冲区读取到的数据的长度
 static u16_t count = 0;
 static u16_t leave_len = 0; 
+u8_t netbuf_type = 0;
+u8_t read_message_symbol = 0;//报文成功读取标记
 u8_t batch_flag = 0;//批次标记
 u8_t batch_table_hash = 0;
 
 /****************************************************************************************
 *@Name............: read_message_from_netbuf
 *@Description.....: 从网络缓冲区中读取整个报文数据
-*@Parameters......: order_netbuf----一级网络缓冲区数据
+*@Parameters......: 
 										netbuf----------报文数据缓冲区
 										data------------二级网络缓冲区
 										netbuf----------数据存放缓冲区
@@ -76,25 +78,30 @@ u8_t batch_table_hash = 0;
 *@Return 					：1 ----成功读取
 										0 ----错误读取
 *****************************************************************************************/
-u8_t read_message_from_netbuf(struct netbuf* order_netbuf,char **netbuf,char ** data,u8_t netbuf_type,u16_t *len)
+u8_t read_message_from_netbuf(char **netbuf,char ** data,u8_t netbuf_type,u16_t *len)
 {
-	u16_t max_length = 0,net_head_current_len = 0,sub_len = *len;//需要读取的报文的总长度，当前读取到的报文的长度;
+	u16_t net_head_current_len = 0,sub_len = *len;//需要读取的报文的总长度，当前读取到的报文的长度;
+	static u16_t max_length = 0;
 	char *sub_data = *data;
 	u8_t read_symbol = 0;//是否成功读取报文信息
+	printf("读取报文数据\r\n");
 	if(netbuf_type == NETORDER_CONTRACT) 	//读取合同网报文
 	{
+		printf("读取合同网报文\r\n");
 		max_length = MAX_CONTRACT_HEAD_LENGTH;
 		while(sub_len > 0 && net_head_current_len < max_length)
 		{
 			contract[net_head_current_len++] = *sub_data++;
 			sub_len--;		
 		}		
-		if(net_head_current_len == max_length)
+		if(net_head_current_len == max_length)     //判断合同网报尾标记
 			if(*(contract + CONTRACT_TAIL_OFFSET) == '\xfb' && *(contract + CONTRACT_TAIL_OFFSET + 1) == '\xbf') read_symbol = 1;		
 		*netbuf = contract;
+		max_length = 0;
 	}
 	else if(netbuf_type == NETOREDER_BATCH)//读取批次报文
 	{
+		printf("读取批次报文\r\n");
 		max_length = MAX_BATCH_HEAD_LENGTH;
 		while(sub_len > 0 && net_head_current_len < max_length)
 		{
@@ -102,21 +109,29 @@ u8_t read_message_from_netbuf(struct netbuf* order_netbuf,char **netbuf,char ** 
 			sub_len--;		
 		}
 		if(net_head_current_len == max_length)
-				if(*(batch + BATCH_TAIL_OFFSET) == '\x55' && *(batch + BATCH_TAIL_OFFSET + 1) == '\xee') read_symbol = 1;
+				if(*(batch + BATCH_TAIL_OFFSET) == '\x55' && *(batch + BATCH_TAIL_OFFSET + 1) == '\xaa') read_symbol = 1;
+		max_length = 0;
 	}
 	else if(netbuf_type == NETOREDER_ORDER)//读取订单数据
 	{
-		max_length = batch_info_table[batch_table_hash].batch_length - MAX_BATCH_HEAD_LENGTH;
-		while(max_length >= sub_len)
+		printf("读取订单数据报文\r\n");
+		if(max_length == 0) max_length = batch_info_table[batch_table_hash].batch_length - MAX_BATCH_HEAD_LENGTH;
+		printf("订单数据长度为%d\r\n",max_length);
+		if(max_length >= sub_len)
 		{
 			put_in_buf((u8_t *)sub_data,sub_len,batch_info_table[batch_table_hash].preservation);
 			max_length -= sub_len;
-			if(netbuf_next(order_netbuf) > 0) netbuf_data(order_netbuf, (void **)&sub_data, &sub_len);//从网络缓冲区读取
+			sub_data += sub_len;
+			sub_len = 0;
 		}
-		put_in_buf((u8_t *)sub_data,max_length,batch_info_table[batch_table_hash].preservation);
-		sub_len -= max_length;
-		sub_data += max_length;
-		read_symbol = 1;
+		if(max_length > 0 && sub_len > 0)
+		{
+			put_in_buf((u8_t *)sub_data,max_length,batch_info_table[batch_table_hash].preservation);
+			sub_len -= max_length;
+			sub_data += max_length;
+			max_length = 0;
+		}
+		if(!max_length) read_symbol = 1;
 	}
 	*data = sub_data;
 	*len = sub_len;
@@ -132,18 +147,24 @@ void deal_with_contract_order(char *contract_buf)
 		printf("contract_type = %d\r\n",contract_type);				
 		if(contract_type == CONTRACT_DOCUMENT)
 		{
-			if(!contract_partner)			contract_response(order_netconn,contract_type+1,0);
+			if(contract_information.contract_number)			printf("已签订合同，无需再签约！！！\r\n");
+			else 
+			{
+				contract_response(order_netconn,contract_type+1,0);
+				printf("主控板状态上发成功!!!\r\n");
+			}
 		}
 		else if(contract_type == CONTRACT_SIGN)
 		{
-			Analyze_Contract_Info_Table(contract_buf);
-			contract_response(order_netconn,contract_type+1,0);
-			contract_partner = 1;
+			if(contract_information.contract_number)			printf("已签订合同，无需再签约！！！\r\n");
+			else{
+				Analyze_Contract_Info_Table(contract_buf);
+				contract_response(order_netconn,contract_type+1,0);
+			}
 		}
 		else if(contract_type == CONTRACT_ESCAPE)
 		{
-			contract_response(order_netconn,contract_type+1,0);
-			contract_partner = 0;
+			contract_information.contract_number = 0;
 		}
 }
 
@@ -152,8 +173,8 @@ void deal_with_batch_order(char *batch_buf)
 {
 	ANALYZE_DATA_2B((batch + BATCH_NUMBER_OFFSET), batch_number);//获取批次号
 
-	printf("batch read success ,batch_number is %x %x\n", *(batch + BATCH_NUMBER_OFFSET), *(batch + BATCH_NUMBER_OFFSET + 1));
-	printf("batch read success ,batch_length is %x %x\n", *(batch + BATCH_TOTAL_LENGTH_OFFSET), *(batch + BATCH_TOTAL_LENGTH_OFFSET + 1));	
+	DEBUG_PRINT("batch read success ,batch_number is %x %x\n", *(batch + BATCH_NUMBER_OFFSET), *(batch + BATCH_NUMBER_OFFSET + 1));
+	DEBUG_PRINT("batch read success ,batch_length is %x %x\n", *(batch + BATCH_TOTAL_LENGTH_OFFSET), *(batch + BATCH_TOTAL_LENGTH_OFFSET + 1));	
 	Analyze_Batch_Info_Table(batch, batch_number);//批次解包
 	
 	batch_table_hash = get_batch_hash(batch_number);
@@ -184,20 +205,23 @@ void deal_with_order_order(void)
 }
 
 //处理报文
-void deal_with_order(char *netbuf,u16_t netbuf_type)
+void deal_with_order(char *netbuf)
 {
+	printf("处理报文\r\n");
 	if(netbuf_type == NETORDER_CONTRACT)
 	{
-		deal_with_contract_order(netbuf);
+		deal_with_contract_order(netbuf);//处理合同网报文
 	}
 	if(netbuf_type == NETOREDER_BATCH)
 	{
-		deal_with_batch_order(netbuf);
+		deal_with_batch_order(netbuf);//处理批次报文
 	}
 	if(netbuf_type == NETOREDER_ORDER)
 	{
-		deal_with_order_order();
+		deal_with_order_order();//处理订单数据
 	}
+	netbuf_type = 0;
+	read_message_symbol = 0;
 }
 /**
 *@brief 接收报文并解析
@@ -206,23 +230,19 @@ void receive_connection(struct netconn *conn)
 {
 	struct netbuf* order_netbuf = NULL;
 	err_t err;
-	u8_t netbuf_type = 0,read_message_symbol;
-	u16 i;
 	char *data,*netbuf;
 	while((err = netconn_recv(conn,&order_netbuf)) == ERR_OK)
-	{
-		netbuf_data(order_netbuf,(void **)&data,&len);//从网络缓冲区读
-//		for(i = 0;i < len;i++)
-//		{
-//			printf("%x ",data[i]);
-//		}
+	{	
+		printf("receive data!!\r\n");
+		netbuf_data(order_netbuf,(void **)&data,&len);//从网络缓冲区读取数据
 start:
-		netbuf_type = find_order_head(&data,&len); //从网络缓冲区中读取第一个报文种类，分析报文种类
-		printf("netbuf_type = %d\r\n",netbuf_type);	
-		read_message_symbol = read_message_from_netbuf(order_netbuf,&netbuf,&data,netbuf_type,&len);//读取整个报文数据长度
-		printf("read_message_symbol = %d\r\n",read_message_symbol);		
-		printf("网络缓冲区剩余长度：len = %d\r\n",len);	
-		deal_with_order(netbuf,netbuf_type);//对数据报文进行处理
+		printf("get data ,len is %d,netbuf_type = %d\r\n", len,netbuf_type);
+		if(!netbuf_type) netbuf_type = find_order_head(&data,&len); //从网络缓冲区中读取第一个报文种类，分析报文种类
+		printf("网络缓冲区剩余长度：len = %d,netbuf_type = %d\r\n",len,netbuf_type);	
+		if(netbuf_type) read_message_symbol = read_message_from_netbuf(&netbuf,&data,netbuf_type,&len);//读取整个报文数据长度		
+		printf("read_message_symbol = %d\r\n",read_message_symbol);
+		if(read_message_symbol) deal_with_order(netbuf);//对数据报文进行处理
+		printf("数据处理完后，网络缓冲区剩余长度：len = %d",len);
 		if(len > 0) goto start; //如有多余数据，重新进行报文判断
 		if(!(netbuf_next(order_netbuf) > 0)) netbuf_delete(order_netbuf);
 	}

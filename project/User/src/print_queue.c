@@ -103,7 +103,7 @@ order_print_queue_info order_print_table;
 //批次表
 batch_info batch_info_table[MAX_BATCH_NUM];				 
 //合同表
-contract_info contract_information;
+
 
 
 /**
