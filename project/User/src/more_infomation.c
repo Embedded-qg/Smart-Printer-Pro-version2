@@ -1,5 +1,6 @@
 #include "more_infomation.h"
 
+float cell_unhealth[MAX_CELL_NUM] = {0};//每个打印机的不健康值
 
 //udp校验和算法
 u16_t Check_Sum(u16_t *data, int len)
@@ -82,8 +83,22 @@ u16_t Get_MCU_Speed(void)
 //获取主控板状态
 u16_t Get_MCU_Status(void)
 {
-	return 10000;
+	u8_t i;
+	float mcu_health;
+	u32_t totalTime,workedTime;
+	u16_t total = 100;
+	extern  PrintCellsMgrInfo PCMgr;
+	for(i = 0,mcu_health = 0;i < MAX_CELL_NUM;i++)
+	{
+		if(PCMgr.cells[i].status == PRINT_CELL_STATUS_ERR) continue;
+		totalTime = PCMgr.cells[i].totalTime;
+		workedTime = PCMgr.cells[i].workedTime;
+		mcu_health += total / MAX_CELL_NUM;
+//		mcu_health += (total - totalTime / 20 - 5 * workedTime / 20) / MAX_CELL_NUM; /** (100 - cell_unhealth[i]);*/
+	}
+	return mcu_health;
 }
+
 //获取时间戳
 u32_t Get_Current_Unix_Time(void)
 {

@@ -41,7 +41,7 @@ void Pack_Req_Or_Status_Message(char *message, req_type type, u8_t symbol, u32_t
 	SET_DATA_2B(&message[16], ((check_sum << 8) + (check_sum >> 8)));
 }
 
-void Pack_Contract_Message(char *message,contract_type type,u32_t mcu_id,u32_t UNIX_time,u16_t mcu_speed,u16_t mcu_health,u32_t preservation)
+void Pack_Contract_Message(char *message,contract_type type,u16_t contract_number,u32_t mcu_id,u32_t UNIX_time,u16_t mcu_speed,u16_t mcu_health)
 {
 	u16_t check_sum;
 
@@ -55,6 +55,7 @@ void Pack_Contract_Message(char *message,contract_type type,u32_t mcu_id,u32_t U
 //设置时间,主控板id，主控板打印速度，主控板健康状态
 	SET_DATA_4B(&message[CONTRACT_SERVER_SEND_TIME_OFFSET],UNIX_time);
 	SET_DATA_4B(&message[CONTRACT_MCU_ID_OFFSET],mcu_id);
+	SET_DATA_2B(&message[CONTRACT_CONTRACT_NUMBER_OFFSET],contract_number);
 	SET_DATA_2B(&message[CONTRACT_MCU_SPEED_OFFSET],mcu_speed);
 	SET_DATA_2B(&message[CONTRACT_MCU_HEALTH],mcu_health);
 	
@@ -64,5 +65,6 @@ void Pack_Contract_Message(char *message,contract_type type,u32_t mcu_id,u32_t U
 	
 //校验和	
 	check_sum = Check_Sum((u16_t *)message,MAX_CONTRACT_HEAD_LENGTH);
+	SET_DATA_2B(&message[CONTRACT_CHECK_SUM_OFFSET], ((check_sum << 8) + (check_sum >> 8)));
 
 }

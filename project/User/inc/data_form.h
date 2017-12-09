@@ -6,16 +6,17 @@
 **************************************************************/
 #include "cc.h"
 /******************网络数据报类型******************/
-#define NETORDER_CONTRACT	1 //合同网报文
-#define NETOREDER_BATCH	2	 //批次报文
-#define NETOREDER_ORDER 3 //订单报文
+#define NETORDER_TYPE_NULL 0
+#define NETORDER_TYPE_CONTRACT	1 //合同网报文
+#define NETORDER_TYPE_BATCH	2	 //批次报文
+#define NETORDER_TYPE_ORDER 3 //订单报文
 
 /******************合同头部格式各个字段的偏移量******************/
 #define	CONTRACT_START_SYMBOL_OFFSET 0  //开始偏移值
 #define CONTRACT_TYPE_OFFSET 2 //合同类型偏移值
 #define CONTRACT_PRIORITY_OFFSET 3 //合同优先级偏移值，是否为加急订单
 #define CONTRACT_SERVER_SEND_TIME_OFFSET 4 //服务器下发时间0偏移值
-#define CONTRACT_CONTRACT_NUMBER_OFFSET 8 //批次编号偏移值
+#define CONTRACT_CONTRACT_NUMBER_OFFSET 8 //合同编号偏移值
 #define CONTRACT_MCU_ID_OFFSET 12 //主控板id偏移值
 #define CONTRACT_MCU_SPEED_OFFSET 16 //打印速度偏移值
 #define CONTRACT_MCU_HEALTH 18 //打印机健康状态偏移值
@@ -58,7 +59,7 @@
 //合同数据表
 typedef struct contract_info{
 #define MAX_CONTRACT_NUM 10
-#define MAX_CONTRACT_HEAD_LENGTH 32
+#define MAX_CONTRACT_HEAD_LENGTH 28
 	u8_t contract_type;//合同类型
 	u8_t priority;//优先级，判断是否为加急订单
 	u32_t sever_send_time;//服务器发送时间

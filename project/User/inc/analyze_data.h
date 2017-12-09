@@ -65,5 +65,4 @@ void Analyze_Batch_Info_Table(char *batch_data, u16_t batch_number);
 void Analyze_Contract_Info_Table(char *contract_data);
 void find_substr_head(char **data, char *substr, u16_t *len, u16_t sub_len);
 u8_t find_order_head(char **data,u16_t *len); //分析报文类型
-u16_t anylyze_order_length(u8_t netbuf_type,char *data);//分析整个报文的长度
 #endif

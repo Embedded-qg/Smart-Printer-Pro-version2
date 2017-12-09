@@ -25,6 +25,7 @@ u16_t Get_MCU_Speed(void);
 	
 //获取主控板健康状态
 u16_t Get_MCU_Status(void);
+
 //获取时间戳
 u32_t Get_Current_Unix_Time(void);
 

@@ -396,7 +396,7 @@ void Order_Print_Status_Mesg_Queue_Send ( u16_t batch_num , u16_t order_num , u8
 void Printer_Status_Mesg_Queue_Send(u32_t printer_num , u8_t status)
 {
 	//status宏，就是对应的发送状态
-//	DEBUG_PRINT("SEND MESG : start to send printer status \r\n");
+	DEBUG_PRINT("SEND MESG : start to send printer status \r\n");
 	SendStatusToWifi(printer_status,status, PRINTER_MESG_IP,printer_num+1);
 	BASE_SEND_STATUS(printer_status,status,printer_num+1);
 	SendStatusToLocal(printer_status,status,printer_num+1); 	

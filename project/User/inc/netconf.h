@@ -67,6 +67,12 @@ extern struct netconn *order_netconn;	//全局TCP链接
 	#define BASE_SEND_STATUS(type, symbol, serverid_or_preservation) 
 #endif
 
+#define NET_DEBUG_PRINT_ON 0
+#if NET_DEBUG_PRINT_ON
+	#define NET_DEBUG_PRINT(fmt,args...) printf (fmt ,##args)
+#else
+	#define NET_DEBUG_PRINT(fmt,args...)
+#endif
 
 void LwIP_Init(void);
 void lwip_demo(void);
@@ -75,7 +81,7 @@ void Recv_Batch(void);
 //void Sent_Status(unsigned char order_No,unsigned char order_status);
 void receive_connection(struct netconn *conn);
 void put_in_buf(u8_t *data, u16_t len, u16_t urg);
-void contract_response(struct netconn *conn,contract_type type,u32_t preservation);
+void contract_response(struct netconn *conn,contract_type type);
 /****************************************************************************************
 *@Name............: write_connection
 *@Description.....: 发送数据报

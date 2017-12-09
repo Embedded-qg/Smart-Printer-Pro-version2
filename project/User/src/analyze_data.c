@@ -70,7 +70,7 @@ return values.......:void
 ****************************************************************************************/
 void Analyze_Contract_Info_Table(char* contract_data)
 {
-	ANALYZE_DATA_2B((contract_data + CONTRACT_CONTRACT_NUMBER_OFFSET), contract_information.contract_number);//合同编号
+	ANALYZE_DATA_2B((contract_data + CONTRACT_CONTRACT_NUMBER_OFFSET), contract_information.contract_number);//合同号
 	ANALYZE_DATA_4B((contract_data + CONTRACT_SERVER_SEND_TIME_OFFSET), contract_information.sever_send_time);//设立服务器发送时间
 	ANALYZE_DATA_2B((contract_data + CONTRACT_CHECK_SUM_OFFSET), contract_information.check_sum);//设立校验和
 }
@@ -88,8 +88,8 @@ void Analyze_Batch_Info_Table(char *batch_data, u16_t batch_number)
 	hash = get_batch_hash(batch_number);
 	batch_info_table[hash].batch_number = batch_number;
 	ANALYZE_DATA_2B((batch_data + BATCH_ORDER_NUMBER_OFFSET), batch_info_table[hash].order_number);//设立订单数目
+	printf("order_number = %d\r\n",batch_info_table[hash].order_number);
 	ANALYZE_DATA_2B((batch_data + BATCH_TOTAL_LENGTH_OFFSET), batch_info_table[hash].batch_length);//设立批次长度
-	printf("批次长度为%d\r\n", batch_info_table[hash].batch_length);
 	ANALYZE_DATA_4B((batch_data + BATCH_SEVER_SEND_TIME_OFFSET), batch_info_table[hash].sever_send_time);//设立服务器发送时间
 	ANALYZE_DATA_4B((batch_data + BATCH_CHECK_SUM_OFFSET), batch_info_table[hash].check_sum);//设立校验和
 	ANALYZE_DATA_2B((batch_data + BATCH_PRESERVATION_OFFSET), batch_info_table[hash].preservation);//设立保留值
@@ -107,44 +107,26 @@ u8_t find_order_head(char **data,u16_t *len)
 	{
 		if(sub_data[i] == '\xbf' && sub_data[i + 1] == '\xfb')
 		{
-			netbuf_type = NETORDER_CONTRACT;
-			printf("这是一个合同网报文\r\n");
+			netbuf_type = NETORDER_TYPE_CONTRACT;
+			NET_DEBUG_PRINT("这是一个合同网报文\r\n");
 			break;
 		}			
 		if(sub_data[i] == '\xaa' && sub_data[i + 1] == '\x55')
 		{
-			netbuf_type = NETOREDER_BATCH;
-			printf("这是一个批次报文\r\n");
+			netbuf_type = NETORDER_TYPE_BATCH;
+			NET_DEBUG_PRINT("这是一个批次报文\r\n");
 			break;
 		}
 		if(sub_data[i] == '\x3e' && sub_data[i + 1] == '\x11')
 		{
-			netbuf_type = NETOREDER_ORDER;
-			printf("这是一个订单数据报文\r\n");
+			netbuf_type = NETORDER_TYPE_ORDER;
+			NET_DEBUG_PRINT("这是一个订单数据报文\r\n");
 			break;
 		}
 	}
+	if(!netbuf_type)  (*len) = 0; 
 	*data = sub_data + i;
 	return netbuf_type;
-}
-
-//根据报文类型分析其长度
-u16_t anylyze_order_length(u8_t netbuf_type,char *data)
-{
-	u16_t max_length;
-	if(netbuf_type == NETORDER_CONTRACT)
-	{
-		max_length = MAX_CONTRACT_HEAD_LENGTH;
-	}
-	else if(netbuf_type == NETOREDER_BATCH)
-	{
-		max_length = MAX_BATCH_HEAD_LENGTH;
-	}
-	else if(netbuf_type == NETOREDER_ORDER)
-	{
-		if(batch_flag == 1) max_length = batch_info_table[batch_table_hash].batch_length - MAX_BATCH_HEAD_LENGTH;
-	}
-	return max_length;
 }
 
 //寻找批次头，减少从网络缓冲读取的长度
