@@ -163,11 +163,11 @@ void SendStatusToLocal(req_type type, u8_t symbol, u32_t preservation)
 	
 	
 	if(type == printer_status){
-		Pack_Req_Or_Status_Message(sent_data, PRINTER_STATUS, symbol, Get_Printer_ID(), 0, preservation);//此时的preservation是主控板打印单元序号或为0
+		Pack_Req_Or_Status_Message(sent_data, PRINTER_STATUS, symbol, Get_MCU_ID(), 0, preservation);//此时的preservation是主控板打印单元序号或为0
 		tmpSem = Ack_Rec_Printer_Sem;
 		delayTimes = 4;//暂时设置为4
 	}else if(type == order_status){
-		Pack_Req_Or_Status_Message(sent_data, ORDER_STATUS, symbol, Get_Printer_ID(), Get_Order_Unix_Time(preservation), preservation);//此时的preservation为订单号
+		Pack_Req_Or_Status_Message(sent_data, ORDER_STATUS, symbol, Get_MCU_ID(), Get_Order_Unix_Time(preservation), preservation);//此时的preservation为订单号
 		tmpSem = Ack_Rec_Order_Sem;
 		delayTimes = 20;//暂时设置为20
 	}
@@ -198,7 +198,7 @@ void AckToLocal(u32_t orderNum)//打印机发送应答给本地
 {
 	char sent_data[SEND_DATA_SIZE] = {0};	//状态报文和请求报文都是固定20字节
 	
-	Pack_Req_Or_Status_Message(sent_data, ACK_STATUS, 0, Get_Printer_ID(), ORDER_ACK_LOCAL, orderNum);
+	Pack_Req_Or_Status_Message(sent_data, ACK_STATUS, 0, Get_MCU_ID(), ORDER_ACK_LOCAL, orderNum);
 	
 	LocalSendData(sent_data, SEND_DATA_SIZE);//从串口发送报文
 }

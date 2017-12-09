@@ -18,8 +18,13 @@ u16_t Check_Sum(u16_t *data, int len);
 u16_t Check_Sum_With_Diff_Part(u16_t *src1, int len1, u16_t *src2, int len2);
 
 //获取主控板id
-u32_t Get_Printer_ID(void);
+u32_t Get_MCU_ID(void);
 
+//获取主控板速度
+u16_t Get_MCU_Speed(void);
+	
+//获取主控板健康状态
+u16_t Get_MCU_Status(void);
 //获取时间戳
 u32_t Get_Current_Unix_Time(void);
 

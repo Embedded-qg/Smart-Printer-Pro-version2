@@ -75,6 +75,7 @@ void Recv_Batch(void);
 //void Sent_Status(unsigned char order_No,unsigned char order_status);
 void receive_connection(struct netconn *conn);
 void put_in_buf(u8_t *data, u16_t len, u16_t urg);
+void contract_response(struct netconn *conn,contract_type type,u32_t preservation);
 /****************************************************************************************
 *@Name............: write_connection
 *@Description.....: 发送数据报

@@ -312,7 +312,7 @@ void DispensePrintJob(u8_t entryIndex)
 	PrintCellInfo *cellp;
 	
 	if((cellp = GetIdlePrintCell()) == NULL) {	//获取一个打印单元
-		DEBUG_PRINT("BUG DETECT: DispensePrintJob: None Usable Print Cell Exits\n");
+//		DEBUG_PRINT("BUG DETECT: DispensePrintJob: None Usable Print Cell Exits\n");
 		return;
 	}
 	cellp->entryIndex = (OrderEntry)entryIndex;
@@ -369,7 +369,7 @@ void PutPrintCell(PrintCellNum no, PrintCellStatus status)
 		return;
 	}
 	
-	DEBUG_PRINT("--------PutPrintCell: Print Cell %u: Set Idle----------\n", no);
+//	DEBUG_PRINT("--------PutPrintCell: Print Cell %u: Set Idle----------\n", no);
 	OSSemPost(PCMgr.resrcSem);
 }
 
@@ -434,12 +434,12 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 		}else {	// 打印单元非忙碌，状态检测指令来自健康检测线程
 			if(cellp->status == PRINT_CELL_STATUS_ERR) {
 				if(status == NORMAL_STATE) {	// 打印机从异常恢复
-					DEBUG_PRINT("\nPrint Cell %u Restore from exception.\n", cellp->no);
+//					DEBUG_PRINT("\nPrint Cell %u Restore from exception.\n", cellp->no);
 					PutPrintCell(cellno, PRINT_CELL_STATUS_IDLE);
 				}
 			}else if(cellp->status == PRINT_CELL_STATUS_IDLE) {	
 				if(status != NORMAL_STATE){		// 打印机从正常到异常
-					DEBUG_PRINT("\nPrint Cell %u fell into exception.\n", cellp->no);
+//					DEBUG_PRINT("\nPrint Cell %u fell into exception.\n", cellp->no);
 					cellp->status = PRINT_CELL_STATUS_ERR;
 					OSSemAccept(PCMgr.resrcSem);
 				}

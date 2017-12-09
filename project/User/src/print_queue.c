@@ -102,6 +102,8 @@ static void printOrderQueueSeque();
 order_print_queue_info order_print_table;        
 //批次表
 batch_info batch_info_table[MAX_BATCH_NUM];				 
+//合同表
+
 
 
 /**
@@ -282,8 +284,7 @@ static s8_t	Add_Order_To_Print_Queue(SqQueue *buf,s8_t entry_index , u8_t order_
 	
 	order_print_table.order_node[entry_index].batch_number = 				(*(order_head+ORDER_BATCH_NUMBER_OFFSET)<<8)				+ *(order_head + ORDER_BATCH_NUMBER_OFFSET + 1);							//所属批次
 	order_print_table.order_node[entry_index].batch_within_number =	(*(order_head+ORDER_BATCH_WITHIN_NUMBER_OFFSET)<<8)	+ *(order_head + ORDER_BATCH_WITHIN_NUMBER_OFFSET + 1);				//批次内订单序号
-	order_print_table.order_node[entry_index].check_sum = 					(*(order_head+ORDER_CHECK_SUM_OFFSET)<<8)						+ *(order_head + ORDER_CHECK_SUM_OFFSET + 1);									//校验码	
-	order_print_table.order_node[entry_index].preservation = 				(*(order_head+ORDER_PRESERVATION_OFFSET)<<8)				+ *(order_head + ORDER_PRESERVATION_OFFSET + 1);							//保留
+	order_print_table.order_node[entry_index].check_sum = 					(*(order_head+ORDER_CHECK_SUM_OFFSET)<<8)						+ *(order_head + ORDER_CHECK_SUM_OFFSET + 1);									//校验码						//保留
 	order_print_table.order_node[entry_index].data_source = 	order_print_table.order_node[entry_index].preservation;
 	order_print_table.order_node[entry_index].priority = order_prio_sigal;
   order_print_table.order_node[entry_index].next_print_node = -1;

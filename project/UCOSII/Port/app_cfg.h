@@ -45,7 +45,7 @@
 
 #define APP_DEBUG 0
 
-#define DEBUG_PRINT_ON 1
+#define DEBUG_PRINT_ON 0
 
 #if DEBUG_PRINT_ON
 	#define DEBUG_PRINT(fmt,args...) printf (fmt ,##args)

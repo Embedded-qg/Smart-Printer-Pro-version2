@@ -38,12 +38,14 @@ extern batch_info batch_info_table[];//批次表
 /**************************************************************
 *	Function Define Section
 **************************************************************/
-	
-/**
+
+	/**
  * @brief 	获取批次序号哈希值
  */
 u8_t get_batch_hash(u16_t batch_number);
 
+	
+u8_t get_contract_hash(u16_t contract_number);
 /* 当数据在不同区域时，需要对两个段进行解析 */
 void Analyze_Data_With_Diff_Part(u8_t *src1, int len1, u8_t *src2, int len2, u32_t *data);
 	
@@ -60,5 +62,8 @@ u16_t get_batch_length(u16_t batch_number);
 *****************************************************************************************/
 void Analyze_Batch_Info_Table(char *batch_data, u16_t batch_number);
 
+void Analyze_Contract_Info_Table(char *contract_data);
 void find_substr_head(char **data, char *substr, u16_t *len, u16_t sub_len);
+u8_t find_order_head(char **data,u16_t *len); //分析报文类型
+u16_t anylyze_order_length(u8_t netbuf_type,char *data);//分析整个报文的长度
 #endif

@@ -149,11 +149,11 @@ void SendStatusToWifi(req_type type, u8_t symbol, u32_t IPadd, u32_t preservatio
 	u8_t sent_data[SEND_DATA_SIZE] = {0};	//状态报文和请求报文都是固定20字节
 	
 	if(type == printer_status){
-		Pack_Req_Or_Status_Message((char *)sent_data, PRINTER_STATUS, symbol, Get_Printer_ID(), 0, preservation);//此时的preservation是主控板打印单元序号或为0
+		Pack_Req_Or_Status_Message((char *)sent_data, PRINTER_STATUS, symbol, Get_MCU_ID(), 0, preservation);//此时的preservation是主控板打印单元序号或为0
 	}else if(type == order_status){
-		Pack_Req_Or_Status_Message((char *)sent_data, ORDER_STATUS, symbol, Get_Printer_ID(), IPadd, preservation);//此时的preservation为订单号
+		Pack_Req_Or_Status_Message((char *)sent_data, ORDER_STATUS, symbol, Get_MCU_ID(), IPadd, preservation);//此时的preservation为订单号
 	}else if(type == wifi_order_req){
-		Pack_Req_Or_Status_Message((char *)sent_data, WIFI_REQ_ACK, symbol, Get_Printer_ID(), IPadd, preservation);//此时的preservation为保留
+		Pack_Req_Or_Status_Message((char *)sent_data, WIFI_REQ_ACK, symbol, Get_MCU_ID(), IPadd, preservation);//此时的preservation为保留
 	}
 
 	WifiSendData(sent_data, SEND_DATA_SIZE);//从串口发送报文
@@ -164,7 +164,7 @@ void AckToWifi(u32_t orderNum, u32_t ipAdd)//打印机发送应答给本地
 {
 	u8_t sent_data[SEND_DATA_SIZE] = {0};	//状态报文和请求报文都是固定20字节
 	
-	Pack_Req_Or_Status_Message((char *)sent_data, ACK_STATUS, 0, Get_Printer_ID(), ipAdd, orderNum);
+	Pack_Req_Or_Status_Message((char *)sent_data, ACK_STATUS, 0, Get_MCU_ID(), ipAdd, orderNum);
 	
 	WifiSendData(sent_data, SEND_DATA_SIZE);//从串口发送报文
 }
