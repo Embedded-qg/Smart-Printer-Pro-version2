@@ -3,6 +3,8 @@
 /**************************************************************
 *	Function Define Section
 **************************************************************/
+extern u16_t Data_long;
+extern u16_t Flag_receive_order;
 
 extern contract_info contract_information;
 extern u8_t batch_flag;
@@ -89,7 +91,8 @@ void Analyze_Batch_Info_Table(char *batch_data, u16_t batch_number)
 	batch_info_table[hash].batch_number = batch_number;
 	ANALYZE_DATA_2B((batch_data + BATCH_ORDER_NUMBER_OFFSET), batch_info_table[hash].order_number);//设立订单数目
 	ANALYZE_DATA_2B((batch_data + BATCH_TOTAL_LENGTH_OFFSET), batch_info_table[hash].batch_length);//设立批次长度
-	printf("批次长度为%d\r\n", batch_info_table[hash].batch_length);
+	Data_long = batch_info_table[hash].order_number;//获取订单的数目
+	Flag_receive_order = 1;//说明已获取批次订单数目
 	ANALYZE_DATA_4B((batch_data + BATCH_SEVER_SEND_TIME_OFFSET), batch_info_table[hash].sever_send_time);//设立服务器发送时间
 	ANALYZE_DATA_4B((batch_data + BATCH_CHECK_SUM_OFFSET), batch_info_table[hash].check_sum);//设立校验和
 	ANALYZE_DATA_2B((batch_data + BATCH_PRESERVATION_OFFSET), batch_info_table[hash].preservation);//设立保留值

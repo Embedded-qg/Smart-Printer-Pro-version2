@@ -28,6 +28,11 @@
 **************************************************************/
 #include "print_cells.h"
 
+PrintCellsMgrInfo Prior; //排序后的打印单元数组
+u32_t Data_long;				 //批次订单数目
+u16_t Flag_receive_order;//接收批次订单的标志
+double grade = 0;				 //计算每个批次打印单元所加的分数
+
 
 /**************************************************************
 *	Macro Define Section
@@ -259,14 +264,114 @@ void InitPrintCellsMgr(void)
 		cellp->status = PRINT_CELL_STATUS_ERR;	
 		cellp->entryIndex = -1;
 		cellp->health_status = PRINTER_HEALTH_UNHEALTHY ;
+		cellp->sum_grade = 50;
 		
 		cellp->printBeginSem = OSSemCreate(0);
 		cellp->printDoneSem = OSSemCreate(0);
 		
 	}
 }
- 
 
+/**
+ *  @fn		Count_Accuracy
+ *	@brief	计算每个打印单元的精确度和所分到的订单数目
+ *	@param	None
+ *	@ret	NULL 	
+ */
+void Count_Accuracy(void)
+{
+	int i;
+	double dispend_number;
+	PrintCellInfo *cellp;
+	for(i=0;i<MAX_CELL_NUM;i++)//计算打印单元加起来的总分数
+	{
+		cellp = &PCMgr.cells[i];
+		if(cellp -> sum_grade >= 10)
+		{
+			grade += cellp -> sum_grade;
+			printf("cellp -> sum_grade = %d\r\n",cellp -> sum_grade);
+		}
+	}
+	printf("grade = %f\r\n",grade);
+	if(grade == 0)//说明打印单元积分都是小于10分的，都小于十分则按照分数占总分数的比例获取订单数目
+	{
+		for(i=0;i<MAX_CELL_NUM;i++)
+		{
+			cellp = &PCMgr.cells[i];
+			grade += cellp -> sum_grade;
+			printf("cellp -> sum_grade = %d\r\n",cellp -> sum_grade);
+		}//计算出总积分
+		for(i=0;i<MAX_CELL_NUM;i++)//进行订单分配
+		{
+			cellp = &PCMgr.cells[i];
+			cellp -> accuracy = cellp -> sum_grade / grade;//计算打印单元积分所占总积分的比例
+			dispend_number =cellp -> accuracy * Data_long;
+			cellp -> dispend_order_number = (int)((cellp -> accuracy) * Data_long);
+			if(dispend_number > (cellp -> dispend_order_number+0.5))
+			{
+				cellp -> dispend_order_number += 1;
+			}
+		}
+	}
+	else{//说明至少有一台积分大于10分
+		for(i=0;i<MAX_CELL_NUM;i++)
+		{
+			cellp = &PCMgr.cells[i];
+			if(cellp -> sum_grade < 10)//积分小于10分，只能获得一份订单
+			{
+				cellp -> accuracy = 0;
+				cellp -> dispend_order_number = 1;
+			}
+			else if(cellp -> sum_grade >= 10)
+			{
+				cellp -> accuracy = cellp -> sum_grade / grade;
+				dispend_number =cellp -> accuracy * Data_long;
+				cellp -> dispend_order_number = (int)((cellp -> accuracy) * Data_long);
+				if(dispend_number > (cellp -> dispend_order_number+0.5))
+				{
+					cellp -> dispend_order_number += 1;
+				}
+			}
+			printf("PCMgr.cells[%d].sum_grade = %d\r\n",i,PCMgr.cells[i].sum_grade);
+			printf("PCMgr.cells[%d].accuracy = %f\r\n",i,PCMgr.cells[i].accuracy);
+		}
+	}
+	grade = 0;
+	for(i = 0; i < MAX_CELL_NUM; i++)//将各打印单元打印的订单数目重置为0
+	{
+		PCMgr.cells[i].print_order_count = 0;
+	}
+}
+
+/**
+ *  @fn		PrioritySort
+ *	@brief	将每个打印单元按精确度高低进行排序
+ *	@param	None
+ *	@ret	NULL 
+			
+ */
+void PrioritySort(void)
+{
+	int i,k,j;
+	PrintCellInfo t;
+	for(i=0;i<MAX_CELL_NUM;i++)
+	{
+		Prior.cells[i]=PCMgr.cells[i];
+	}
+	for(i=0;i<MAX_CELL_NUM;i++) 
+	{
+		k=i;
+		for(j=i+1;j<MAX_CELL_NUM;j++)
+			if(Prior.cells[k].accuracy<Prior.cells[j].accuracy)
+				k=j;
+		if(k!=j)
+		{
+			t=Prior.cells[k];
+			Prior.cells[k]=Prior.cells[i];
+			Prior.cells[i]=t;
+		}		
+	}
+}
 /**
  *  @fn		GetIdlePrintCell
  *	@brief	查找mgrp，获得一个空闲的打印单元
@@ -348,6 +453,13 @@ void PutRestoredOrder(PrintCellNum no, OrderEntry entryIndex)
 			status 打印单元的状态
  *	@ret	None
  */
+/**
+ *  @fn		PutPrintCell
+ *	@brief	将编号为no的打印单元设置为空闲，并将其归还管理器
+ *	@param	no 打印单元编号
+			status 打印单元的状态
+ *	@ret	None
+ */
 void PutPrintCell(PrintCellNum no, PrintCellStatus status)
 {
 #if OS_CRITICAL_METHOD == 3u
@@ -356,12 +468,17 @@ void PutPrintCell(PrintCellNum no, PrintCellStatus status)
 	
 	PrintCellInfo *cellp = &PCMgr.cells[no - 1];
 	u8_t entryIndex;
+	int i;
+	static int print_number_sum;//计算一个批次的订单数目总共打印了多少份
+	int Useful_printer;
 
 	OS_ENTER_CRITICAL();
 	cellp->status = status;
 	entryIndex = cellp->entryIndex;
 	cellp->entryIndex = -1;
 	OS_EXIT_CRITICAL();
+	
+	
 	
 	if(status == PRINT_CELL_STATUS_ERR) { // 打印机硬件故障，订单需要分发其他单元重新打印
 		DEBUG_PRINT("--------PutPrintCell: Print Cell %u: Hardware Fault----------\n", no);
@@ -370,7 +487,79 @@ void PutPrintCell(PrintCellNum no, PrintCellStatus status)
 	}
 	
 //	DEBUG_PRINT("--------PutPrintCell: Print Cell %u: Set Idle----------\n", no);
-	OSSemPost(PCMgr.resrcSem);
+	OS_ENTER_CRITICAL();
+	printf("PCMgr.cells[0].print_order_count = %ld  and  PCMgr.cells[1].print_order_count = %ld\r\n",PCMgr.cells[0].print_order_count,PCMgr.cells[1].print_order_count);
+	printf("   no = %d      !!!!!!!!\r\n",no);
+	printf("Prior[0].no = %d  and  Prior[1].no = %d      !!!!!!!!\r\n",Prior.cells[0].no,Prior.cells[1].no);
+	printf("Prior[0].accuracy = %f  and  Prior[1].accuracy = %f      !!!!!!!!\r\n",Prior.cells[0].accuracy,Prior.cells[1].accuracy);
+  printf("Prior[0].dispend_order_number = %ld and Prior[1].dispend_order_number = %ld\r\n",Prior.cells[0].dispend_order_number,Prior.cells[0].dispend_order_number);
+	if(PCMgr.cells[0].status != PRINT_CELL_STATUS_ERR && PCMgr.cells[1].status != PRINT_CELL_STATUS_ERR)//判断是否有打印单元不可用
+	{
+		Useful_printer = 1;//为1表示两台打印单元都可用
+	}
+	else
+	{
+		Useful_printer = 0;//为0表示只有一台打印单元可用或者都不可用
+	}
+	if(Flag_receive_order == 1)
+	{
+		if(PCMgr.cells[0].print_order_count == 0 && PCMgr.cells[1].print_order_count == 0)//证明刚开始要打印订单
+		{
+			print_number_sum = 0;//将打印订单数目置为0
+		}
+		for(i = 0; i < MAX_CELL_NUM; i++)
+		{
+			if(PCMgr.cells[i].no == no)//判断是哪台打印单元
+			{
+				PCMgr.cells[i].print_order_count++;
+				print_number_sum++;//计算一个批次的订单打印了多少份
+			}
+		}//计算打印单元各自打印的订单数目
+		for(i = 0; i < MAX_CELL_NUM; i++)//记录各个打印单元打印的订单数目
+		{
+			if(Prior.cells[i].no == 1)
+			{
+				Prior.cells[i].print_order_count = PCMgr.cells[0].print_order_count;
+			}
+			else
+			{
+				Prior.cells[i].print_order_count = PCMgr.cells[1].print_order_count;
+			}
+		}
+	}
+	
+	printf("print_number_sum = %d\r\n",print_number_sum);
+	printf("Prior.cells[0].print_order_count = %d  and  Prior.cells[0].dispend_order_number = %d\r\n",Prior.cells[0].print_order_count,Prior.cells[0].dispend_order_number);
+	printf("Prior.cells[1].print_order_count = %d  and  Prior.cells[1].dispend_order_number = %d\r\n",Prior.cells[1].print_order_count,Prior.cells[1].dispend_order_number);
+	if(Prior.cells[1].print_order_count >= Prior.cells[1].dispend_order_number  && Prior.cells[1].no == no && (Prior.cells[1].dispend_order_number != (Data_long/2)) && Flag_receive_order == 1 && Useful_printer == 1)//打印成功率低的打印单元打印完自己的份数后不发送信号量，前提是订单数目不为总订单的一半且两个打印单元都可用
+	{
+		printf("here kill one PCMgr.resrcSem!!!!!\r\n");
+	}
+	else if(print_number_sum >= Data_long && Prior.cells[0].no == no && Flag_receive_order == 1 && Prior.cells[1].dispend_order_number != (Data_long/2) && Useful_printer == 1)//精确度高的打印单元会打印大于等于一半的订单，即精确度高的打印单元打印完一个批次中的最后一份订单，释放两个信号量，前提是分配到的订单数目不为总订单数目的一半且两个打印单元均可用
+	{
+		OSSemPost(PCMgr.resrcSem);
+		OSSemPost(PCMgr.resrcSem);
+		if(PCMgr.resrcSem->OSEventCnt >= 3)
+		{
+			OSSemAccept(PCMgr.resrcSem);
+		}
+		printf("here post 2 signal post_resrcSem_OSEventCnt\r\n");
+	}
+	else
+	{
+		OSSemPost(PCMgr.resrcSem);
+		if(PCMgr.resrcSem->OSEventCnt >= 3)
+		{
+			OSSemAccept(PCMgr.resrcSem);
+		}
+		printf("here post 1 signal post_resrcSem_OSEventCnt!!!!!!!!! = %d\r\n",PCMgr.resrcSem->OSEventCnt);
+	}
+	printf("post_resrcSem_OSEventCnt = %d\r\n",PCMgr.resrcSem->OSEventCnt);
+	if(print_number_sum >=	Data_long)//打印完一个批次订单，将其置为0
+	{
+		print_number_sum = 0;
+	}
+	OS_EXIT_CRITICAL();
 }
 
 
@@ -396,6 +585,12 @@ void OutputErrorTag(PrintCellNum cellno)
  *	@param	no 打印单元编号
  *	@ret	None
  */
+/**
+ *  @fn		DealwithOrder
+ *	@brief	处理串口接收中断，完成订单的打印状态判断等功能
+ *	@param	no 打印单元编号
+ *	@ret	None
+ */
 static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 {
 	extern OS_EVENT *Printer_Status_Rec_Sem;
@@ -408,6 +603,8 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 	
 	//接收够4B的状态反馈数据，进行状态解析工作 
 		status = ResolveStatus(tmp);
+////		printf("PCMgr.cells = %d\r\n",cellno);
+////		printf("second_PCMgr.cells[%d].status = %d\r\n",cellno,PCMgr.cells[cellno-1].status);
 		if(cellp->status == PRINT_CELL_STATUS_BUSY) {	// 打印单元忙碌，则根据当前打印机的状态决定订单是否打印成功
 			orderp = &order_print_table.order_node[cellp->entryIndex];
 			if(orderp->status == ORDER_DATA_OK) {		
@@ -415,6 +612,12 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 					cellStatus = PRINT_CELL_STATUS_IDLE;
 					orderp->status = PRINT_STATUS_OK;					
 					Delete_Order(cellp->entryIndex);
+					
+					PCMgr.cells[cellno-1].sum_grade++;//打印正确分数加1
+					if(PCMgr.cells[cellno-1].sum_grade >= 100)//积分上限为100分
+					{
+						PCMgr.cells[cellno-1].sum_grade = 100;
+					}
 					DEBUG_PRINT("DealwithOrder: Order Print OK.\n");
 				}else {							// 打印机状态异常，订单打印失败
 					cellStatus = PRINT_CELL_STATUS_ERR;
@@ -423,31 +626,42 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 					Printer_Status_Send(cellno, status);	// 打印机异常，发送打印机状态
 					WritePrintCellInfo(cellno);
 					OutputErrorTag(cellno);
+					
+					PCMgr.cells[cellno-1].sum_grade = PCMgr.cells[cellno-1].sum_grade - 10 ;//打印出错一份订单减10分
+					if(PCMgr.cells[cellno-1].sum_grade <= 0)//积分不能少于0分，除非打印单元坏了
+					{
+						PCMgr.cells[cellno-1].sum_grade = 1;
+					}
+					
 					DEBUG_PRINT("DealwithOrder: Order Print Failedly.\n");
+					printf("DealwithOrder: Order Print Failedly.\r\n");
 				}			
 				cutPaper(cellno);
 				PutPrintCell(cellno, cellStatus);					
 
 				Order_Print_Status_Send(orderp,orderp->status);	
-				OSSemPost(cellp->printDoneSem);	// 发送订单打印完成信号				
+				OSSemPost(cellp->printDoneSem);	// 发送订单打印完成信号
+
 			}
 		}else {	// 打印单元非忙碌，状态检测指令来自健康检测线程
 			if(cellp->status == PRINT_CELL_STATUS_ERR) {
 				if(status == NORMAL_STATE) {	// 打印机从异常恢复
 //					DEBUG_PRINT("\nPrint Cell %u Restore from exception.\n", cellp->no);
 					PutPrintCell(cellno, PRINT_CELL_STATUS_IDLE);
+					printf("exception_PRINT_CELL_STATUS_IDLE\r\n");
 				}
 			}else if(cellp->status == PRINT_CELL_STATUS_IDLE) {	
 				if(status != NORMAL_STATE){		// 打印机从正常到异常
 //					DEBUG_PRINT("\nPrint Cell %u fell into exception.\n", cellp->no);
+					
 					cellp->status = PRINT_CELL_STATUS_ERR;
 					OSSemAccept(PCMgr.resrcSem);
+					printf("printer_failed_and kill one sem\r\n");
 				}
 			}	
 			OSSemPost(Printer_Status_Rec_Sem);
-		}
+		}	
 }
-
 
 
 /**

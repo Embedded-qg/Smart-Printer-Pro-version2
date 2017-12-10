@@ -89,6 +89,11 @@ typedef struct {
 	OS_EVENT *printBeginSem;			// 标记该打印单元的打印线程是否需要开始工作
 	OS_EVENT *printDoneSem;				// 标记该打印单元的打印线程是否完成了打印工作
 	
+	u16_t print_order_count;			//计算各自打印单元每个批次分配到的订单的数目 s16_t
+	s16_t sum_grade;							//该打印单元的积分
+	double accuracy;							//打印单元的精确度
+	u16_t dispend_order_number;	 	//打印单元分配到的订单 s16_t
+	
 }PrintCellInfo;	/* 打印单元数据结构 */
 
 typedef struct {
@@ -99,6 +104,24 @@ typedef struct {
 /**************************************************************
 *        Prototype Declare Section
 **************************************************************/
+/**
+ *  @fn		PrioritySort
+ *	@brief	将打印单元数组按精确度高低排序
+ *	@param	None
+ *	@ret	None
+ */
+void PrioritySort(void);
+
+
+/**
+ *  @fn		Count_Accuracy
+ *	@brief	计算打印单元的精确度和各打印单元所分配到的订单数目
+ *	@param	None
+ *	@ret	None
+ */
+void Count_Accuracy(void);
+
+
 /**
  *  @fn		ReadPrintCellsInfo
  *	@brief	从片内ROM读取并恢复所有打印单元的信息
@@ -187,6 +210,7 @@ void USART1_DMA_TC_Hook(void);
 void USART2_DMA_TC_Hook(void);
 
 
+extern PrintCellsMgrInfo Prior;
 extern PrintCellsMgrInfo PCMgr;
 
 /**************************************************************

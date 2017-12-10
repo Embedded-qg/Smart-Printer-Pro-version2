@@ -10,6 +10,9 @@ extern batch_info batch_info_table[];	//批次表
 extern OS_EVENT *Batch_Rec_Sem;			//完成一次批次读取的二值信号量
 extern OS_EVENT *Print_Queue_Sem;		//数据存入打印队列的信号量
 
+extern void Count_Accuracy(void);//计算批次数据下的精确度
+extern void PrioritySort(void);//打印单元按正确率进行排序
+
 struct ip_addr localhost_ip;
 struct ip_addr localhost_netmask;
 struct ip_addr localhost_gw;
@@ -176,6 +179,10 @@ void deal_with_batch_order(char *batch_buf)
 	DEBUG_PRINT("batch read success ,batch_number is %x %x\n", *(batch + BATCH_NUMBER_OFFSET), *(batch + BATCH_NUMBER_OFFSET + 1));
 	DEBUG_PRINT("batch read success ,batch_length is %x %x\n", *(batch + BATCH_TOTAL_LENGTH_OFFSET), *(batch + BATCH_TOTAL_LENGTH_OFFSET + 1));	
 	Analyze_Batch_Info_Table(batch, batch_number);//批次解包
+	
+	Count_Accuracy();//计算批次数据下打印机单元精确度和所分配到的订单
+	PrioritySort();//打印单元按积分高低进行排序
+	
 	
 	batch_table_hash = get_batch_hash(batch_number);
 	
