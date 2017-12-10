@@ -28,9 +28,11 @@
 **************************************************************/
 #include "print_cells.h"
 
+
 extern INT32U StartTime[100];//起始时钟节拍
 extern void AddTimes(INT32U time,InternetTime current_internet_time);//增加时间
 extern InternetTime current_internet_time[100];
+
 
 u16_t Flag_receive_order;//接收批次订单的标志
 PrintCellsMgrInfo Prior;//排序后的打印单元数组
@@ -279,9 +281,10 @@ void InitPrintCellsMgr(void)
 
 /**
  *  @fn		Count_Accuracy
- *	@brief	计算每个打印单元的精确度和所分到的订单数目
+ *	@brief	计算每个打印单元的正确率
  *	@param	None
- *	@ret	NULL 	
+ *	@ret	NULL 
+			
  */
 void Count_Accuracy(void)
 {
@@ -295,7 +298,8 @@ void Count_Accuracy(void)
 		{
 			if(cellp -> workedTime >36000)//连续打印时长超过1小时
 			{
-				cellp -> sum_grade = cellp -> sum_grade -5;//积分减5分
+				cellp -> sum_grade = cellp -> sum_grade - 5;//积分减5分
+				printf("more than 36000\r\n");
 			}
 		}
 	}
@@ -327,7 +331,7 @@ void Count_Accuracy(void)
 			{
 				cellp -> dispend_order_number += 1;
 			}
-		}
+		}//进行订单分配
 	}
 	else{//说明至少有一台积分大于10分
 		for(i=0;i<MAX_CELL_NUM;i++)
@@ -469,13 +473,7 @@ void PutRestoredOrder(PrintCellNum no, OrderEntry entryIndex)
 			status 打印单元的状态
  *	@ret	None
  */
-/**
- *  @fn		PutPrintCell
- *	@brief	将编号为no的打印单元设置为空闲，并将其归还管理器
- *	@param	no 打印单元编号
-			status 打印单元的状态
- *	@ret	None
- */
+
 void PutPrintCell(PrintCellNum no, PrintCellStatus status)
 {
 #if OS_CRITICAL_METHOD == 3u
