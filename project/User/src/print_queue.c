@@ -869,9 +869,7 @@ static s8_t error_order_deal(SqQueue* buf, s8_t order_prio_sigal)
 		}
 	
 	}
-	
-
-	
+		
 	DEBUG_PRINT("QUEUE_DEBUG : DELETE AN ERROR ORDER! ------\n");
 }
 

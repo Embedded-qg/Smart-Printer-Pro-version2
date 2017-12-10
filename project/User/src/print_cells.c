@@ -68,7 +68,7 @@ static PrintCellInfo *GetIdlePrintCell(void);
  *	管理打印单元
  */
 PrintCellsMgrInfo PCMgr;
-
+extern u16_t cell_cutCnt[MAX_CELL_NUM];
 
 /**
  *	存放因打印机错误而搁置的订单 
@@ -427,7 +427,7 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 				}			
 				cutPaper(cellno);
 				PutPrintCell(cellno, cellStatus);					
-
+				if(status == 0x01) cell_cutCnt[cellno]++;
 				Order_Print_Status_Send(orderp,orderp->status);	
 				OSSemPost(cellp->printDoneSem);	// 发送订单打印完成信号				
 			}

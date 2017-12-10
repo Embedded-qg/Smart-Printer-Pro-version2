@@ -14,13 +14,12 @@
 /******************合同头部格式各个字段的偏移量******************/
 #define	CONTRACT_START_SYMBOL_OFFSET 0  //开始偏移值
 #define CONTRACT_TYPE_OFFSET 2 //合同类型偏移值
-#define CONTRACT_PRIORITY_OFFSET 3 //合同优先级偏移值，是否为加急订单
 #define CONTRACT_SERVER_SEND_TIME_OFFSET 4 //服务器下发时间0偏移值
 #define CONTRACT_CONTRACT_NUMBER_OFFSET 8 //合同编号偏移值
 #define CONTRACT_MCU_ID_OFFSET 12 //主控板id偏移值
 #define CONTRACT_MCU_SPEED_OFFSET 16 //打印速度偏移值
-#define CONTRACT_MCU_HEALTH 18 //打印机健康状态偏移值
-#define CONTRACT_PRESERVATION_OFFSET 20 //保留数据偏移值
+#define CONTRACT_MCU_MAX_BUFSIZE 18 //主控板缓冲区大小
+#define CONTRACT_MCU_HEALTH 20//打印机健康状态偏移值
 #define CONTRACT_CHECK_SUM_OFFSET 24//校验和偏移值
 #define CONTRACT_TAIL_OFFSET 26//结束偏移值
 /*********************关于合同的一些宏定义*********************/
@@ -61,15 +60,13 @@ typedef struct contract_info{
 #define MAX_CONTRACT_NUM 10
 #define MAX_CONTRACT_HEAD_LENGTH 28
 	u8_t contract_type;//合同类型
-	u8_t priority;//优先级，判断是否为加急订单
 	u32_t sever_send_time;//服务器发送时间
-	u16_t contract_number;//批次编号
+	u16_t contract_number;//合同编号
 	u32_t mcu_id;//主控板id
 	u16_t mcu_speed;//主控板打印速度
-	u16_t mcu_health;//主控板健康状态
-	u32_t preservation;//保留
+	u16_t mcu_max_buf_size;//主控板最大缓冲区大小
+	u32_t mcu_health;//主控板健康状态
 	u16_t check_sum;//校验码
-	u8_t stutas; //状态
 	u8_t next_print_node;//下已打印节点
 }contract_info;
 

@@ -80,7 +80,6 @@ typedef struct {
 	u32_t cutCnt;						// 总切刀次数
 	u32_t totalLength;					// 总打印长度
 	u8_t exceptCnt[EXCEPTION_NUM+1];	// 异常与故障发生次数
-
 	
 	u32_t workedTime;					// 连续打印时长，单位为0.1s
 	u32_t beginTick;					// 一次打印开始时的滴答

@@ -1,6 +1,6 @@
 #include "more_infomation.h"
 
-float cell_unhealth[MAX_CELL_NUM] = {0};//每个打印机的不健康值
+u16_t cell_cutCnt[MAX_CELL_NUM] = {0};
 
 //udp校验和算法
 u16_t Check_Sum(u16_t *data, int len)
@@ -77,25 +77,35 @@ u32_t Get_MCU_ID(void)
 //获取主控板速度
 u16_t Get_MCU_Speed(void)
 {
-	return MAX_CELL_NUM;
+	u16_t mcu_Speed = 0,i;
+	for(i = 0;i < MAX_CELL_NUM;i++)
+	{
+		 if(PCMgr.cells[i].status == PRINT_CELL_STATUS_ERR) mcu_Speed++;
+	}
+}
+
+u16_t Get_MCU_MaxBufSize(void)
+{
+	return MAXQSIZE;//获取主控板缓冲区的最大大小
 }
 
 //获取主控板状态
-u16_t Get_MCU_Status(void)
+u32_t Get_MCU_Status(void)
 {
-	u8_t i;
-	float mcu_health;
-	u32_t totalTime,workedTime;
-	u16_t total = 100;
+	u8_t i,health_cellNum = 0;
+	u32_t mcu_health;
+	u32_t totalTime,workedTime,cutCnt;
+	u32_t total = 3 * 3600 * 10;
 	extern  PrintCellsMgrInfo PCMgr;
 	for(i = 0,mcu_health = 0;i < MAX_CELL_NUM;i++)
 	{
 		if(PCMgr.cells[i].status == PRINT_CELL_STATUS_ERR) continue;
-		totalTime = PCMgr.cells[i].totalTime;
 		workedTime = PCMgr.cells[i].workedTime;
-		mcu_health += total / MAX_CELL_NUM;
+		mcu_health += (total - workedTime) * (100 - 5 * cutCnt);
+		health_cellNum++;
 //		mcu_health += (total - totalTime / 20 - 5 * workedTime / 20) / MAX_CELL_NUM; /** (100 - cell_unhealth[i]);*/
 	}
+	mcu_health = mcu_health/health_cellNum;
 	return mcu_health;
 }
 

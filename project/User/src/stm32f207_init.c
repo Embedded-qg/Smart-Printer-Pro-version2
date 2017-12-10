@@ -562,8 +562,8 @@ int fputc(int ch, FILE *f)
     /* Loop until the end of transmission */
 
     /* e.g. write a character to the USART */
-//    USART_SendData(UART4, (uint8_t) ch);
-		USART_SendData(USART1, (uint8_t) ch);
+    USART_SendData(UART4, (uint8_t) ch);
+//		USART_SendData(USART1, (uint8_t) ch);
     return ch;
 }
 

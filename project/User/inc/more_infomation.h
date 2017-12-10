@@ -23,8 +23,11 @@ u32_t Get_MCU_ID(void);
 //获取主控板速度
 u16_t Get_MCU_Speed(void);
 	
+//获取主控板最大缓冲区大小
+u16_t Get_MCU_MaxBufSize(void);
+	
 //获取主控板健康状态
-u16_t Get_MCU_Status(void);
+u32_t Get_MCU_Status(void);
 
 //获取时间戳
 u32_t Get_Current_Unix_Time(void);

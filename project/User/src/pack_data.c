@@ -41,7 +41,7 @@ void Pack_Req_Or_Status_Message(char *message, req_type type, u8_t symbol, u32_t
 	SET_DATA_2B(&message[16], ((check_sum << 8) + (check_sum >> 8)));
 }
 
-void Pack_Contract_Message(char *message,contract_type type,u16_t contract_number,u32_t mcu_id,u32_t UNIX_time,u16_t mcu_speed,u16_t mcu_health)
+void Pack_Contract_Message(char *message,contract_type type,u16_t contract_number,u32_t mcu_id,u32_t UNIX_time,u16_t mcu_speed,u16_t mcu_maxBufSize,u32_t mcu_health)
 {
 	u16_t check_sum;
 
@@ -57,7 +57,8 @@ void Pack_Contract_Message(char *message,contract_type type,u16_t contract_numbe
 	SET_DATA_4B(&message[CONTRACT_MCU_ID_OFFSET],mcu_id);
 	SET_DATA_2B(&message[CONTRACT_CONTRACT_NUMBER_OFFSET],contract_number);
 	SET_DATA_2B(&message[CONTRACT_MCU_SPEED_OFFSET],mcu_speed);
-	SET_DATA_2B(&message[CONTRACT_MCU_HEALTH],mcu_health);
+	SET_DATA_2B(&message[CONTRACT_MCU_MAX_BUFSIZE],mcu_maxBufSize);
+	SET_DATA_4B(&message[CONTRACT_MCU_HEALTH],mcu_health);
 	
 //ÖÕÖ¹·û
 	message[CONTRACT_TAIL_OFFSET] = '\xfb';

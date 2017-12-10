@@ -282,7 +282,8 @@ void contract_response(struct netconn *conn,contract_type type)
 	err_t err;
 	u16_t i = 0;
 #ifdef REMOTE	
-	Pack_Contract_Message(sent_data,type,contract_information.contract_number,Get_MCU_ID(),Get_Current_Unix_Time(),Get_MCU_Speed(),Get_MCU_Status());
+	Pack_Contract_Message(sent_data,type,contract_information.contract_number,Get_MCU_ID(),
+	Get_Current_Unix_Time(),Get_MCU_Speed(),Get_MCU_MaxBufSize(),Get_MCU_Status());
 #endif
 //	NET_DEBUG_PRINT("\r\n");
 //	for(i = 0;i < MAX_CONTRACT_HEAD_LENGTH;i++)
