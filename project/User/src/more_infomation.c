@@ -70,7 +70,7 @@ u16_t Check_Sum_With_Diff_Part(u16_t *src1, int len1, u16_t *src2, int len2)
 //获取主控板id
 u32_t Get_MCU_ID(void)
 {
-	return 1;
+	return 2;
 }
 
 //获取主控板速度

@@ -159,7 +159,8 @@ void deal_with_contract_order(char *contract_buf)
 		}
 		else if(contract_type == CONTRACT_SIGN)
 		{
-			if(contract_information.contract_number)			printf("已签订合同，无需再签约！！！\r\n");
+			if(contract_information.contract_number)			
+				printf("已签订合同，无需再签约！！！\r\n");
 			else{
 				Analyze_Contract_Info_Table(contract_buf);
 				contract_response(order_netconn,contract_type+1,0);

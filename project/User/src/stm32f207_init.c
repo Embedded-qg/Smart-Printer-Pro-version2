@@ -161,7 +161,7 @@ static void Uart4_Init(void)
 	USART_ClockInit(UART4,&USART_ClockInitStruct);
 
 
-	USART_InitStructure.USART_BaudRate = 9600;
+	USART_InitStructure.USART_BaudRate = 115200;
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
 	USART_InitStructure.USART_StopBits = USART_StopBits_1;
 	USART_InitStructure.USART_Parity = USART_Parity_No;
@@ -562,7 +562,7 @@ int fputc(int ch, FILE *f)
     /* Loop until the end of transmission */
 
     /* e.g. write a character to the USART */
-    USART_SendData(UART4, (uint8_t) ch);
+    USART_SendData(USART3, (uint8_t) ch);
 
     return ch;
 }
@@ -585,7 +585,7 @@ int fgetc(FILE *fp)
 {
 	int ch = 0;
 
-	ch = (int)USART1->DR & 0xFF;
+	ch = (int)USART3->DR & 0xFF;
 	
 	putchar(ch); //╩ьот
 	
