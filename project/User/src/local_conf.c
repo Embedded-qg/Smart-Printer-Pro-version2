@@ -20,6 +20,12 @@ extern OS_EVENT *Ack_Rec_Printer_Sem;	//本地接收对打印机状态应答的信号量
 static u32_t last_order_number = 0;		//上一次接收的订单号
 static u32_t current_order_number = 0;	//本次接收的订单号
 extern OS_EVENT *Print_Queue_Sem;
+
+extern u32 hour ,min ,sec ,msec;//时分秒 毫秒，用于获取网络时间
+extern INT32U StartTime[100];//起始时钟节拍
+//extern void GetTime(u8_t *data);//获取时间
+extern void AddTimes(INT32U time,InternetTime current_internet_time);//增加时间
+extern InternetTime current_internet_time[100];
 /**************************************************************
 *	Function Define Section
 **************************************************************/
@@ -239,6 +245,8 @@ void DealAckFromLocal(char *ack)//解决来自本地的应答
 void recOrder(char *data, u16_t len)//接收订单
 {
 	u16_t order_len;
+	u32_t mcu_idno;
+	u32_t current_time;
 	u16_t order_total_len;			//订单总共长度
 	
 	u16_t timeCount = 0;
@@ -259,7 +267,16 @@ void recOrder(char *data, u16_t len)//接收订单
 	
 	if(timeCount < 40 && True == CheckRec((u8_t *)data, order_len)){//检测订单是否正确
 		ANALYZE_DATA_4B((data + ORDER_NUM_HEAD_OFFSET), current_order_number);//获取订单号
-		
+		ANALYZE_DATA_4B((data + ORDER_SEVER_SEND_TIME_OFFSET), current_time);//获取时间值
+		ANALYZE_DATA_4B((data + ORDER_MCU_ID_OFFSET), mcu_idno);//获取本批次内订单序号
+		current_internet_time[mcu_idno].hour = current_time/10000000;//时
+		current_internet_time[mcu_idno].min = (current_time/100000)%100;//分
+		current_internet_time[mcu_idno].sec = (current_time/1000)%100;//秒
+		current_internet_time[mcu_idno].msec = current_time%1000;//毫秒
+		DEBUG_PRINT_TIMME("\r\n订单下发时间%d:%d:%d:%d ，序号为%lu，\r\n",current_internet_time[mcu_idno].hour,current_internet_time[mcu_idno].min,current_internet_time[mcu_idno].sec,current_internet_time[mcu_idno].msec,mcu_idno);
+
+		DEBUG_PRINT_TIMME("订单编号：%lu\r\n",current_order_number);
+		DEBUG_PRINT_TIMME("订单长度：%u\r\n",order_total_len);		
 		if(current_order_number != last_order_number){//判断订单号是否重复
 			put_in_buf((u8_t*)data, order_len, URGENT);//写入缓冲区
 			ClearBuf();
@@ -306,6 +323,7 @@ void local_receive(void)//接收本地的订单及应答
 	char readFromBuf[20];
 	u16_t len;//从缓冲区读取到的数据的长度
 	u8_t os_err = 0;
+	u32_t current_number;
 	extern OS_EVENT *Local_Rec_Data_Sem;
 	
 	while(1){//串口接收缓冲区不为空
@@ -333,6 +351,10 @@ void local_receive(void)//接收本地的订单及应答
 		len = GetBufLen(usart_buf);//缓冲区长度
 		find_substr_head(&data, "\x3e\x11", &len, 2);//寻找订单头
 		if(len > 0) {//检测到是订单头了
+			
+			ANALYZE_DATA_4B((data + ORDER_MCU_ID_OFFSET), current_number);//获取本批次内订单序号
+			StartTime[current_number] = OSTimeGet()*TIME_INTERVAL;//起始时间，基准值
+			DEBUG_PRINT_TIMME("StartTime:%u 序号%lu\r\n",StartTime[current_number],current_number);			
 			recOrder(data, len);//接收订单
 		}else{//如果找不到订单或应答头，就清除缓冲区，并继续下一步
 			ClearBuf();

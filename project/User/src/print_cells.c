@@ -28,10 +28,15 @@
 **************************************************************/
 #include "print_cells.h"
 
-PrintCellsMgrInfo Prior; //排序后的打印单元数组
-u32_t Data_long;				 //批次订单数目
+extern INT32U StartTime[100];//起始时钟节拍
+extern void AddTimes(INT32U time,InternetTime current_internet_time);//增加时间
+extern InternetTime current_internet_time[100];
+
 u16_t Flag_receive_order;//接收批次订单的标志
-double grade = 0;				 //计算每个批次打印单元所加的分数
+PrintCellsMgrInfo Prior;//排序后的打印单元数组
+u16_t Data_long;//批次订单数目
+float grade = 0;	 //计算每个批次打印单元所加的分数
+
 
 
 /**************************************************************
@@ -621,7 +626,9 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 			if(orderp->status == ORDER_DATA_OK) {		
 				if(status == NORMAL_STATE) {	// 打印机状态正常，成功打印
 					cellStatus = PRINT_CELL_STATUS_IDLE;
-					orderp->status = PRINT_STATUS_OK;					
+					orderp->status = PRINT_STATUS_OK;				
+					DEBUG_PRINT_TIMME("打印成功结束，序号为%lu，",orderp->mcu_id);					
+					AddTimes(OSTimeGet()*TIME_INTERVAL-StartTime[orderp->mcu_id],current_internet_time[orderp->mcu_id]);//增加时间					
 					Delete_Order(cellp->entryIndex);
 					
 					PCMgr.cells[cellno-1].sum_grade++;//打印正确分数加1
@@ -633,6 +640,8 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 				}else {							// 打印机状态异常，订单打印失败
 					cellStatus = PRINT_CELL_STATUS_ERR;
 					orderp->status = PRINT_STATUS_MACHINE_ERR;
+					DEBUG_PRINT_TIMME("打印失败，打印机异常，序号为%lu，",orderp->mcu_id);
+					AddTimes(OSTimeGet()*TIME_INTERVAL-StartTime[orderp->mcu_id],current_internet_time[orderp->mcu_id]);//增加时间					
 					cellp->exceptCnt[status]++;															
 					Printer_Status_Send(cellno, status);	// 打印机异常，发送打印机状态
 					WritePrintCellInfo(cellno);
