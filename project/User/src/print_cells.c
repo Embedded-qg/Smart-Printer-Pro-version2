@@ -283,6 +283,17 @@ void Count_Accuracy(void)
 	int i;
 	double dispend_number;
 	PrintCellInfo *cellp;
+	for(i=0;i<MAX_CELL_NUM;i++)//如果连续打印时长超过1小时,打印单元积分减5分
+	{
+		cellp = &PCMgr.cells[i];
+		if(cellp -> sum_grade >= 50)//打印单元积分大于50分
+		{
+			if(cellp -> workedTime >36000)//连续打印时长超过1小时
+			{
+				cellp -> sum_grade = cellp -> sum_grade -5;//积分减5分
+			}
+		}
+	}
 	for(i=0;i<MAX_CELL_NUM;i++)//计算打印单元加起来的总分数
 	{
 		cellp = &PCMgr.cells[i];
