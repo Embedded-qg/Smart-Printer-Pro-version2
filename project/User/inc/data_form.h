@@ -49,6 +49,7 @@
 
 /***********************状态头部表格长度***********************/
 #define SEND_DATA_SIZE 				  	  20 //状态头部长度
+#define TRANSF_MESS_SIZE				24		//任务转移报文长度
 #define REC_DATA_SIZE					  20 //状态头部长度
 //原本应定义为STATUS_HEAD_SIZE的，但考虑接收与反馈的概念不同，故用这种方法
 

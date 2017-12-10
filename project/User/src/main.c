@@ -176,7 +176,7 @@ int main(void)
                		      (OS_STK *) &PRINT_TaskStk[PRINT_TASK_STK_SIZE - 1],	//分配给任务的堆栈的栈顶指针   从顶向下递减
                           (INT8U) PRINT_TASK_PRIO);								//分配给任务的优先级															
 					
-	/*任务功能：建立订次接收*/
+	/*任务功能：建立批次接收*/
 	os_err = OSTaskCreate((void (*) (void *))Recv_Batch_Task,               		//指向任务代码的指针
                           (void *) 0,												//任务开始执行时，传递给任务的参数的指针
                		      (OS_STK *) &REQ_BATCH_TaskStk[REQ_BATCH_TASK_STK_SIZE - 1],//分配给任务的堆栈的栈顶指针   从顶向下递减

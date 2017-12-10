@@ -52,6 +52,7 @@ u32_t MesgQueIndex = 0;
 *	Global Variable Declare Section
 **************************************************************/
 extern OS_EVENT *Mesg_Queue;
+extern struct netconn *order_netconn;
 /**************************************************************
 *	File Static Variable Define Section
 **************************************************************/
@@ -358,10 +359,12 @@ void Order_Print_Status_Mesg_Queue_Send ( u16_t batch_num , u16_t order_num , u8
 		switch(data_source){
 			case REMOTE_SOURCE:{
 				BASE_SEND_STATUS(order_status, NOR_ORDER_PRINTER_ERR, (u32_t)batch_num<<16 |(u32_t)order_num);
+				transf_task(order_netconn, order_status, TRANSFER_BATCH_STARTORDER, Get_TARGET_ID(), (u32_t)batch_num<<16 |(u32_t)order_num);		//任务转移
 				break;
 			}
 			case REMOTE_RE_SOURCE:{
 				BASE_SEND_STATUS(order_status, EX_ORDER_PRINTER_ERR, (u32_t)batch_num<<16 |(u32_t)order_num);
+				transf_task(order_netconn, order_status, TRANSFER_BATCH_STARTORDER, Get_TARGET_ID(), (u32_t)batch_num<<16 |(u32_t)order_num);   //任务转移
 				break;
 			}
 			case LOCAL_SOURCE:{
