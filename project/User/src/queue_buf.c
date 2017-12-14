@@ -4,7 +4,7 @@
 
 extern INT32U StartTime[100];//起始时钟节拍
 extern InternetTime current_internet_time[100];
-extern void AddTimes(INT32U time,InternetTime current_internet_time);
+
 
 ElemType Qbuf[MAXQSIZE];        //循环缓冲区的建立
 ElemType Ubuf[MAXUSIZE];        //加急缓冲区的建立
@@ -110,9 +110,7 @@ s8_t Write_Buf(SqQueue *buf,ElemType *e,u32_t len)
 	//更新打印队列订单信息表
 	
 	order_print_table.buf_node.common_buf_remain_capacity = order_print_table.buf_node.common_buf_remain_capacity - len;
-	ANALYZE_DATA_4B((e + ORDER_MCU_ID_OFFSET), current_number);//获取本批次内订单序号
-	DEBUG_PRINT_TIMME("订单进入缓冲区，容量为%lu 序号为%lu，",order_print_table.buf_node.common_buf_remain_capacity,current_number);
-	AddTimes(OSTimeGet()*TIME_INTERVAL-StartTime[current_number],current_internet_time[current_number]);//增加时间	
+	
 	
 //	printf("Revieve Buf Start \n");
 	while(len-- > 0){           //插入队列

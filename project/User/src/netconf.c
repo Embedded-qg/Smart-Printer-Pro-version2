@@ -117,9 +117,9 @@ u8_t read_message_from_netbuf(char **netbuf,char ** data,u8_t netbuf_type,u16_t 
 	}
 	else if(netbuf_type == NETOREDER_ORDER)//读取订单数据
 	{
-		printf("读取订单数据报文\r\n");
+//		printf("读取订单数据报文\r\n");
 		if(max_length == 0) max_length = batch_info_table[batch_table_hash].batch_length - MAX_BATCH_HEAD_LENGTH;
-		printf("订单数据长度为%d\r\n",max_length);
+//		printf("订单数据长度为%d\r\n",max_length);
 		if(max_length >= sub_len)
 		{
 			put_in_buf((u8_t *)sub_data,sub_len,batch_info_table[batch_table_hash].preservation);
@@ -243,16 +243,22 @@ void receive_connection(struct netconn *conn)
 	{	
 		printf("receive data!!\r\n");
 		netbuf_data(order_netbuf,(void **)&data,&len);//从网络缓冲区读取数据
+		
 start:
-		printf("get data ,len is %d,netbuf_type = %d\r\n", len,netbuf_type);
-		if(!netbuf_type) netbuf_type = find_order_head(&data,&len); //从网络缓冲区中读取第一个报文种类，分析报文种类
-		printf("网络缓冲区剩余长度：len = %d,netbuf_type = %d\r\n",len,netbuf_type);	
-		if(netbuf_type) read_message_symbol = read_message_from_netbuf(&netbuf,&data,netbuf_type,&len);//读取整个报文数据长度		
-		printf("read_message_symbol = %d\r\n",read_message_symbol);
-		if(read_message_symbol) deal_with_order(netbuf);//对数据报文进行处理
-		printf("数据处理完后，网络缓冲区剩余长度：len = %d",len);
-		if(len > 0) goto start; //如有多余数据，重新进行报文判断
-		if(!(netbuf_next(order_netbuf) > 0)) netbuf_delete(order_netbuf);
+//		printf("get data ,len is %d,netbuf_type = %d\r\n", len,netbuf_type);
+		if(!netbuf_type)
+			netbuf_type = find_order_head(&data,&len); //从网络缓冲区中读取第一个报文种类，分析报文种类
+//		printf("网络缓冲区剩余长度：len = %d,netbuf_type = %d\r\n",len,netbuf_type);	
+		if(netbuf_type)
+			read_message_symbol = read_message_from_netbuf(&netbuf,&data,netbuf_type,&len);//读取整个报文数据长度		
+//		printf("read_message_symbol = %d\r\n",read_message_symbol);
+		if(read_message_symbol)
+			deal_with_order(netbuf);//对数据报文进行处理
+//		printf("数据处理完后，网络缓冲区剩余长度：len = %d\r\n",len);
+		if(len > 0)
+			goto start; //如有多余数据，重新进行报文判断
+		if(!(netbuf_next(order_netbuf) > 0))
+			netbuf_delete(order_netbuf);
 	}
 	OSTimeDlyHMSM(0, 0, 0, 50);
 }

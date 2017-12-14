@@ -30,7 +30,6 @@
 
 
 extern INT32U StartTime[100];//起始时钟节拍
-extern void AddTimes(INT32U time,InternetTime current_internet_time);//增加时间
 extern InternetTime current_internet_time[100];
 
 
@@ -309,17 +308,17 @@ void Count_Accuracy(void)
 		if(cellp -> sum_grade >= 10)
 		{
 			grade += cellp -> sum_grade;
-			printf("cellp -> sum_grade = %d\r\n",cellp -> sum_grade);
+//			printf("cellp -> sum_grade = %d\r\n",cellp -> sum_grade);
 		}
 	}
-	printf("grade = %f\r\n",grade);
+//	printf("grade = %f\r\n",grade);
 	if(grade == 0)//说明打印单元积分都是小于10分的，都小于十分则按照分数占总分数的比例获取订单数目
 	{
 		for(i=0;i<MAX_CELL_NUM;i++)
 		{
 			cellp = &PCMgr.cells[i];
 			grade += cellp -> sum_grade;
-			printf("cellp -> sum_grade = %d\r\n",cellp -> sum_grade);
+//			printf("cellp -> sum_grade = %d\r\n",cellp -> sum_grade);
 		}//计算出总积分
 		for(i=0;i<MAX_CELL_NUM;i++)//进行订单分配
 		{
@@ -352,8 +351,8 @@ void Count_Accuracy(void)
 					cellp -> dispend_order_number += 1;
 				}
 			}
-			printf("PCMgr.cells[%d].sum_grade = %d\r\n",i,PCMgr.cells[i].sum_grade);
-			printf("PCMgr.cells[%d].accuracy = %f\r\n",i,PCMgr.cells[i].accuracy);
+//			printf("PCMgr.cells[%d].sum_grade = %d\r\n",i,PCMgr.cells[i].sum_grade);
+//			printf("PCMgr.cells[%d].accuracy = %f\r\n",i,PCMgr.cells[i].accuracy);
 		}
 	}
 	grade = 0;
@@ -382,7 +381,7 @@ void PrioritySort(void)
 	{
 		k=i;
 		for(j=i+1;j<MAX_CELL_NUM;j++)
-			if(Prior.cells[k].accuracy<Prior.cells[j].accuracy)
+//			if(Prior.cells[k].accuracy<Prior.cells[j].accuracy)
 				k=j;
 		if(k!=j)
 		{
@@ -502,11 +501,11 @@ void PutPrintCell(PrintCellNum no, PrintCellStatus status)
 	
 //	DEBUG_PRINT("--------PutPrintCell: Print Cell %u: Set Idle----------\n", no);
 	OS_ENTER_CRITICAL();
-	printf("PCMgr.cells[0].print_order_count = %ld  and  PCMgr.cells[1].print_order_count = %ld\r\n",PCMgr.cells[0].print_order_count,PCMgr.cells[1].print_order_count);
-	printf("   no = %d      !!!!!!!!\r\n",no);
-	printf("Prior[0].no = %d  and  Prior[1].no = %d      !!!!!!!!\r\n",Prior.cells[0].no,Prior.cells[1].no);
-	printf("Prior[0].accuracy = %f  and  Prior[1].accuracy = %f      !!!!!!!!\r\n",Prior.cells[0].accuracy,Prior.cells[1].accuracy);
-  printf("Prior[0].dispend_order_number = %ld and Prior[1].dispend_order_number = %ld\r\n",Prior.cells[0].dispend_order_number,Prior.cells[0].dispend_order_number);
+//	printf("PCMgr.cells[0].print_order_count = %ld  and  PCMgr.cells[1].print_order_count = %ld\r\n",PCMgr.cells[0].print_order_count,PCMgr.cells[1].print_order_count);
+//	printf("   no = %d      !!!!!!!!\r\n",no);
+//	printf("Prior[0].no = %d  and  Prior[1].no = %d      !!!!!!!!\r\n",Prior.cells[0].no,Prior.cells[1].no);
+//	printf("Prior[0].accuracy = %f  and  Prior[1].accuracy = %f      !!!!!!!!\r\n",Prior.cells[0].accuracy,Prior.cells[1].accuracy);
+//  printf("Prior[0].dispend_order_number = %ld and Prior[1].dispend_order_number = %ld\r\n",Prior.cells[0].dispend_order_number,Prior.cells[0].dispend_order_number);
 	if(PCMgr.cells[0].status != PRINT_CELL_STATUS_ERR && PCMgr.cells[1].status != PRINT_CELL_STATUS_ERR)//判断是否有打印单元不可用
 	{
 		Useful_printer = 1;//为1表示两台打印单元都可用
@@ -542,9 +541,9 @@ void PutPrintCell(PrintCellNum no, PrintCellStatus status)
 		}
 	}
 	
-	printf("print_number_sum = %d\r\n",print_number_sum);
-	printf("Prior.cells[0].print_order_count = %d  and  Prior.cells[0].dispend_order_number = %d\r\n",Prior.cells[0].print_order_count,Prior.cells[0].dispend_order_number);
-	printf("Prior.cells[1].print_order_count = %d  and  Prior.cells[1].dispend_order_number = %d\r\n",Prior.cells[1].print_order_count,Prior.cells[1].dispend_order_number);
+//	printf("print_number_sum = %d\r\n",print_number_sum);
+//	printf("Prior.cells[0].print_order_count = %d  and  Prior.cells[0].dispend_order_number = %d\r\n",Prior.cells[0].print_order_count,Prior.cells[0].dispend_order_number);
+//	printf("Prior.cells[1].print_order_count = %d  and  Prior.cells[1].dispend_order_number = %d\r\n",Prior.cells[1].print_order_count,Prior.cells[1].dispend_order_number);
 	if(Prior.cells[1].print_order_count >= Prior.cells[1].dispend_order_number  && Prior.cells[1].no == no && (Prior.cells[1].dispend_order_number != (Data_long/2)) && Flag_receive_order == 1 && Useful_printer == 1)//打印成功率低的打印单元打印完自己的份数后不发送信号量，前提是订单数目不为总订单的一半且两个打印单元都可用
 	{
 		printf("here kill one PCMgr.resrcSem!!!!!\r\n");
@@ -557,7 +556,7 @@ void PutPrintCell(PrintCellNum no, PrintCellStatus status)
 		{
 			OSSemAccept(PCMgr.resrcSem);
 		}
-		printf("here post 2 signal post_resrcSem_OSEventCnt\r\n");
+//		printf("here post 2 signal post_resrcSem_OSEventCnt\r\n");
 	}
 	else
 	{
@@ -566,9 +565,9 @@ void PutPrintCell(PrintCellNum no, PrintCellStatus status)
 		{
 			OSSemAccept(PCMgr.resrcSem);
 		}
-		printf("here post 1 signal post_resrcSem_OSEventCnt!!!!!!!!! = %d\r\n",PCMgr.resrcSem->OSEventCnt);
+//		printf("here post 1 signal post_resrcSem_OSEventCnt!!!!!!!!! = %d\r\n",PCMgr.resrcSem->OSEventCnt);
 	}
-	printf("post_resrcSem_OSEventCnt = %d\r\n",PCMgr.resrcSem->OSEventCnt);
+//	printf("post_resrcSem_OSEventCnt = %d\r\n",PCMgr.resrcSem->OSEventCnt);
 	if(print_number_sum >=	Data_long)//打印完一个批次订单，将其置为0
 	{
 		print_number_sum = 0;
@@ -625,8 +624,8 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 				if(status == NORMAL_STATE) {	// 打印机状态正常，成功打印
 					cellStatus = PRINT_CELL_STATUS_IDLE;
 					orderp->status = PRINT_STATUS_OK;				
-					DEBUG_PRINT_TIMME("打印成功结束，序号为%lu，",orderp->mcu_id);					
-					AddTimes(OSTimeGet()*TIME_INTERVAL-StartTime[orderp->mcu_id],current_internet_time[orderp->mcu_id]);//增加时间					
+					DEBUG_PRINT_TIMME("打印成功，订单编号为%lu，",orderp->serial_number);
+					ShowTime(orderp->sever_send_time,StartTime,OSTimeGet()*TIME_INTERVAL);								
 					Delete_Order(cellp->entryIndex);
 					
 					PCMgr.cells[cellno-1].sum_grade++;//打印正确分数加1
@@ -638,8 +637,8 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 				}else {							// 打印机状态异常，订单打印失败
 					cellStatus = PRINT_CELL_STATUS_ERR;
 					orderp->status = PRINT_STATUS_MACHINE_ERR;
-					DEBUG_PRINT_TIMME("打印失败，打印机异常，序号为%lu，",orderp->mcu_id);
-					AddTimes(OSTimeGet()*TIME_INTERVAL-StartTime[orderp->mcu_id],current_internet_time[orderp->mcu_id]);//增加时间					
+					DEBUG_PRINT_TIMME("打印失败，订单编号为%lu，",orderp->serial_number);
+					ShowTime(orderp->sever_send_time,StartTime,OSTimeGet()*TIME_INTERVAL);				
 					cellp->exceptCnt[status]++;															
 					Printer_Status_Send(cellno, status);	// 打印机异常，发送打印机状态
 					WritePrintCellInfo(cellno);

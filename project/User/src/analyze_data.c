@@ -9,6 +9,8 @@ extern u16_t Flag_receive_order;
 extern contract_info contract_information;
 extern u8_t batch_flag;
 extern u8_t batch_table_hash;
+
+extern INT32U StartTime; //基准时间
 /**
  * @brief 	获取批次序号哈希值
  */
@@ -111,19 +113,20 @@ u8_t find_order_head(char **data,u16_t *len)
 		if(sub_data[i] == '\xbf' && sub_data[i + 1] == '\xfb')
 		{
 			netbuf_type = NETORDER_CONTRACT;
-			printf("这是一个合同网报文\r\n");
+			DEBUG_PRINT_TIMME("接收到批合同网报文\r\n");
 			break;
 		}			
 		if(sub_data[i] == '\xaa' && sub_data[i + 1] == '\x55')
 		{
 			netbuf_type = NETOREDER_BATCH;
-			printf("这是一个批次报文\r\n");
+			DEBUG_PRINT_TIMME("接收到批次报文\r\n");
 			break;
 		}
 		if(sub_data[i] == '\x3e' && sub_data[i + 1] == '\x11')
 		{
 			netbuf_type = NETOREDER_ORDER;
-			printf("这是一个订单数据报文\r\n");
+			DEBUG_PRINT_TIMME("接收到订单数据报文\r\n");
+			StartTime = OSTimeGet()*TIME_INTERVAL; //记录基准时间值
 			break;
 		}
 	}

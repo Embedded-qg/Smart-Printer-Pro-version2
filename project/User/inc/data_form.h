@@ -32,9 +32,9 @@
 #define ORDER_SEVER_SEND_TIME_OFFSET	  8  //服务器发送时间偏移值
 #define ORDER_SERIAL_NUMBER_OFFSET		  12 //订单序号偏移值
 #define ORDER_BATCH_NUMBER_OFFSET		  16 //所属批次偏移值
-#define ORDER_BATCH_WITHIN_NUMBER_OFFSET 20 //批次内序号偏移值
-#define ORDER_CHECK_SUM_OFFSET			  22 //校验和偏移值
-#define ORDER_DATA_OFFSET				  24 //数据域偏移值
+#define ORDER_BATCH_WITHIN_NUMBER_OFFSET 18 //批次内序号偏移值
+#define ORDER_CHECK_SUM_OFFSET			  20 //校验和偏移值
+#define ORDER_DATA_OFFSET				  22 //数据域偏移值
 
 
 /******************批次头部格式各个字段的偏移量*****************/
