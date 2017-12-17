@@ -16,6 +16,7 @@
 #include "RequestHeap.h"
 #include "agent_udp.h"
 #include "agent_tcp.h"
+#include "transfer_task.h"
 
 #define GET_STATUS_01 putchar(0x10);putchar(0x04);putchar(0x01);
 #define GET_STATUS_02 putchar(0x10);putchar(0x04);putchar(0x02);
@@ -311,9 +312,19 @@ static  void Print_Task(void* p_arg)
 		DEBUG_PRINT("Print_Task: ORDER  WAITING\n");			
 		OSSemPend(Print_Sem, 0, &err);		
 		DEBUG_PRINT("Print_Task: ORDER  GET\n");
+	
+//		transf_task(order_netconn,order_status,TRANSFER_BATCH_STARTORDER,Get_TARGET_ID(),
+//							(u32_t)orderp->batch_number<<16|(u32_t)orderp->batch_within_number);
+//		Init_Queue();
 		
+		printf("\n---aaaaa----\n");		
 		if(GetRestoredOrder(&entry) == 1 || GetOrderFromQueue(&entry) ==  ORDER_QUEUE_OK) {	// 成功获取订单
-			if(CheckOrderData(entry) == ORDER_DATA_OK) {	// 订单数据正确，下发打印任务
+			if(if_printer_all_error() == ALL_ERROR){		//打印机异常无法打印，需要任务转移
+					printf(ERROR_PRINTER_ALL_ERROR);
+					Init_Queue();
+				transf_task(order_netconn,order_status,TRANSFER_BATCH_STARTORDER,Get_TARGET_ID(),
+					(u32_t)order_print_table.order_node[entry].batch_number<<16|(u32_t)order_print_table.order_node[entry].batch_within_number);}
+			else if(CheckOrderData(entry) == ORDER_DATA_OK){	// 订单数据正确，下发打印任务
 				DEBUG_PRINT("Print_Task: ORDER DATA CHECK OK\n");
 				DispensePrintJob(entry);	
 			}else {		// 订单数据错误，丢弃订单

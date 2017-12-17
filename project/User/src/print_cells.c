@@ -146,6 +146,26 @@ void ReadPrintCellsInfo(void)
 	}
 }
 
+
+/**
+ *  @fn		if_printer_all_error
+ *	@brief	检测打印机是否全坏
+ *	@param	None
+ *	@ret	None
+ */
+AllPrinterStatus if_printer_all_error(void)
+{
+  int i;
+	for(i = 0; i < MAX_CELL_NUM; i++) {		
+		if(PCMgr.cells[i].status != PRINT_CELL_STATUS_ERR) 
+		{
+			return EXIST_USEFUL_PRINTER;
+		}
+	}
+	return ALL_ERROR;
+}
+
+
 /**
  *  @fn		WritePrintCellInfo
  *	@brief	将打印单元的信息写入ROM
@@ -651,14 +671,22 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 					}
 					
 					DEBUG_PRINT("DealwithOrder: Order Print Failedly.\n");
-					printf("DealwithOrder: Order Print Failedly.\r\n");
-				}			
+					printf("\nDealwithOrder: Order Print Failedly.");
+				
+					if(if_printer_all_error() == ALL_ERROR){
+							printf("sssss");
+							printf(ERROR_PRINTER_ALL_ERROR);
+//							Init_Queue();
+							transf_task(order_netconn,order_status,TRANSFER_BATCH_STARTORDER,Get_TARGET_ID(),
+							(u32_t)orderp->batch_number<<16|(u32_t)orderp->batch_within_number);
+							return ;
+				}
+			}					
 				cutPaper(cellno);
 				PutPrintCell(cellno, cellStatus);					
 
 				Order_Print_Status_Send(orderp,orderp->status);	
 				OSSemPost(cellp->printDoneSem);	// 发送订单打印完成信号
-
 			}
 		}else {	// 打印单元非忙碌，状态检测指令来自健康检测线程
 			if(cellp->status == PRINT_CELL_STATUS_ERR) {

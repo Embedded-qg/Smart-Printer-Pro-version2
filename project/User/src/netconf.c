@@ -279,7 +279,7 @@ void contract_response(struct netconn *conn,contract_type type,u32_t preservatio
 		
 		//当网络写入错误时，需要等待一段时间后继续写入该数据包，否则无法反馈给服务器
 		OSTimeDlyHMSM(0,0,++i,0);
-		printf("\n\n\nNETCONN WRITE ERR_T IS %d\n\n\n", err);
+		printf("\n\n\ncontract_respinse:NETCONN WRITE ERR_T IS %d\n\n\n", err);
 	}	
 
 }
@@ -320,7 +320,6 @@ void write_connection(struct netconn *conn, req_type type, u8_t symbol, u32_t pr
 		Pack_Req_Or_Status_Message(sent_data, FIRST_REQ, symbol, Get_MCU_ID(), 
 									Get_Current_Unix_Time(), preservation);	
 	}
-
 #endif
 	
 	while(0 != (err = netconn_write(conn, sent_data, SEND_DATA_SIZE, NETCONN_COPY))){
@@ -329,14 +328,17 @@ void write_connection(struct netconn *conn, req_type type, u8_t symbol, u32_t pr
 		
 		//当网络写入错误时，需要等待一段时间后继续写入该数据包，否则无法反馈给服务器
 		OSTimeDlyHMSM(0,0,++i,0);
-		printf("\n\n\nNETCONN WRITE ERR_T IS %d\n\n\n", err);
+		printf("\n\n\nwrite_connect:NETCONN WRITE ERR_T IS %d\n\n\n", err);
 		
 		if(type != order_req){//订单请求需持续发送，否则服务器将无法下达订单
 			if(i > 3) break;
-		}else if(i > 10) break;//但等待多次后是无意义的
-	}
-		
+		}
+		else if(i > 10){//但等待多次后是无意义的 
+			break;
+		}
+	}		
 }
+
 
 /**
  * @brief	连接至远程服务器
@@ -346,21 +348,23 @@ void con_to_server(void)
 	struct ip_addr server_ip;
 	extern struct netconn *order_netconn;	//全局TCP链接
 	extern OS_EVENT *Recon_To_Server_Sem;
-	if((order_netconn = netconn_new(NETCONN_TCP)) != NULL){
-		printf("Connection build.\n");
-	}else{
-		printf("Fail to build connection.\n");
-		OSSemPost(Recon_To_Server_Sem);	
+	if( (order_netconn = netconn_new(NETCONN_TCP)) != NULL)
+	{
+		printf(ORDER_CONNECTION_BUILD);
+	}
+	else
+	{
+		printf(ERROR_ORDER_CONNECTION_FAIL_TO_BUILD);
+		OSSemPost(Recon_To_Server_Sem);			//发送信号，失败重连
 	}
 	
 	netconn_set_recvtimeout(order_netconn,10000);//设置接收延时时间 
 	
 #ifdef REMOTE//设置服务器ip地址
 	IP4_ADDR(&server_ip,10,21,48,11);//云服务器学校
-//		IP4_ADDR(&server_ip,123,207,228,117);		//云服务器_胖子
+//	IP4_ADDR(&server_ip,123,207,228,117);		//云服务器_胖子
 //	IP4_ADDR(&server_ip,192,168,1,116);		//JockJo测试机
 //	IP4_ADDR(&server_ip, 192,168,1,119);	//工作室测试机
-//	IP4_ADDR(&server_ip,192,168,1,110);  //用肥虫电脑的IP
 	netconn_connect(order_netconn,&server_ip,8086);
 #else	
 	IP4_ADDR(&server_ip,192,168,1,116);
@@ -369,10 +373,8 @@ void con_to_server(void)
 	
 	write_connection(order_netconn, first_req, REQ_LINK_OK, 0);//初次请求建立发送主控板ID
 	OSTimeDlyHMSM(0,0,1,0);
-//	write_connection(order_netconn, order_req, ORDER_REQUEST, 0);//请求订单			此处可以修改为需要请求的内容
-//	printf("Order req.\n");
 	
-	//发多次测试
+//发多次测试
 #ifdef APP_DEBUG
 	//write_connection(order_netconn, first_req, REQ_LINK_OK, 0);//初次请求建立
 	//write_connection(order_netconn, first_req, REQ_LINK_OK, 0);//初次请求建立
@@ -392,13 +394,13 @@ void LwIP_Init(void)
 	static char *str_ipaddr = (void*)0;
 	tcpip_init(NULL,NULL);
 
-
 #if LWIP_DHCP//动态ip分配
   localhost_ip.addr = 0;
   localhost_netmask.addr = 0;
   localhost_gw.addr = 0;
-	printf("\nDHCP can be choosed !!!");
+	printf(DHCP_CAN_BE_CHOOSED);
 #else
+//以下为手动分配IP
 //  IP4_ADDR(&localhost_ip, 192,168,1,135);
 //  IP4_ADDR(&localhost_netmask, 255, 255, 255, 0);
 //  IP4_ADDR(&localhost_gw, 192, 168, 1, 1);
@@ -406,23 +408,23 @@ void LwIP_Init(void)
   IP4_ADDR(&localhost_ip, 192,168,0,135);
   IP4_ADDR(&localhost_netmask, 255, 255, 255, 0);
   IP4_ADDR(&localhost_gw, 192, 168, 0, 1);	
-	printf("\nDHCP is not  be choosed !!!\n");	
+	printf(ERROR_DHCP_IS_NOT_BE_CHOOSED);
 #endif
 
 	netif_add(&DM9161_netif, &localhost_ip, &localhost_netmask, &localhost_gw, NULL, &ethernetif_init, &tcpip_input);
   netif_set_default(&DM9161_netif);
 	
 #if LWIP_DHCP
-		while(  (err_start = dhcp_start(&DM9161_netif)) != ERR_OK)
+		while( (err_start = dhcp_start(&DM9161_netif)) != ERR_OK)
 		{
-				printf("\nDHCP start failed!");
+				printf(ERROR_DHCP_START_FAILED);
 				//此处应该有不成功的处理函数为佳
 		}
 		while(DM9161_netif.ip_addr.addr == 0)
 		{
 			//等待一会，让IP地址存放近DM9161
 				OSTimeDlyHMSM(0, 0, 1, 0);
-				printf("\nDM9161 netif's  is  null!");
+				printf(ERROR_DM9161_NETIF_IS_NULL);
 		}
 		localhost_ip.addr = DM9161_netif.ip_addr.addr;	
 		localhost_netmask.addr = DM9161_netif.netmask.addr;
@@ -433,26 +435,15 @@ void LwIP_Init(void)
 	str_ipaddr = ipaddr_ntoa(&localhost_ip);
 	if(str_ipaddr != (void*)0)
 	{
-		printf("\nstr_ipaddr is:");		
+		printf(STR_IPADDR_IS);		
 		printf(str_ipaddr);
 	}
 	else
 	{
-		printf("\nstr_ipaddr is null");		
+		printf(ERROR_STR_IPADDR_IS_NULL);		
 	}
-	
-//#ifdef LWIP_IGMP
-//	while(  (err_start = igmp_start(&DM9161_netif)) != ERR_OK)
-//	{
-//			printf("igmp start failed!");
-//				//此处应该有不成功的处理函数为佳
-//	}
-//#endif	//LWIP_IGMP
-	
-/*  When the netif is fully configured this function must be called.*/
+		
+/*When the netif is fully configured this function must be called.*/
   netif_set_up(&DM9161_netif);
 	OSSemPost(LWIP_Init_Sem);			//释放成信号
-}
-
-
-	
+}	

@@ -65,31 +65,37 @@
  *	@return		  none
  *  @notice
  */
-
 void transf_task(struct netconn *conn, req_type type, u8_t symbol, u32_t target_id, u32_t preservation)
 {
-		char send_data[TRANSF_MESS_SIZE] = {0};	//任务转移报文是固定20字节
+		char send_data[TRANSF_MESS_SIZE] = {0};	//任务转移报文是固定24字节
 		err_t err;
 		int i = 0;
-
+			printf("\nbbbbbbbbb\n");
+		
 		if(type == order_status){
 			Pack_TransfTask_Message(send_data, ORDER_STATUS, symbol, Get_MCU_ID(), target_id, 
 															Get_Current_Unix_Time(), preservation);	//订单状态种preservation为订单批次号和批次内序号
 		}
+			printf("\nssssssssss\n");
 		
 		while(0 != (err = netconn_write(conn, send_data, TRANSF_MESS_SIZE, NETCONN_COPY))){
-		if(ERR_IS_FATAL(err))//致命错误，表示没有连接
-			break;
+			if(ERR_IS_FATAL(err))//致命错误，表示没有连接
+				break;
 		
-		//当网络写入错误时，需要等待一段时间后继续写入该数据包，否则无法反馈给服务器
-		OSTimeDlyHMSM(0,0,++i,0);
-		printf("\n\n\nNETCONN WRITE ERR_T IS %d\n\n\n", err);
+			//当网络写入错误时，需要等待一段时间后继续写入该数据包，否则无法反馈给服务器
+			OSTimeDlyHMSM(0,0,++i,0);
+			printf("\n\n\nTransf_task:NETCONN WRITE ERR_T IS %d\n\n\n", err);
+			
+			if(type != order_req){//订单请求需持续发送，否则服务器将无法下达订单
+				if(i > 3) break;
+			}else if(i > 10) break;//但等待多次后是无意义的
+		}
 		
-		if(type != order_req){//订单请求需持续发送，否则服务器将无法下达订单
-			if(i > 3) break;
-		}else if(i > 10) break;//但等待多次后是无意义的
-	}
-
+			printf("\n-------------------------\n");
+			for(i=0;i<TRANSF_MESS_SIZE;i++)
+				printf("\n%d = %x\n", i,send_data[i]);
+			printf("\n-------------------------\n");
+		
 }
 
 u32_t Get_TARGET_ID()

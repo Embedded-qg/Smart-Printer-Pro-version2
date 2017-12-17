@@ -38,6 +38,7 @@
 #include "app_cfg.h"
 #include "data_form.h"
 #include "more_infomation.h"
+#include "print_error.h"
 
 extern struct netconn *order_netconn;	//È«¾ÖTCPÁ´½Ó
 

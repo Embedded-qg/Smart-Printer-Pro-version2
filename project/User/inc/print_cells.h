@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include "print_queue.h"
 #include "status_mesg.h"
+#include "print_error.h"
 
 /**************************************************************
 *        Macro Define Section
@@ -68,6 +69,11 @@ typedef enum {
 	PRINT_CELL_STATUS_BUSY,		//忙碌
 	PRINT_CELL_STATUS_ERR		//不可用
 }PrintCellStatus;	/* 打印单元状态类型 */
+
+typedef enum {
+	ALL_ERROR,				//打印单元全部不可用
+	EXIST_USEFUL_PRINTER		//有可用的打印单元
+}AllPrinterStatus;	/* 打印单元状态类型 */
 
 typedef struct {
 
@@ -119,6 +125,13 @@ typedef struct {
  */
 void PrioritySort(void);
 
+/**
+ *  @fn		if_printer_all_error
+ *	@brief	检测打印机是否全坏
+ *	@param	None
+ *	@ret	None
+ */
+AllPrinterStatus if_printer_all_error(void);
 
 /**
  *  @fn		Count_Accuracy
