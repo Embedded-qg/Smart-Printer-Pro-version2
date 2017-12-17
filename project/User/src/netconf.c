@@ -17,6 +17,22 @@ struct ip_addr localhost_ip;
 struct ip_addr localhost_netmask;
 struct ip_addr localhost_gw;
 
+contract_info contract_information;
+static u16_t contract_total_len = 0;//批次总共长度
+static u16_t contract_number = 0;	//合同号
+static u16_t batch_number = 0; //批次号
+static u16_t last_bacth_number = 0;
+static u32_t contract_partner = 0;
+static char contract[33] = {0};
+static char batch[21] = {0};
+static u16_t len = 0;	//从网络缓冲区读取到的数据的长度
+static u16_t count = 0;
+static u16_t leave_len = 0; 
+u8_t netbuf_type = 0;
+u8_t read_message_symbol = 0;//报文成功读取标记
+u8_t batch_flag = 0;//批次标记
+u8_t batch_table_hash = 0;
+
 //#define TCPSEVER
 #define TCPCLIENT
 #define REMOTE  1
@@ -54,21 +70,7 @@ void put_in_buf(u8_t *data, u16_t len, u16_t urg)
 	}
 }
 
-contract_info contract_information;
-static u16_t contract_total_len = 0;//批次总共长度
-static u16_t contract_number = 0;	//合同号
-static u16_t batch_number = 0; //批次号
-static u16_t last_bacth_number = 0;
-static u32_t contract_partner = 0;
-static char contract[33] = {0};
-static char batch[21] = {0};
-static u16_t len = 0;	//从网络缓冲区读取到的数据的长度
-static u16_t count = 0;
-static u16_t leave_len = 0; 
-u8_t netbuf_type = 0;
-u8_t read_message_symbol = 0;//报文成功读取标记
-u8_t batch_flag = 0;//批次标记
-u8_t batch_table_hash = 0;
+
 
 /****************************************************************************************
 *@Name............: read_message_from_netbuf

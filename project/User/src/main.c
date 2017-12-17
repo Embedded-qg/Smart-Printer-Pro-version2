@@ -304,28 +304,28 @@ static  void Print_Task(void* p_arg)
 {
 	INT8U err;
 	u8_t entry;
-	order_info *orderp;
+	extern order_print_queue_info order_print_table;
 	(void) p_arg;
-
+	
 	while(1)
 	{
 		DEBUG_PRINT("Print_Task: ORDER  WAITING\n");			
 		OSSemPend(Print_Sem, 0, &err);		
 		DEBUG_PRINT("Print_Task: ORDER  GET\n");
-	
-//		transf_task(order_netconn,order_status,TRANSFER_BATCH_STARTORDER,Get_TARGET_ID(),
-//							(u32_t)orderp->batch_number<<16|(u32_t)orderp->batch_within_number);
-//		Init_Queue();
 		
 		printf("\n---aaaaa----\n");		
 		if(GetRestoredOrder(&entry) == 1 || GetOrderFromQueue(&entry) ==  ORDER_QUEUE_OK) {	// 成功获取订单
-			if(if_printer_all_error() == ALL_ERROR){		//打印机异常无法打印，需要任务转移
-					printf(ERROR_PRINTER_ALL_ERROR);
-					Init_Queue();
-				transf_task(order_netconn,order_status,TRANSFER_BATCH_STARTORDER,Get_TARGET_ID(),
-					(u32_t)order_print_table.order_node[entry].batch_number<<16|(u32_t)order_print_table.order_node[entry].batch_within_number);}
-			else if(CheckOrderData(entry) == ORDER_DATA_OK){	// 订单数据正确，下发打印任务
+			if(CheckOrderData(entry) == ORDER_DATA_OK){	// 订单数据正确，下发打印任务
 				DEBUG_PRINT("Print_Task: ORDER DATA CHECK OK\n");
+				if(if_printer_all_error() == ALL_ERROR){		//打印机异常无法打印，需要任务转移，提前结束
+					printf(ERROR_PRINTER_ALL_ERROR);
+//					Init_Queue();
+					printf("\n--------xxxxxxxx-------\n batch_number:%u \n", order_print_table.order_node[entry].batch_number);
+					printf("\n--------xxxxxxxx-------\n batch_within_number:%u \n", order_print_table.order_node[entry].batch_within_number);				
+					transf_task(order_netconn,order_status,TRANSFER_BATCH_STARTORDER,Get_TARGET_ID(),
+					order_print_table.order_node[entry].batch_number<<16|(u32_t)order_print_table.order_node[entry].batch_within_number);
+					continue	;
+				}
 				DispensePrintJob(entry);	
 			}else {		// 订单数据错误，丢弃订单
 				Delete_Order(entry);

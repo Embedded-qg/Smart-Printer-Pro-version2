@@ -627,7 +627,6 @@ void OutputErrorTag(PrintCellNum cellno)
 static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 {
 	extern OS_EVENT *Printer_Status_Rec_Sem;
-
 	u8_t status;
 	PrintCellStatus cellStatus;
 	PrintCellInfo *cellp = &PCMgr.cells[cellno-1];
@@ -677,6 +676,7 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 							printf("sssss");
 							printf(ERROR_PRINTER_ALL_ERROR);
 //							Init_Queue();
+						printf("\n--------xxxxxxxx-------\n batch_number:%u \n", orderp->batch_number);
 							transf_task(order_netconn,order_status,TRANSFER_BATCH_STARTORDER,Get_TARGET_ID(),
 							(u32_t)orderp->batch_number<<16|(u32_t)orderp->batch_within_number);
 							return ;
