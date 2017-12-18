@@ -31,7 +31,7 @@
 
 extern INT32U StartTime[100];//起始时钟节拍
 extern InternetTime current_internet_time[100];
-
+extern u16_t batch_order_already_print;//一个批次订单数目剩下未打印的份数
 
 u16_t Flag_receive_order;//接收批次订单的标志
 PrintCellsMgrInfo Prior;//排序后的打印单元数组
@@ -503,7 +503,6 @@ void PutPrintCell(PrintCellNum no, PrintCellStatus status)
 	PrintCellInfo *cellp = &PCMgr.cells[no - 1];
 	u8_t entryIndex;
 	int i;
-	static int print_number_sum;//计算一个批次的订单数目总共打印了多少份
 	static int kill_PCMgr_resrcSem_flag;//标志是否打印单元未PostPCMgr_resrcSem信号量
 	int Useful_printer;
 
@@ -540,7 +539,6 @@ void PutPrintCell(PrintCellNum no, PrintCellStatus status)
 	{
 		if(PCMgr.cells[0].print_order_count == 0 && PCMgr.cells[1].print_order_count == 0)//证明刚开始要打印订单
 		{
-			print_number_sum = 0;//将打印订单数目置为0
 			if(Useful_printer == 1 && kill_PCMgr_resrcSem_flag == 1)//证明两台打印单元均可用且之前有台打印单元未PostPCMgr_resrcSem
 			{
 				kill_PCMgr_resrcSem_flag = 2;//post两个PCMgr.resrcSem信号量
@@ -553,7 +551,8 @@ void PutPrintCell(PrintCellNum no, PrintCellStatus status)
 			}
 		}
 		for(i = 0; i < MAX_CELL_NUM; i++)
-		{
+		{	
+			DEBUG_PRINT_STATEGY("\r\n before exception_printer_set_normal_flag = %d\r\n",exception_printer_set_normal_flag);
 			if(exception_printer_set_normal_flag > 2 && Useful_printer == 1)//如果打印机台数大于等于2台的话，打印机单元从异常恢复正常不用订单计数增加
 			{
 				exception_printer_set_normal_flag --;
@@ -561,8 +560,8 @@ void PutPrintCell(PrintCellNum no, PrintCellStatus status)
 			else if(PCMgr.cells[i].no == no)//判断是哪台打印单元
 			{
 				PCMgr.cells[i].print_order_count++;//一个批次该打印单元已经打印的份数
-				print_number_sum++;//计算一个批次的订单打印了多少份
 			}
+			DEBUG_PRINT_STATEGY("\r\n after exception_printer_set_normal_flag = %d\r\n",exception_printer_set_normal_flag);
 		}//计算打印单元各自打印的订单数目
 
 		for(i = 0; i < MAX_CELL_NUM; i++)//记录各个打印单元打印的订单数目
@@ -578,7 +577,6 @@ void PutPrintCell(PrintCellNum no, PrintCellStatus status)
 		}
 	}
 	DEBUG_PRINT_STATEGY("Data_long = %d\r\n",Data_long);
-	DEBUG_PRINT_STATEGY("print_number_sum = %d\r\n",print_number_sum);
 	DEBUG_PRINT_STATEGY("Prior.cells[0].print_order_count = %d  and  Prior.cells[0].dispend_order_number = %d\r\n",Prior.cells[0].print_order_count,Prior.cells[0].dispend_order_number);
 	DEBUG_PRINT_STATEGY("Prior.cells[1].print_order_count = %d  and  Prior.cells[1].dispend_order_number = %d\r\n",Prior.cells[1].print_order_count,Prior.cells[1].dispend_order_number);
 	if(Prior.cells[1].print_order_count >= Prior.cells[1].dispend_order_number  && Prior.cells[1].no == no && (Prior.cells[1].dispend_order_number != (Data_long/2)) && Flag_receive_order == 1 && Useful_printer == 1)//打印成功率低的打印单元打印完自己的份数后不发送信号量，前提是订单数目不为总订单的一半且两个打印单元都可用
@@ -586,7 +584,7 @@ void PutPrintCell(PrintCellNum no, PrintCellStatus status)
 		kill_PCMgr_resrcSem_flag = 1;//这里未postPCMgr_resrcSem
 		printf("here kill one PCMgr.resrcSem!!!!!\r\n");
 	}
-	else if(print_number_sum >= Data_long && Prior.cells[0].no == no && Flag_receive_order == 1 && kill_PCMgr_resrcSem_flag == 1 && Useful_printer == 1)//精确度高的打印单元会打印大于等于一半的订单，即精确度高的打印单元打印完一个批次中的最后一份订单，释放两个信号量，前提是分配到的订单数目不为总订单数目的一半且两个打印单元均可用
+	else if(batch_order_already_print == 0 && Prior.cells[0].no == no && Flag_receive_order == 1 && kill_PCMgr_resrcSem_flag == 1 && Useful_printer == 1)//精确度高的打印单元会打印大于等于一半的订单，即精确度高的打印单元打印完一个批次中的最后一份订单，释放两个信号量，前提是分配到的订单数目不为总订单数目的一半且两个打印单元均可用
 	{
 		kill_PCMgr_resrcSem_flag = 2;
 		OSSemPost(PCMgr.resrcSem);
@@ -607,10 +605,6 @@ void PutPrintCell(PrintCellNum no, PrintCellStatus status)
 		DEBUG_PRINT_STATEGY("here post 1 signal post_resrcSem_OSEventCnt!!!!!!!!! = %d\r\n",PCMgr.resrcSem->OSEventCnt);
 	}
 	DEBUG_PRINT_STATEGY("post_resrcSem_OSEventCnt = %d\r\n",PCMgr.resrcSem->OSEventCnt);
-	if(print_number_sum >=	Data_long)//打印完一个批次订单，将其置为0
-	{
-		print_number_sum = 0;
-	}
 	OS_EXIT_CRITICAL();
 }
 
@@ -646,7 +640,7 @@ void OutputErrorTag(PrintCellNum cellno)
 static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 {
 	extern OS_EVENT *Printer_Status_Rec_Sem;
-	extern u16_t batch_order_already_print;
+
 	u8_t status;
 	PrintCellStatus cellStatus;
 	PrintCellInfo *cellp = &PCMgr.cells[cellno-1];
@@ -715,8 +709,8 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 //					DEBUG_PRINT("\nPrint Cell %u Restore from exception.\n", cellp->no);
 					PutPrintCell(cellno, PRINT_CELL_STATUS_IDLE);
 					exception_printer_set_normal_flag++;//
+					printf("exception_printer_set_normal_flag = %d\r\n",exception_printer_set_normal_flag);
 					printf("exception_PRINT_CELL_STATUS_IDLE\r\n");
-					
 				}
 			}else if(cellp->status == PRINT_CELL_STATUS_IDLE) {	
 				if(status != NORMAL_STATE){		// 打印机从正常到异常
