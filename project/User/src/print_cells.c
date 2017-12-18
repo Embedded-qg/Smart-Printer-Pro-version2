@@ -552,18 +552,19 @@ void PutPrintCell(PrintCellNum no, PrintCellStatus status)
 				}
 			}
 		}
-		if(exception_printer_set_normal_flag != 1)//打印机如果是从异常恢复到正常，就不用订单增加计数
+		for(i = 0; i < MAX_CELL_NUM; i++)
 		{
-			for(i = 0; i < MAX_CELL_NUM; i++)
+			if(exception_printer_set_normal_flag > 2 && Useful_printer == 1)//如果打印机台数大于等于2台的话，打印机单元从异常恢复正常不用订单计数增加
 			{
-				if(PCMgr.cells[i].no == no)//判断是哪台打印单元
-				{
-					PCMgr.cells[i].print_order_count++;
-					print_number_sum++;//计算一个批次的订单打印了多少份
-				}
-			}//计算打印单元各自打印的订单数目
-			exception_printer_set_normal_flag = 2;
-		}
+				exception_printer_set_normal_flag --;
+			}
+			else if(PCMgr.cells[i].no == no)//判断是哪台打印单元
+			{
+				PCMgr.cells[i].print_order_count++;//一个批次该打印单元已经打印的份数
+				print_number_sum++;//计算一个批次的订单打印了多少份
+			}
+		}//计算打印单元各自打印的订单数目
+
 		for(i = 0; i < MAX_CELL_NUM; i++)//记录各个打印单元打印的订单数目
 		{
 			if(Prior.cells[i].no == 1)
@@ -712,8 +713,8 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 			if(cellp->status == PRINT_CELL_STATUS_ERR) {
 				if(status == NORMAL_STATE) {	// 打印机从异常恢复
 //					DEBUG_PRINT("\nPrint Cell %u Restore from exception.\n", cellp->no);
-					exception_printer_set_normal_flag = 1;
 					PutPrintCell(cellno, PRINT_CELL_STATUS_IDLE);
+					exception_printer_set_normal_flag++;//
 					printf("exception_PRINT_CELL_STATUS_IDLE\r\n");
 					
 				}
