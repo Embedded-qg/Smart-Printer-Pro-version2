@@ -507,6 +507,9 @@ static void TCP_Task(void *p_arg)
 
 		(void) p_arg;
 		agent_tcp_server();
+	
+	
+	
 //		if(!NORMAL)		//这里实际上需要一个信号量
 //		{
 //			con_to_agent();

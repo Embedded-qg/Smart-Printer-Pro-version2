@@ -95,15 +95,17 @@ typedef struct {
 	OS_EVENT *printBeginSem;			// 标记该打印单元的打印线程是否需要开始工作
 	OS_EVENT *printDoneSem;				// 标记该打印单元的打印线程是否完成了打印工作
 	
-	u32_t print_order_count;		//计算各自打印单元每个批次分配到的订单的数目
+	u16_t print_order_count;		//计算各自打印单元每个批次分配到的订单的数目
 	s16_t sum_grade;							//该打印单元的积分
 	double accuracy;						//打印单元的精确度
-	u32_t dispend_order_number;	 	//打印单元分配到的订单
+	u16_t dispend_order_number;	 	//打印单元分配到的订单
 	
 }PrintCellInfo;	/* 打印单元数据结构 */
 
 typedef struct {
-	OS_EVENT *resrcSem;					//标记可用的打印单元资源数	
+	OS_EVENT *resrcSem1;					//打印单元1
+	OS_EVENT *resrcSem2;					//打印单元2
+
 	PrintCellInfo cells[MAX_CELL_NUM];	//可使用的打印单元表
 }PrintCellsMgrInfo;	/* 打印单元管理结构 */
 

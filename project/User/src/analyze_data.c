@@ -94,6 +94,7 @@ void Analyze_Batch_Info_Table(char *batch_data, u16_t batch_number)
 	batch_info_table[hash].batch_number = batch_number;
 	ANALYZE_DATA_2B((batch_data + BATCH_ORDER_NUMBER_OFFSET), batch_info_table[hash].order_number);//设立订单数目
 	ANALYZE_DATA_2B((batch_data + BATCH_TOTAL_LENGTH_OFFSET), batch_info_table[hash].batch_length);//设立批次长度
+	DEBUG_PRINT_STATEGY("\r\n batch_info_table[hash].order_number = %d\r\n",batch_info_table[hash].order_number);
 	DEBUG_PRINT_STATEGY("\r\n before batch_order_already_print = %d\r\n",batch_order_already_print);
 	Data_long = batch_info_table[hash].order_number + batch_order_already_print;//获取订单的数目
 	batch_order_already_print = Data_long;//将其记录在batch_order_already_print，打印完一份就减1
