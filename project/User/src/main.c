@@ -32,15 +32,15 @@ void UART4_Hook(void);
 /******************************************USART,DMA related Area******************/
 
 /* Private function prototypes -----------------------------------------------*/
-static  OS_STK LWIP_TaskStartStk[LWIP_TASK_START_STK_SIZE];
-static  OS_STK PRINT_TaskStk[PRINT_TASK_STK_SIZE];
-static  OS_STK REQ_BATCH_TaskStk[REQ_BATCH_TASK_STK_SIZE];
-static  OS_STK PRINT_QUEUE_TaskStk[PRINT_QUEUE_TASK_STK_SIZE];
-static  OS_STK HEALTH_DETECT_TaskStk[HEALTH_DETECT_TASK_STK_SIZE];
-static  OS_STK LOCAL_REC_TaskStk[LOCAL_REC_STK_SIZE];
-static  OS_STK WIFI_REC_TaskStk[WIFI_REC_STK_SIZE];
-static  OS_STK WIFI_REC_Req_TaskStk[WIFI_REC_REQ_STK_SIZE];
-static  OS_STK MESG_QUE_TaskStk[MESG_QUE_STK_SIZE];
+__align(8) static  OS_STK LWIP_TaskStartStk[LWIP_TASK_START_STK_SIZE];
+__align(8) static  OS_STK PRINT_TaskStk[PRINT_TASK_STK_SIZE];
+__align(8) static  OS_STK REQ_BATCH_TaskStk[REQ_BATCH_TASK_STK_SIZE];
+__align(8) static  OS_STK PRINT_QUEUE_TaskStk[PRINT_QUEUE_TASK_STK_SIZE];
+__align(8) static  OS_STK HEALTH_DETECT_TaskStk[HEALTH_DETECT_TASK_STK_SIZE];
+__align(8) static  OS_STK LOCAL_REC_TaskStk[LOCAL_REC_STK_SIZE];
+__align(8) static  OS_STK WIFI_REC_TaskStk[WIFI_REC_STK_SIZE];
+__align(8) static  OS_STK WIFI_REC_Req_TaskStk[WIFI_REC_REQ_STK_SIZE];
+__align(8) static  OS_STK MESG_QUE_TaskStk[MESG_QUE_STK_SIZE];
 
 // 打印传输单元线程，负责实际的订单传输工作
 static  OS_STK TRANSMITTER_TaskStk[MAX_CELL_NUM][TRANSMITTER_STK_SIZE];
@@ -312,7 +312,7 @@ static  void Print_Task(void* p_arg)
 		DEBUG_PRINT("Print_Task: ORDER  WAITING\n");			
 		OSSemPend(Print_Sem, 0, &err);		
 		DEBUG_PRINT("Print_Task: ORDER  GET\n");
-		
+		DEBUG_PRINT_STATEGY("\r\nPrint_Task: ORDER  GET\n");
 		printf("\n---aaaaa----\n");		
 		if(GetRestoredOrder(&entry) == 1 || GetOrderFromQueue(&entry) ==  ORDER_QUEUE_OK) {	// 成功获取订单
 			if(CheckOrderData(entry) == ORDER_DATA_OK){	// 订单数据正确，下发打印任务
