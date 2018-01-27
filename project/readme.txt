@@ -4,3 +4,4 @@
 
 待改进：
 1、在打印线程和健康监控线程中不能共享信号量Printer_Status_Rec_Sem。
+Creating a new branch is quick.
