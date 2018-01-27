@@ -144,7 +144,7 @@ void sys_mbox_free(sys_mbox_t *mbox)
   if(Err != OS_ERR_NONE)
   {
     //add error log here
-    printf("[Sys_arch]free Mbox sem fail\n");
+    DEBUG_PRINT("[Sys_arch]free Mbox sem fail\n");
   }
 
   mbox->sem = NULL;
@@ -182,7 +182,7 @@ void sys_mbox_post(sys_mbox_t *q, void *msg)
   q->msg_num++;
   if(q->msg_num == MAX_QUEUE_ENTRIES)
   {
-    printf("mbox post, box full\n");
+    DEBUG_PRINT("mbox post, box full\n");
   }
 
   Err = OSSemPost(q->sem);
@@ -191,7 +191,7 @@ void sys_mbox_post(sys_mbox_t *q, void *msg)
   if(Err != OS_ERR_NONE)
   {
     //add error log here
-    printf("[Sys_arch]:mbox post sem fail\n");
+    DEBUG_PRINT("[Sys_arch]:mbox post sem fail\n");
   }
   
 }
@@ -209,7 +209,7 @@ err_t sys_mbox_trypost(sys_mbox_t *q, void *msg)
 
   if (q->msg_num >= MAX_QUEUE_ENTRIES) {
     SYS_ARCH_UNPROTECT(lev);
-	printf("[Sys_arch]:mbox try post mbox full\n");
+	DEBUG_PRINT("[Sys_arch]:mbox try post mbox full\n");
     return ERR_MEM;
   }
 
@@ -230,7 +230,7 @@ err_t sys_mbox_trypost(sys_mbox_t *q, void *msg)
   if(Err != OS_ERR_NONE)
   {
     //add error log here
-    printf("[Sys_arch]:mbox try post sem fail\n");
+    DEBUG_PRINT("[Sys_arch]:mbox try post sem fail\n");
   }
 
   return ERR_OK;
@@ -283,7 +283,7 @@ u32_t sys_arch_mbox_fetch(sys_mbox_t *q, void **msg, u32_t timeout)
     SYS_ARCH_UNPROTECT(lev);
 	if(tmp_num != q->msg_num)   //检查一下消息数和头尾指针是否一致
 	{
-        printf("mbox fetch error, umatch [%u] with tmp [%u]", q->msg_num, tmp_num);
+        DEBUG_PRINT("mbox fetch error, umatch [%u] with tmp [%u]", q->msg_num, tmp_num);
 	}
     
 	//printf("mbox fetch ok, match [%u] with tmp [%u]", q->msg_num, tmp_num);

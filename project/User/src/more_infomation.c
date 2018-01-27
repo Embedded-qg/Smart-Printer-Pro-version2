@@ -71,7 +71,7 @@ u16_t Check_Sum_With_Diff_Part(u16_t *src1, int len1, u16_t *src2, int len2)
 //获取主控板id
 u32_t Get_MCU_ID(void)
 {
-	return 1;
+	return 2;
 }
 
 //获取主控板速度
@@ -80,8 +80,10 @@ u16_t Get_MCU_Speed(void)
 	u16_t mcu_Speed = 0,i;
 	for(i = 0;i < MAX_CELL_NUM;i++)
 	{
-		 if(PCMgr.cells[i].status == PRINT_CELL_STATUS_ERR) mcu_Speed++;
+		 if(PCMgr.cells[i].status != PRINT_CELL_STATUS_ERR) mcu_Speed++;
 	}
+//	printf("MCU_SPEED = %d\r\n",mcu_Speed);
+	return mcu_Speed;
 }
 
 u16_t Get_MCU_MaxBufSize(void)

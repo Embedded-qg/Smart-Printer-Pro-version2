@@ -1,5 +1,6 @@
 #include "wifi_conf.h"
 
+
 #define ORDER_LENGTH_LAST_OFFSET	4//订单头的订单长度的最后字节位置
 #define ORDER_HEAD_LAST_OFFSET		2//订单头的标志的最后字节位置
 #define ORDER_NUM_HEAD_OFFSET		12//订单序号头偏移
@@ -25,20 +26,7 @@ extern OS_EVENT *Print_Queue_Sem;
 *	Function Define Section
 **************************************************************/
 
-void UART6_Hook(u8_t ch)//将从串口6读取到的数据放入缓冲区
-{
-	extern OS_EVENT *Wifi_Rec_Data_Sem;
-	
-	if((wifi_buf.write + 1) % wifi_buf.MAX == wifi_buf.read)
-		return;
-	
-	wifi_buf.base[wifi_buf.write++] = ch;
-	wifi_buf.write = wifi_buf.write % wifi_buf.MAX;
-	if(wifi_buf.buf_empty == BUF_IS_EMPTY)
-		OSSemPost(Wifi_Rec_Data_Sem);
-	
-	wifi_buf.buf_empty = BUF_IS_NOT_EMPTY;    //缓冲不为空
-}
+
 
 //获取缓冲区长度
 #define GetBufLen(buf) \

@@ -258,7 +258,7 @@ extern void USART1_Hook(void);
 
 #include"print_cells.h"
 
-static INT8U sus_print_task[MAX_CELL_NUM] = {0xFF,0xFF};
+static INT8U sus_print_task[MAX_CELL_NUM] = {0xFF,0xFF,0xFF,0xFF};
 
 void USART1_IRQHandler(void)
 {
@@ -328,33 +328,58 @@ void UART4_IRQHandler(void)
 ******************************************************************************/
 #include "cc.h"
 
-
-
-extern void USART3_Hook(u8_t ch);//蓝牙钩子
-
-
 void USART3_IRQHandler(void)
 {
 	uint8_t ch;
 	//The sentences are commented below are used to receive a byte one by one (in RXNE situation)
-	if(USART_GetITStatus(USART3, USART_IT_RXNE) != RESET)  //process the received byte,RXNE == 1, related Resigister is Stand by
+	if(USART_GetITStatus(USART3, USART_IT_RXNE) != RESET)  //process the received byte
 	{
 		ch = USART_ReceiveData(USART3);
-		USART3_Hook(ch);//现在是蓝牙阶段
+		if(ch != Xoff && ch != Xon)
+		{
+			USART3_Hook();
+		}
+		else if(ch == Xoff)
+		{
+			sus_print_task[3] = OSPrioHighRdy;
+			OSTaskSuspend(OSPrioHighRdy);
+		}
+		else if(ch == Xon)
+		{
+			if(sus_print_task[3] != (INT8U)0xFF)   //检测之前是否已经挂起对应的打印线程
+			{
+				OSTaskResume(sus_print_task[3]);     //恢复打印线程
+				sus_print_task[3] = 0xFF;
+			}		
+		}
 	}
 	USART_ClearITPendingBit(USART3, USART_IT_RXNE);
 }
-
-extern void UART6_Hook(u8_t ch);//wifi钩子
 
 void USART6_IRQHandler(void)
 {
 	uint8_t ch;
 	//The sentences are commented below are used to receive a byte one by one (in RXNE situation)
-	if(USART_GetITStatus(USART6, USART_IT_RXNE) != RESET)  //process the received byte,RXNE == 1, related Resigister is Stand by
+	if(USART_GetITStatus(USART6, USART_IT_RXNE) != RESET)  //process the received byte
 	{
 		ch = USART_ReceiveData(USART6);
-		UART6_Hook(ch);//现在是wifi阶段
+		if(ch != Xoff && ch != Xon)
+		{
+			UART6_Hook();
+		}
+		else if(ch == Xoff)
+		{
+			sus_print_task[2] = OSPrioHighRdy;
+			OSTaskSuspend(OSPrioHighRdy);
+		}
+		else if(ch == Xon)
+		{
+			if(sus_print_task[2] != (INT8U)0xFF)   //检测之前是否已经挂起对应的打印线程
+			{
+				OSTaskResume(sus_print_task[2]);     //恢复打印线程
+				sus_print_task[2] = 0xFF;
+			}		
+		}
 	}
 	USART_ClearITPendingBit(USART6, USART_IT_RXNE);
 }

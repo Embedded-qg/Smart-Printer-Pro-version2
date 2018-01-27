@@ -20,22 +20,24 @@ extern OS_EVENT *Ack_Rec_Printer_Sem;	//本地接收对打印机状态应答的信号量
 static u32_t last_order_number = 0;		//上一次接收的订单号
 static u32_t current_order_number = 0;	//本次接收的订单号
 extern OS_EVENT *Print_Queue_Sem;
+extern  s8_t CheckPrintStatue(PrintCellNum cellno);
 /**************************************************************
 *	Function Define Section
 **************************************************************/
 
-void USART3_Hook(u8_t ch)//将从串口3读取到的数据放入缓冲区
-{
-	extern OS_EVENT *Local_Rec_Data_Sem;
-	if((usart_buf.write + 1) % usart_buf.MAX == usart_buf.read)
-		return;
-	
-	usart_buf.base[usart_buf.write++] = ch;
-	usart_buf.write = usart_buf.write % usart_buf.MAX;
-	if(usart_buf.buf_empty)
-		OSSemPost(Local_Rec_Data_Sem);
-	usart_buf.buf_empty = BUF_IS_NOT_EMPTY;    //缓冲不为空
-}
+//void USART3_Hook(u8_t ch)//将从串口3读取到的数据放入缓冲区
+//{
+//	extern OS_EVENT *Local_Rec_Data_Sem;
+//	if((usart_buf.write + 1) % usart_buf.MAX == usart_buf.read)
+//		return;
+//	
+//	usart_buf.base[usart_buf.write++] = ch;
+//	usart_buf.write = usart_buf.write % usart_buf.MAX;
+//	if(usart_buf.buf_empty)
+//		OSSemPost(Local_Rec_Data_Sem);
+//	usart_buf.buf_empty = BUF_IS_NOT_EMPTY;    //缓冲不为空
+//}
+
 
 //获取缓冲区长度
 #define GetBufLen(buf) \

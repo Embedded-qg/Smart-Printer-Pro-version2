@@ -28,7 +28,6 @@
 void 	WifiSendData(u8_t *data, u16_t len);		//从串口发送数据
 void 	wifi_receive(void);							//接收串口数据并进行数据处理
 void 	WifiReadData(u8_t *data, u16_t *len);		//读取串口缓冲区，有多少读多少，但不移动缓冲区指针
-void 	UART6_Hook(u8_t ch);						//将从串口6取到的数据放入缓冲区
 void 	AckToWifi(u32_t orderNum, u32_t ipAdd);		//打印机发送应答给本地
 void 	WifiRecOrder(u8_t *data);					//接收订单
 s8_t 	WifiReadAssignBytes(u8_t *data, u16_t len);	//读取串口缓冲区，指定长度为len

@@ -161,9 +161,8 @@ s8_t Check_Buf_Request_Signal(SqQueue buf)
 	{
 		if(0 < OSSemAccept(Batch_Rec_Sem))//表明读取完成
 		{
-
 			write_connection(order_netconn, order_req, 0, 0); 
-				DEBUG_PRINT("<<<<<<<<<<<<<<<<<<<<<<<<<<--------------------------SEND ORDER REQ--------------------------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+			DEBUG_PRINT("<<<<<<<<<<<<<<<<<<<<<<<<<<--------------------------SEND ORDER REQ--------------------------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\r\n");
 		}
 		else
 			;	

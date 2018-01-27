@@ -40,7 +40,7 @@
 /**************************************************************
 *        Macro Define Section
 **************************************************************/
-#define MAX_CELL_NUM	2	/* 最大打印单元数量，应小于等于4 */
+#define MAX_CELL_NUM	4/* 最大打印单元数量，应小于等于4 */
 
 /**
  * 打印单元编号定义
@@ -177,8 +177,9 @@ void OutputErrorTag(PrintCellNum cellno);
  * UART Receive Interrupt Hook Define 
  */
 void USART1_Hook(void);
+void USART3_Hook(void);
 void UART4_Hook(void);
-
+void UART6_Hook(void);
 /**
  * DMA Transmission complete Hook Define 
  */

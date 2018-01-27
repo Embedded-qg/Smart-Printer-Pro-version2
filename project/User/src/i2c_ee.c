@@ -1,6 +1,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f2xx_i2c.h"
 #include "i2c_ee.h"
+#include "app_cfg.h"
 #include <stdio.h>
 
 /* Private typedef -----------------------------------------------------------*/
@@ -394,22 +395,22 @@ void I2C_Test(void)
     u8 I2c_Buf_Write[256];
     u8 I2c_Buf_Read[256];
 
-    printf("写入的数据\n\r");
+    DEBUG_PRINT("写入的数据\n\r");
 
     for(i=0;i<=255;i++) //填充缓冲
     {   
         I2c_Buf_Write[i]=i;
-        printf("0x%02X ",I2c_Buf_Write[i]);
+        DEBUG_PRINT("0x%02X ",I2c_Buf_Write[i]);
         if(i%16 == 15)
         {
-            printf("\n\r");
+            DEBUG_PRINT("\r\n");
         }
     }
 
     //将I2c_Buf_Write中顺序递增的数据写入EERPOM中 
     I2C_EE_BufferWrite(I2c_Buf_Write,EEP_Firstpage,256);	 
 
-    printf("\n\r读出的数据\n\r");
+    DEBUG_PRINT("\r\n读出的数据\r\n");
     //将EEPROM读出数据顺序保持到I2c_Buf_Read中 
     I2C_EE_BufferRead(I2c_Buf_Read,EEP_Firstpage,256); 
 
@@ -418,17 +419,17 @@ void I2C_Test(void)
     {	
         if(I2c_Buf_Read[i]!=I2c_Buf_Write[i])
         {
-            printf("0x%02X ", I2c_Buf_Read[i]);
-            printf("错误:I2C EEPROM写入与读出的数据不一致\n\r");
+            DEBUG_PRINT("0x%02X ", I2c_Buf_Read[i]);
+            DEBUG_PRINT("错误:I2C EEPROM写入与读出的数据不一致\r\n");
             return;
         }
-        printf("0x%02X ", I2c_Buf_Read[i]);
+        DEBUG_PRINT("0x%02X ", I2c_Buf_Read[i]);
         if(i%16 == 15)
         {
-            printf("\n\r");
+            DEBUG_PRINT("\r\n");
         }
     }
-    printf("读写测试通过PASSED\n\r");
+    DEBUG_PRINT("读写测试通过PASSED\r\n");
 }
 
 

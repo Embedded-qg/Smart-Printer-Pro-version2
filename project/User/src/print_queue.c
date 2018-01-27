@@ -122,7 +122,7 @@ static s8_t Find_Entry(u16_t len , u8_t order_prio_sigal)
 	
 	if(len <= BLOCK_1K_SIZE)
 	{
-		DEBUG_PRINT("QUEUE DEBUG : TRYING TO GOT 1K NODE-----------\n");
+		ORDER_DEBUG_PRINT("QUEUE DEBUG : TRYING TO GOT 1K NODE-----------\r\n");
 		return Find_Block_Num(BLOCK_1K_SIZE ,order_prio_sigal);
 	}
 	else if (len <= BLOCK_2K_SIZE)
@@ -191,7 +191,7 @@ static s8_t Find_Block_Num(u16_t blocksize ,u8_t order_prio_sigal)
 			break;
 		}
 		default :
-			DEBUG_PRINT("QUEUE DEBUG :  SWITCH ERROR--------------\n");
+			ORDER_DEBUG_PRINT("QUEUE DEBUG :  SWITCH ERROR--------------\r\n");
 			break;
 	}
 	
@@ -200,34 +200,34 @@ static s8_t Find_Block_Num(u16_t blocksize ,u8_t order_prio_sigal)
 		Accept_Sigal_num = OSSemAccept(Block_Sem);
 		if( Accept_Sigal_num == 0){//证明已经没有内存块,告诉线程紧急订单没有内存块的信号。
 			
-			DEBUG_PRINT("QUEUE DEBUG :  LACK OF BLOCK ,Lack_Num %d\n ",Lack_Num);
+			ORDER_DEBUG_PRINT("QUEUE DEBUG :  LACK OF BLOCK ,Lack_Num %d\r\n ",Lack_Num);
 			OSTimeDlyHMSM(0, 0, 0, 500);
 			return Lack_Num;
 		}
 	}
 	else{//非紧急订单
 		OSSemPend(Block_Sem,0,&os_err);	//若无空闲内存块，则阻塞
-		DEBUG_PRINT("QUEUE DEBUG :  GOT Block_Sem-------------\n");
+		ORDER_DEBUG_PRINT("QUEUE DEBUG :  GOT Block_Sem-------------\r\n");
 	}
 	
-//	DEBUG_PRINT("QUEUE DEBUG :  acquire mutex of printqueue-----------\n");
+//	ORDER_DEBUG_PRINT("QUEUE DEBUG :  acquire mutex of printqueue-----------\r\n");
 	OSMutexPend(order_print_table.mutex,0,&os_err);//拿队列资源的锁
-//	DEBUG_PRINT("QUEUE DEBUG :  got mutex of printqueue-----------\n");
+//	ORDER_DEBUG_PRINT("QUEUE DEBUG :  got mutex of printqueue-----------\r\n");
 	entry_index = block_index_start;
 	
-	DEBUG_PRINT("QUEUE DEBUG : entry_index: %u, block_index_start = %u,------- block_index_end = %u\n", entry_index, block_index_start, block_index_end);
+	ORDER_DEBUG_PRINT("QUEUE DEBUG : entry_index: %u, block_index_start = %u,------- block_index_end = %u\r\n", entry_index, block_index_start, block_index_end);
 	
 	while(entry_index < block_index_end){//查找空的索引号
 		if(order_print_table.order_node[entry_index].data == NULL){			
 			OSMutexPost(order_print_table.mutex);//释放队列资源的锁	
-			DEBUG_PRINT("QUEUE DEBUG : Find EmptyBlock =  %u\n", entry_index);
+			ORDER_DEBUG_PRINT("QUEUE DEBUG : Find EmptyBlock =  %u\r\n", entry_index);
 			return entry_index;
 		}
 		entry_index++;
 	}	
 	
 	OSMutexPost(order_print_table.mutex);
-	DEBUG_PRINT("QUEUE DEBUG :   ORDER_FIND_INDEX_ERR-----------\n");
+	ORDER_DEBUG_PRINT("QUEUE DEBUG :   ORDER_FIND_INDEX_ERR-----------\r\n");
 	return ORDER_FIND_INDEX_ERR;
 }
 
@@ -251,21 +251,21 @@ static s8_t	Add_Order_To_Print_Queue(SqQueue *buf,s8_t entry_index , u8_t order_
 	
 	//开始申请内存块
 	if(entry_index < BLOCK_1K_INDEX_END){
-		DEBUG_PRINT("\nQUEUE DEBUG----GOT 1K BLOCK----\n");
+		ORDER_DEBUG_PRINT("\nQUEUE DEBUG----GOT 1K BLOCK----\r\n");
 		order_print_table.order_node[entry_index].data = OSMemGet(queue_1K,&os_err);
 	}
 	else if(entry_index < BLOCK_2K_INDEX_END){
-		DEBUG_PRINT("\nQUEUE DEBUG----GOT 2K BLOCK----\n");
+		ORDER_DEBUG_PRINT("\nQUEUE DEBUG----GOT 2K BLOCK----\r\n");
 		order_print_table.order_node[entry_index].data = OSMemGet(queue_2K,&os_err);
 	}
 	else if(entry_index < BLOCK_4K_INDEX_END){
-		DEBUG_PRINT("\nQUEUE DEBUG----GOT 4K BLOCK----\n");
+		ORDER_DEBUG_PRINT("\nQUEUE DEBUG----GOT 4K BLOCK----\r\n");
 		order_print_table.order_node[entry_index].data = OSMemGet(queue_4K,&os_err);
 	}
 	else if(entry_index < BLOCK_10K_INDEX_END){	
-		DEBUG_PRINT("\nQUEUE DEBUG----GOT 10K BLOCK----\n");
+		ORDER_DEBUG_PRINT("\nQUEUE DEBUG----GOT 10K BLOCK----\r\n");
 		order_print_table.order_node[entry_index].data = OSMemGet(queue_10K,&os_err);
-		DEBUG_PRINT("ORDER DATA POINTER: %p\n", order_print_table.order_node[entry_index].data);
+		ORDER_DEBUG_PRINT("ORDER DATA POINTER: %p\r\n", order_print_table.order_node[entry_index].data);
 		
 	}
 	
@@ -280,7 +280,7 @@ static s8_t	Add_Order_To_Print_Queue(SqQueue *buf,s8_t entry_index , u8_t order_
 	
 	order_print_table.order_node[entry_index].serial_number = 			((u32_t)(*(order_head + ORDER_SERIAL_NUMBER_OFFSET)) << 24)				+ 	((u32_t)(*(order_head + ORDER_SERIAL_NUMBER_OFFSET +1 )) << 16 ) 
 																																	+	((u32_t)(*(order_head + ORDER_SERIAL_NUMBER_OFFSET +2 )) << 8) 	+		((u32_t)(*(order_head + ORDER_SERIAL_NUMBER_OFFSET +3 )));						//订单序号
-	DEBUG_PRINT("QUEUE DEBUG :id number :%u", order_print_table.order_node[entry_index].serial_number);
+	ORDER_DEBUG_PRINT("QUEUE DEBUG :id number :%u\r\n", order_print_table.order_node[entry_index].serial_number);
 	
 	order_print_table.order_node[entry_index].batch_number = 				(*(order_head+ORDER_BATCH_NUMBER_OFFSET)<<8)				+ *(order_head + ORDER_BATCH_NUMBER_OFFSET + 1);							//所属批次
 	order_print_table.order_node[entry_index].batch_within_number =	(*(order_head+ORDER_BATCH_WITHIN_NUMBER_OFFSET)<<8)	+ *(order_head + ORDER_BATCH_WITHIN_NUMBER_OFFSET + 1);				//批次内订单序号
@@ -297,10 +297,10 @@ static s8_t	Add_Order_To_Print_Queue(SqQueue *buf,s8_t entry_index , u8_t order_
 	}
 	else{
 		//更改打印队列信息，确定订单的位置顺序
-		DEBUG_PRINT("QUEUE DEBUG :Before Insert\n");
+		ORDER_DEBUG_PRINT("QUEUE DEBUG :Before Insert\r\n");
 		printOrderQueueSeque();
 		Change_Normal_Order_Seque(entry_index);
-		DEBUG_PRINT("QUEUE DEBUG :After Insert\n");
+		ORDER_DEBUG_PRINT("QUEUE DEBUG :After Insert\r\n");
 		printOrderQueueSeque();
 	}
 	
@@ -319,12 +319,12 @@ static s8_t	Add_Order_To_Print_Queue(SqQueue *buf,s8_t entry_index , u8_t order_
 static void printOrderQueueSeque()
 {
 	u8_t index = order_print_table.head;
-	DEBUG_PRINT("QUEUE DEBUG : traverse queue{ \n");
-	DEBUG_PRINT("				node : %u  - >  next: %u\n",index , order_print_table.order_node[index].next_print_node);		
+	ORDER_DEBUG_PRINT("QUEUE DEBUG : traverse queue{ \r\n");
+	ORDER_DEBUG_PRINT("				node : %u  - >  next: %u\r\n",index , order_print_table.order_node[index].next_print_node);		
 	while (index != order_print_table.head)
 	{				
 		index = order_print_table.order_node[index].next_print_node;
-		DEBUG_PRINT("				node : %u  - >  next: %u\n",index , order_print_table.order_node[index].next_print_node);
+		ORDER_DEBUG_PRINT("				node : %u  - >  next: %u\r\n",index , order_print_table.order_node[index].next_print_node);
 	}
 			
 		
@@ -449,7 +449,7 @@ static s8_t Change_Order_Seque(s8_t entry_index)
 				order_print_table.order_node[current_index].next_print_node = order_print_table.head;						
 				order_print_table.head = current_index;
 				
-				DEBUG_PRINT("QUEUE DEBUG : head change \n" );
+				ORDER_DEBUG_PRINT("QUEUE DEBUG : head change \r\n" );
 				return 0;
 			}
 			else{//表明队列中有加急订单。
@@ -457,7 +457,7 @@ static s8_t Change_Order_Seque(s8_t entry_index)
 					if(start_index == order_print_table.tail)
 					{
 						
-					DEBUG_PRINT("QUEUE DEBUG : start_index %u\n" , start_index );
+					ORDER_DEBUG_PRINT("QUEUE DEBUG : start_index %u\r\n" , start_index );
 						return 0;
 					}
 					Find_Front_And_Next_Index(start_index, block_size, &next_index , &front_index, &current_index);//找到最靠近队头的那个相同内存的订单索引上下文索引。
@@ -465,7 +465,7 @@ static s8_t Change_Order_Seque(s8_t entry_index)
 					if(front_index == current_index){				
 						//普通订单打印队列中的第一个就是相同大小的内存块，所以不用进行操作。
 						
-					DEBUG_PRINT("QUEUE DEBUG : first do not change \n");
+					ORDER_DEBUG_PRINT("QUEUE DEBUG : first do not change \r\n");
 						return 0;
 					}
 					else{					
@@ -477,7 +477,7 @@ static s8_t Change_Order_Seque(s8_t entry_index)
 				}				
 				else{
 					//相同的内存单元的订单，是加急订单，则不需要进行处理。
-					DEBUG_PRINT("QUEUE DEBUG : same do not change\n" );
+					ORDER_DEBUG_PRINT("QUEUE DEBUG : same do not change\r\n" );
 					return 0;
 				}
 			}
@@ -536,28 +536,28 @@ s8_t Delete_Order(s8_t entry_index)
 	OSMutexPend(order_print_table.mutex, 0, &err);	
 	orderp->data = NULL;
 	if(NULL == data) {
-		DEBUG_PRINT("Delete_Order: Internal Error: Order %u has null block!\n", 
+		ORDER_DEBUG_PRINT("Delete_Order: Internal Error: Order %u has null block!\r\n", 
 										orderp->serial_number);
 		OSMutexPost(order_print_table.mutex);
 		return ORDER_EMPTY_BLOCK;
 	}
-	DEBUG_PRINT("Delete_Order: Deleting order %u.\n", orderp->serial_number);
+	ORDER_DEBUG_PRINT("Delete_Order: Deleting order %u.\r\n", orderp->serial_number);
 	OSMutexPost(order_print_table.mutex);	
 	/*释放内存块*/		
 	if(entry_index < BLOCK_1K_INDEX_END) {
-		DEBUG_PRINT("Delete_Order: PUT 1K BLOCK\n");
+		ORDER_DEBUG_PRINT("Delete_Order: PUT 1K BLOCK\r\n");
 		OSMemPut(queue_1K, data);
 		OSSemPost(Block_1K_Sem);
 	}else if(entry_index < BLOCK_2K_INDEX_END){
-		DEBUG_PRINT("Delete_Order: PUT 2K BLOCK\n");
+		ORDER_DEBUG_PRINT("Delete_Order: PUT 2K BLOCK\r\n");
 		OSMemPut(queue_2K, data);
 		OSSemPost(Block_2K_Sem);
 	}else if(entry_index < BLOCK_4K_INDEX_END){
-		DEBUG_PRINT("Delete_Order: PUT 4K BLOCK\n");
+		ORDER_DEBUG_PRINT("Delete_Order: PUT 4K BLOCK\r\n");
 		OSMemPut(queue_4K, data);			
 		OSSemPost(Block_4K_Sem);
 	}else if(entry_index < BLOCK_10K_INDEX_END){
-		DEBUG_PRINT("Delete_Order: PUT 10K BLOCK\n");
+		ORDER_DEBUG_PRINT("Delete_Order: PUT 10K BLOCK\r\n");
 		OSMemPut(queue_10K, data);			
 		OSSemPost(Block_10K_Sem);
 	}
@@ -619,12 +619,12 @@ s8_t GetOrderFromQueue(u8_t *entryp)
 		order_print_table.head = order_print_table.order_node[order_print_table.head].next_print_node;
 	}
 	order_print_table.order_node[*entryp].next_print_node = 0;
-	DEBUG_PRINT("GetOrderFromQueue: Got print order %u\n", 
+	ORDER_DEBUG_PRINT("GetOrderFromQueue: Got print order %u\r\n", 
 		order_print_table.order_node[*entryp].serial_number);
 	if(order_print_table.empty == 1) {
-		DEBUG_PRINT("GetOrderFromQueue: No more job appending.\n");
+		ORDER_DEBUG_PRINT("GetOrderFromQueue: No more job appending.\r\n");
 	}else {
-		DEBUG_PRINT("GetOrderFromQueue: Next job's num is %u\n", 
+		ORDER_DEBUG_PRINT("GetOrderFromQueue: Next job's num is %u\r\n", 
 			order_print_table.order_node[order_print_table.head].serial_number);		
 	}
 	OSMutexPost(order_print_table.mutex);
@@ -648,7 +648,7 @@ s8_t CheckOrderData(u8_t entry_index)
 	if(NULL == datap) {
 		orderp->status = PRINT_STATUS_DATA_ERR;	/* 订单数据错误 */
 		Order_Print_Status_Send(orderp,PRINT_STATUS_DATA_ERR);
-		DEBUG_PRINT("CheckOrderData: checking empty block!\n");
+		ORDER_DEBUG_PRINT("CheckOrderData: checking empty block!\r\n");
 		return ORDER_DATA_ERR;		
 	}
 	pbytes = 0;
@@ -660,7 +660,7 @@ s8_t CheckOrderData(u8_t entry_index)
 			orderp->status = PRINT_STATUS_DATA_ERR;	/* 订单数据错误 */
 			Order_Print_Status_Send(orderp,PRINT_STATUS_DATA_ERR);
 
-			DEBUG_PRINT("CheckOrderData: Invalid type of data field!\n");
+			ORDER_DEBUG_PRINT("CheckOrderData: Invalid type of data field!\r\n");
 			
 			return ORDER_DATA_ERR;
 		}
@@ -699,13 +699,13 @@ s8_t Print_Order(u8_t cellno)
 		needCutPaper[cellno] = 0;
 	}
 	
-	DEBUG_PRINT("-------------Print_Order: ---------------\n");
-	DEBUG_PRINT("-ORDER NUM:   %u\n", orderp->serial_number);
-	DEBUG_PRINT("-ORDER SIZE : %u\n", orderp->size);
-	DEBUG_PRINT("-DATA HEADER: %x%x\n", *orderp->data, *(orderp->data+1));
-	DEBUG_PRINT("-DATA LENGTH: %u\n", length);
-	DEBUG_PRINT("-DATA TAIL  : %x%x\n", *(datap + 4 + length + 2), *(datap + 4 + length + 3));
-	DEBUG_PRINT("-------------------------------------\n");	
+	ORDER_DEBUG_PRINT("-------------Print_Order: ---------------\r\n");
+	ORDER_DEBUG_PRINT("-ORDER NUM:   %u\r\n", orderp->serial_number);
+	ORDER_DEBUG_PRINT("-ORDER SIZE : %u\r\n", orderp->size);
+	ORDER_DEBUG_PRINT("-DATA HEADER: %x%x\r\n", *orderp->data, *(orderp->data+1));
+	ORDER_DEBUG_PRINT("-DATA LENGTH: %u\r\n", length);
+	ORDER_DEBUG_PRINT("-DATA TAIL  : %x%x\r\n", *(datap + 4 + length + 2), *(datap + 4 + length + 3));
+	ORDER_DEBUG_PRINT("-------------------------------------\r\n");	
 	
 	orderp->status = PRINT_STATUS_START;
 	Order_Print_Status_Send(orderp,	PRINT_STATUS_START);
@@ -722,12 +722,12 @@ s8_t Print_Order(u8_t cellno)
 		type = GetDataType(datap);
  
 		if(DATA_IS_PLAINTEXT == type) {		// 文字内容
-			DEBUG_PRINT("Print_Order: Printing Paint Text\n");
+			ORDER_DEBUG_PRINT("Print_Order: Printing Paint Text\r\n");
 			//DMA_To_USARTx_Send(datap + DATA_HEADER_SIZE, length, cellno);
 			mySendData(datap + DATA_HEADER_SIZE, length, cellno);
 		}
 		else if(DATA_IS_IMAGE == type) {	// 图片内容		
-			DEBUG_PRINT("Print_Order: Printing Picture\n");
+			ORDER_DEBUG_PRINT("Print_Order: Printing Picture\r\n");
 //			OSTimeDlyHMSM(0,0,2,0);
 			printImages(datap + DATA_HEADER_SIZE, GetImageBytes(datap, length), cellno);
 			
@@ -735,9 +735,9 @@ s8_t Print_Order(u8_t cellno)
 		else if(DATA_IS_QRCODE == type) {	// 二维码链接		
 //			OSTimeDlyHMSM(0,0,0,500);
 			printQRCode(datap + DATA_HEADER_SIZE, length, cellno);
-			DEBUG_PRINT("Print_OrderPrinting: QR Code\n");
+			ORDER_DEBUG_PRINT("Print_OrderPrinting: QR Code\r\n");
 		}else {
-			DEBUG_PRINT("BUG DETECT: Print_Order: DATA CHECKING WRONG.\n");
+			ORDER_DEBUG_PRINT("BUG DETECT: Print_Order: DATA CHECKING WRONG.\r\n");
 		}
 		pbytes += length + DATA_HEADER_SIZE + DATA_FOOTER_SIZE; //已经处理的字节数
 		PCMgr.cells[cellno-1].totalLength += pbytes;
@@ -748,14 +748,14 @@ s8_t Print_Order(u8_t cellno)
 	
 	// 发送检测打印机状态的指令，以决定本订单是否打印成功
 	OSTimeDlyHMSM(0,0,(u8)((orderp->size / 512) + (orderp->size / 2048)), 500);
-	DEBUG_PRINT("Print_Order: Waiting for Printer's status.\n");
+	ORDER_DEBUG_PRINT("Print_Order: Waiting for Printer's status.\r\n");
 	SEND_STATUS_CMD_ONE(cellno);
 	OSTimeDlyHMSM(0,0,1,0);//发送状态后延时
 	
 	// 正常情况下Pend请求会立刻返回，若超时则代表打印过程中传输线异常
 	OSSemPend(cellp->printDoneSem, 20, &err);
 	if(err == OS_ERR_TIMEOUT){	// 打印过程中出现异常，使得打印机离线
-		DEBUG_PRINT("Print_Order: Printer %u Off-line while Printing.\n", cellno);
+		ORDER_DEBUG_PRINT("Print_Order: Printer %u Off-line while Printing.\r\n", cellno);
 		needCutPaper[cellno] = 1;
 		Order_Print_Status_Send(orderp, PRINT_CELL_STATUS_ERR);	
 		PutPrintCell(cellno, PRINT_CELL_STATUS_ERR);
@@ -828,7 +828,7 @@ static s8_t OrderEnqueue(SqQueue* buf,s8_t entry_index , u16_t order_len,u8_t or
 	Add_Order_To_Print_Queue(buf,entry_index,order_prio_sigal);												
 	//发送订单进入打印队列的报文	
 	Order_QUEUE_Status_Send(&(order_print_table.order_node[entry_index]),ENQUEUE_OK	);						
-	DEBUG_PRINT("-------ONE ORDER ENQUEUE---------\n");	
+	ORDER_DEBUG_PRINT("-------ONE ORDER ENQUEUE---------\r\n");	
 	OSSemPost(Print_Sem);//产生打印信号
 		
 	return 0;
@@ -870,7 +870,7 @@ static s8_t error_order_deal(SqQueue* buf, s8_t order_prio_sigal)
 	
 	}
 		
-	DEBUG_PRINT("QUEUE_DEBUG : DELETE AN ERROR ORDER! ------\n");
+	ORDER_DEBUG_PRINT("QUEUE_DEBUG : DELETE AN ERROR ORDER! ------\r\n");
 }
 
 
@@ -915,36 +915,36 @@ void Print_Queue_Fun()
 			}
 			
 			Read_Order_Length_Queue(*buf,&order_len);//获取订单长度			
-			DEBUG_PRINT("ORDER DEBUG : Order Length: %u------------\n", order_len);
+			ORDER_DEBUG_PRINT("ORDER DEBUG : Order Length: %u------------\r\n", order_len);
 			
 //			找到订单队列中存放订单的位置			
 //			返回值四种:		ORDER_TOO_LARGER、 ORDER_FIND_INDEX_ERR
 //									或者正常的索引值，
 //									或者是负数代表加急紧缺的内存块				
 			entry_index = Find_Entry(order_len,order_prio_sigal);
-			DEBUG_PRINT("ORDER DEBUG : Order Index: %d------------\n", entry_index);
+			ORDER_DEBUG_PRINT("ORDER DEBUG : Order Index: %d------------\r\n", entry_index);
 			if(entry_index == ORDER_TOO_LARGER){									//这里必须处理订单大小过大的问题
-				DEBUG_PRINT("ORDER_ERR: ORDER_TOO_LARGER\r\n");
+				ORDER_DEBUG_PRINT("ORDER_ERR: ORDER_TOO_LARGER\r\n");
 				error_order_deal(buf, order_prio_sigal);
 			}
 			else if( entry_index == ORDER_FIND_INDEX_ERR){				//订单大小大于4K,但是又没有超过最长订单限制，（现在订单最长限制就为4K，所以理论上不可达）
-				DEBUG_PRINT("ORDER_ERR: ORDER_FIND_INDEX_ERR,  occur error when find the order index \n");	
+				ORDER_DEBUG_PRINT("ORDER_ERR: ORDER_FIND_INDEX_ERR,  occur error when find the order index \r\n");	
 				error_order_deal(buf , order_prio_sigal);
 			}
 			else if (entry_index < 0 ){														//表明紧急订单没有申请到内存块
-				DEBUG_PRINT("ORDER_WARNNING: NON BLOCK FOR UGRGENT ORDER\n");					
+				ORDER_DEBUG_PRINT("ORDER_WARNNING: NON BLOCK FOR UGRGENT ORDER\r\n");					
 				OSSemPost(Print_Queue_Sem);	//因为加急订单并没有删除，所以还是存在缓冲中					
 				
-				DEBUG_PRINT("QUEUE DEBUG :Before Non block Change\n");
+				ORDER_DEBUG_PRINT("QUEUE DEBUG :Before Non block Change\r\n");
 				printOrderQueueSeque();						
 				Change_Order_Seque(entry_index);//改变订单顺序，以让加急订单尽快加入到队列中)	
-				DEBUG_PRINT("QUEUE DEBUG :After  Non block Change\n");
+				ORDER_DEBUG_PRINT("QUEUE DEBUG :After  Non block Change\r\n");
 				printOrderQueueSeque();				
 				
 				OSTimeDlyHMSM(0, 0, 1, 0);
 			}
 			else{																									//正常取得索引
-				DEBUG_PRINT("ORDER_SUCCESS: ENQUEUE SUCCESS \n");					
+				ORDER_DEBUG_PRINT("ORDER_SUCCESS: ENQUEUE SUCCESS \r\n");					
 				OrderEnqueue(buf,entry_index , order_len,order_prio_sigal);
 				//这里进行7K判断，因为每入队一个订单，都有可能会让缓冲区减少一点。
 				Check_Buf_Request_Signal(queue_buf);

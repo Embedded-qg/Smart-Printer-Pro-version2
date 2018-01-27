@@ -63,6 +63,8 @@ static u16_t len = 0;	//从网络缓冲区读取到的数据的长度
 u8_t netbuf_type = 0;
 u8_t batch_flag = 0;//批次标记
 u8_t batch_table_hash = 0;
+static u16_t order_req_num = 0;
+static u16_t batch_count = 0;
 
 /****************************************************************************************
 *@Name............: read_message_from_netbuf
@@ -177,8 +179,8 @@ void deal_with_contract_order(char *contract_buf)
 		}
 		else if(contract_type == CONTRACT_ESCAPE)//解约
 		{
+			contract_response(order_netconn,contract_type+1);	
 			contract_partner = contract_information.contract_number = 0;
-			contract_response(order_netconn,contract_type+1);
 			NET_DEBUG_PRINT("已解约\r\n");
 		}
 }
@@ -187,25 +189,20 @@ void deal_with_contract_order(char *contract_buf)
 void deal_with_batch_order(char *batch_buf)
 {
 	u16_t preservation;
-
-//	ANALYZE_DATA_2B((batch + BATCH_PRESERVATION_OFFSET), preservation);//读取批次状态
-
-//	if(contract_partner == 0 && preservation == 0)
-//	{
-//		NET_DEBUG_PRINT("不接收此报文！！！\r\n");
-//		return ;
-//	}
-	
+	u16_t order_number;
 	last_bacth_number = batch_number;
 	ANALYZE_DATA_2B((batch + BATCH_NUMBER_OFFSET), batch_number);//获取批次号
+	ANALYZE_DATA_2B((batch + BATCH_ORDER_NUMBER_OFFSET),order_number);//获取订单数目
 	
-	NET_DEBUG_PRINT("batch read success ,batch_number is %x %x\r\n", *(batch + BATCH_NUMBER_OFFSET), *(batch + BATCH_NUMBER_OFFSET + 1));
-	NET_DEBUG_PRINT("batch read success ,batch_length is %x %x\r\n", *(batch + BATCH_TOTAL_LENGTH_OFFSET), *(batch + BATCH_TOTAL_LENGTH_OFFSET + 1));		
-	
-	batch_table_hash = get_batch_hash(batch_number);
+	NET_DEBUG_PRINT("order number = %d\r\n",order_number);
+	NET_DEBUG_PRINT("batch read success ,batch_number is %d\r\n", batch_number);
+//	NET_DEBUG_PRINT("batch read success ,batch_length is %x %x\r\n", *(batch + BATCH_TOTAL_LENGTH_OFFSET), *(batch + BATCH_TOTAL_LENGTH_OFFSET + 1));		
+
 	Analyze_Batch_Info_Table(batch, batch_number);//批次解包
-	
+	batch_table_hash =  get_batch_hash(batch_number);
 	if(batch_number != last_bacth_number) batch_flag = 1;
+	batch_count++;
+	NET_DEBUG_PRINT("接收批次数目为%d\r\n",batch_count);
 }
 
 void deal_with_order_order(void)
@@ -238,12 +235,12 @@ void deal_with_order(char *netbuf)
 		NET_DEBUG_PRINT("处理合同网报文\r\n");
 		deal_with_contract_order(netbuf);//处理合同网报文
 	}
-	if(netbuf_type == NETORDER_TYPE_BATCH)
+	else if(netbuf_type == NETORDER_TYPE_BATCH)
 	{
 		NET_DEBUG_PRINT("处理批次报文\r\n");
 		deal_with_batch_order(netbuf);//处理批次报文
 	}
-	if(netbuf_type == NETORDER_TYPE_ORDER)
+	else if(netbuf_type == NETORDER_TYPE_ORDER)
 	{
 		NET_DEBUG_PRINT("处理订单数据报文\r\n");
 		deal_with_order_order();//处理订单数据
@@ -312,12 +309,14 @@ void write_connection(struct netconn *conn, req_type type, u8_t symbol, u32_t pr
 {
 	char sent_data[SEND_DATA_SIZE] = {0};	//状态报文和请求报文都是固定20字节
 	err_t err;
-	int i = 0;
+	int i = 0,j = 0;
 #ifdef REMOTE
 	//先处理网络而非本地
 	if(type == order_req){
 		Pack_Req_Or_Status_Message(sent_data, ORDER_REQ, symbol, Get_MCU_ID(), 
 									Get_Current_Unix_Time(), preservation);
+		order_req_num++;
+		NET_DEBUG_PRINT("阈值请求次数为%d\r\n",order_req_num);
 	}
 	else if(type == batch_status){//此时的preservation高16位为批次号
 		Pack_Req_Or_Status_Message(sent_data, BATCH_STATUS, symbol, Get_MCU_ID(), 
@@ -337,7 +336,12 @@ void write_connection(struct netconn *conn, req_type type, u8_t symbol, u32_t pr
 	}
 
 #endif
-	
+//	for(j = 0;j < SEND_DATA_SIZE;j++)
+//	{
+//		NET_DEBUG_PRINT("%x ",sent_data[j]);
+//	}
+//	NET_DEBUG_PRINT("\r\n");
+
 	while(0 != (err = netconn_write(conn, sent_data, SEND_DATA_SIZE, NETCONN_COPY))){
 		if(ERR_IS_FATAL(err))//致命错误，表示没有连接
 			break;
@@ -345,12 +349,12 @@ void write_connection(struct netconn *conn, req_type type, u8_t symbol, u32_t pr
 		//当网络写入错误时，需要等待一段时间后继续写入该数据包，否则无法反馈给服务器
 		OSTimeDlyHMSM(0,0,++i,0);
 		NET_DEBUG_PRINT("NETCONN WRITE ERR_T IS %d\r\n", err);
-		
+
 		if(type != order_req){//订单请求需持续发送，否则服务器将无法下达订单
 			if(i > 3) break;
 		}else if(i > 10) break;//但等待多次后是无意义的
 	}
-		
+	if(type == order_req) NET_DEBUG_PRINT("err = %d\r\n",err);	
 }
 
 /**

@@ -86,7 +86,7 @@ typedef struct order_information {
 	u32_t sever_send_time;     //服务器发送时间
 	u32_t serial_number;	   //订单序号
 	u16_t size;		  		   //订单长度
-	u32_t batch_number;		   //所属批次
+	u16_t batch_number;		   //所属批次
 	u16_t batch_within_number; //批次内序号
 	u16_t check_sum;		   //校验和
 	u16_t preservation;		   //保留	

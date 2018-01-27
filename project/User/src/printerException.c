@@ -3,7 +3,7 @@
 #include "compress.h"
 #include "format.h"
 
-USART_TypeDef * portSelect[4] = {0,USART1,UART4,USART3};
+USART_TypeDef * portSelect[5] = {0,USART1,UART4,USART6,USART3};
 
 /* static function declaration */
 static unsigned char stateCheck(u8_t option, u8_t deviceNum);

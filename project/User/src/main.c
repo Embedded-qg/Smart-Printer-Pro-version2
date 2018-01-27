@@ -226,6 +226,7 @@ int main(void)
 							  (void *)(PRINT_CELL_NUM_ONE + i),														//任务开始执行时，传递给任务的参数的指针
 							  (OS_STK *) &TRANSMITTER_TaskStk[i][TRANSMITTER_STK_SIZE - 1],		//分配给任务的堆栈的栈顶指针   从顶向下递减
 							  (INT8U) TRANSMITTER_TASK_PRIO + i);									//分配给任务的优先级	
+
 	}		
 						  
 	OSTimeSet(0);
@@ -468,6 +469,7 @@ static void Transmit_Task(void * p_arg)
 	while(1) 
 	{
 		OSSemPend(cellp->printBeginSem, 0, &err);
+		DEBUG_PRINT("cellno = %d\r\n",cellno);
 		Print_Order(cellno);
 	}
 	

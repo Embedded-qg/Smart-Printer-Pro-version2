@@ -107,6 +107,14 @@
 #define DATA_HEADER_SIZE 	4
 #define DATA_FOOTER_SIZE	4
 
+
+#define ORDER_DEBUG_PRINT_ON 0
+#if ORDER_DEBUG_PRINT_ON
+	#define ORDER_DEBUG_PRINT(fmt,args...) printf (fmt ,##args)
+#else
+	#define ORDER_DEBUG_PRINT(fmt,args...)
+#endif
+
 typedef struct buf_information
 {
 	u32_t common_buf_size;

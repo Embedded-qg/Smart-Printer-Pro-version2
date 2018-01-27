@@ -88,7 +88,6 @@ void Analyze_Batch_Info_Table(char *batch_data, u16_t batch_number)
 	hash = get_batch_hash(batch_number);
 	batch_info_table[hash].batch_number = batch_number;
 	ANALYZE_DATA_2B((batch_data + BATCH_ORDER_NUMBER_OFFSET), batch_info_table[hash].order_number);//设立订单数目
-	printf("order_number = %d\r\n",batch_info_table[hash].order_number);
 	ANALYZE_DATA_2B((batch_data + BATCH_TOTAL_LENGTH_OFFSET), batch_info_table[hash].batch_length);//设立批次长度
 	ANALYZE_DATA_4B((batch_data + BATCH_SEVER_SEND_TIME_OFFSET), batch_info_table[hash].sever_send_time);//设立服务器发送时间
 	ANALYZE_DATA_4B((batch_data + BATCH_CHECK_SUM_OFFSET), batch_info_table[hash].check_sum);//设立校验和
@@ -108,19 +107,19 @@ u8_t find_order_head(char **data,u16_t *len)
 		if(sub_data[i] == '\xbf' && sub_data[i + 1] == '\xfb')
 		{
 			netbuf_type = NETORDER_TYPE_CONTRACT;
-			NET_DEBUG_PRINT("这是一个合同网报文\r\n");
+			ANALYZE_DEBUG_PRINT("这是一个合同网报文\r\n");
 			break;
 		}			
 		if(sub_data[i] == '\xaa' && sub_data[i + 1] == '\x55')
 		{
 			netbuf_type = NETORDER_TYPE_BATCH;
-			NET_DEBUG_PRINT("这是一个批次报文\r\n");
+			ANALYZE_DEBUG_PRINT("这是一个批次报文\r\n");
 			break;
 		}
 		if(sub_data[i] == '\x3e' && sub_data[i + 1] == '\x11')
 		{
 			netbuf_type = NETORDER_TYPE_ORDER;
-			NET_DEBUG_PRINT("这是一个订单数据报文\r\n");
+			ANALYZE_DEBUG_PRINT("这是一个订单数据报文\r\n");
 			break;
 		}
 	}

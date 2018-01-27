@@ -300,6 +300,7 @@ static PrintCellInfo *GetIdlePrintCell(void)
 }
  
 
+
 /**
  *  @fn		DispensePrintJob
  *	@brief	将打印任务分配给打印单元，并执行打印
@@ -315,6 +316,7 @@ void DispensePrintJob(u8_t entryIndex)
 //		DEBUG_PRINT("BUG DETECT: DispensePrintJob: None Usable Print Cell Exits\n");
 		return;
 	}
+	
 	cellp->entryIndex = (OrderEntry)entryIndex;
 	OSSemPost(cellp->printBeginSem);	// 开始订单传输工作
 }
@@ -458,16 +460,16 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 					0：获取到第4个字节
 					-1：其他错误情况
  */
-static s8_t CheckPrintStatue(PrintCellNum cellno)
+s8_t CheckPrintStatue(PrintCellNum cellno)
 {
 	static u8_t tmp[4];
-	static u8_t cnt = 0;
+	static u8_t cnt[5] = {0};
 	
-	tmp[cnt++] = PRINTER_GET(cellno);
-
+	tmp[cnt[cellno]] = PRINTER_GET(cellno);
+	cnt[cellno]++;
 	// 在串口中断中接收数据只能按中断一次接收一Byte来进行，下面每接收到一个字节，就会发送下一状态指令，
 	// 这样，下一次进入该中断处理函数时，状态反馈数据会被读入缓冲区。
-	switch(cnt) {
+	switch(cnt[cellno]) {
 		case 1:
 			SEND_STATUS_CMD_TWO(cellno);
 			return 1;
@@ -479,10 +481,10 @@ static s8_t CheckPrintStatue(PrintCellNum cellno)
 			return 1;
 		case 4:
 			DealwithOrder(cellno,tmp);
-			cnt = 0;
+			cnt[cellno] = 0;
 			return 0;
 		default:
-			cnt = 0;
+			cnt[cellno] = 0;
 			return -1;
 	}	
 }
@@ -502,7 +504,15 @@ void UART4_Hook(void)
 	CheckPrintStatue(PRINT_CELL_NUM_TWO);
 }
 
+void UART6_Hook(void)
+{
+		CheckPrintStatue(PRINT_CELL_NUM_THREE);
+}
 
+void USART3_Hook(void)
+{
+		CheckPrintStatue(PRINT_CELL_NUM_FOUR);
+}
 
 static void DealwithDMA(PrintCellNum cellno)
 {

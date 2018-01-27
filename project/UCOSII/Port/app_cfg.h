@@ -11,19 +11,19 @@
 #define  PRINT_TASK_PRIO             9
 #define  LOCAL_REC_TASK_PRIO       	 8
 #define  WIFI_REC_REQ_TASK_PRIO      6
-#define  WIFI_REC_TASK_PRIO       	 14
+#define  WIFI_REC_TASK_PRIO       	 16
 #define  REQ_BATCH_TASK_PRIO         10
 #define  PRINT_QUEUE_TASK_PRIO       11
 #define  UDP_TASK_PRIO                7
 //#define  TCP_TASK_PRIO                13
 // 优先级区间[TRANSMITTER_TASK_PRIO, TRANSMITTER_TASK_PRIO + MAX_CELL_NUM]被传输线程占用
 #define  TRANSMITTER_TASK_PRIO		 12
-#define  MIN_TASK_PRIO 				 15	//最低任务优先级
-#define	 LOCAL_SEND_DATA_MUTEX_PRIO	 16
-#define  WIFI_SEND_DATA_MUTEX_PRIO	 17
-#define  URGENT_BUF_MUTEX_PRIO		 18
-#define  QUEUE_BUF_MUTEX_PRIO		 19
-#define  ORDER_PRINT_TABLE_MUTEX_PRIO 20
+#define  MIN_TASK_PRIO 				 17	//最低任务优先级
+#define	 LOCAL_SEND_DATA_MUTEX_PRIO	 18
+#define  WIFI_SEND_DATA_MUTEX_PRIO	 19
+#define  URGENT_BUF_MUTEX_PRIO		 20
+#define  QUEUE_BUF_MUTEX_PRIO		 21
+#define  ORDER_PRINT_TABLE_MUTEX_PRIO 22
 /*
 *********************************************************************************************************
 *                                            TASK STACK SIZES

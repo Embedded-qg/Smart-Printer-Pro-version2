@@ -6,7 +6,7 @@
 #include "print_cells.h"
 
 /*********************************************************Gloabal Area**************************************************/
-extern USART_TypeDef * portSelect[4];
+extern USART_TypeDef * portSelect[5];
 
 #define PRINTER_PUT(data, deviceNum) USART_SendData(portSelect[deviceNum], data)
 #define PRINTER_GET(deviceNum) USART_ReceiveData(portSelect[deviceNum])

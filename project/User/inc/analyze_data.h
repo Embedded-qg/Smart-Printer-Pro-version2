@@ -34,6 +34,12 @@ extern batch_info batch_info_table[];//Åú´Î±í
 		data |= *((add) + 1);		\
 	}while(0)
 	
+#define ANALYZE_DEBUG_PRINT_ON 0
+#if ANALYZE_DEBUG_PRINT_ON
+	#define ANALYZE_DEBUG_PRINT(fmt,args...) printf (fmt ,##args)
+#else
+	#define ANALYZE_DEBUG_PRINT(fmt,args...)
+#endif
 
 /**************************************************************
 *	Function Define Section

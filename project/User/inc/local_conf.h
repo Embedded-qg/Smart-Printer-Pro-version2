@@ -32,7 +32,7 @@ typedef enum status{
 void 	LocalSendData(char *data, u16_t len);		//从串口发送数据
 void 	local_receive(void);						//接收串口数据并进行数据处理
 void 	ReadData(char *data, u16_t *len);			//读取串口缓冲区，有多少读多少，但不移动缓冲区指针
-void 	USART3_Hook(u8_t ch);						//将从串口3读取到的数据放入缓冲区
+//void 	USART3_Hook(u8_t ch);						//将从串口3读取到的数据放入缓冲区
 void 	AckToLocal(u32_t orderNum);					//打印机发送应答给本地
 void 	DealAckFromLocal(char *data);				//解决来自本地的应答
 void 	recOrder(char *data, u16_t len);			//接收订单

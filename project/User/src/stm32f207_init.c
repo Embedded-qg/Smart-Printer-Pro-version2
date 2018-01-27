@@ -89,7 +89,7 @@ static void Usart6_Init(void)
 	
 	USART_StructInit(&USART_InitStructure);//载入默认USART参数
 	USART_ClockStructInit(&USART_ClockInitStruct);//载入默认USART参数        
-	//配置串口6的管脚 PC6 USART1_TX PC7 USART1_RX    
+	//配置串口6的管脚 PC6 UART6_TX PC7 UART6_RX    
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;    //复用
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP; //推挽输出
@@ -105,7 +105,7 @@ static void Usart6_Init(void)
 	USART_ClockInit(USART6,&USART_ClockInitStruct);
 
 
-	USART_InitStructure.USART_BaudRate = 57600;
+	USART_InitStructure.USART_BaudRate = 115200;
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
 	USART_InitStructure.USART_StopBits = USART_StopBits_1;
 	USART_InitStructure.USART_Parity = USART_Parity_No;
@@ -218,7 +218,7 @@ static void Usart3_Init(void)
 	USART_ClockInit(USART3,&USART_ClockInitStruct);
 
 
-	USART_InitStructure.USART_BaudRate = 9600;//蓝牙波特率为9600，wifi则为57600
+	USART_InitStructure.USART_BaudRate = 115200;//蓝牙波特率为9600，wifi则为57600
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
 	USART_InitStructure.USART_StopBits = USART_StopBits_1;
 	USART_InitStructure.USART_Parity = USART_Parity_No;
@@ -483,7 +483,7 @@ void Mem_To_USART2_DMA_Config(uint8_t *SendBuff, uint16_t size)
 }
 
 
-void System_Setup()
+ void System_Setup()
 {
 	RCC_ClocksTypeDef RCC_Clocks;
 	
@@ -562,8 +562,8 @@ int fputc(int ch, FILE *f)
     /* Loop until the end of transmission */
 
     /* e.g. write a character to the USART */
-    USART_SendData(UART4, (uint8_t) ch);
-//		USART_SendData(USART1, (uint8_t) ch);
+//    USART_SendData(USART2, (uint8_t) ch);
+		USART_SendData(UART4, (uint8_t) ch);
     return ch;
 }
 

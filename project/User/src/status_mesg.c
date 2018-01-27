@@ -396,10 +396,11 @@ void Order_Print_Status_Mesg_Queue_Send ( u16_t batch_num , u16_t order_num , u8
 void Printer_Status_Mesg_Queue_Send(u32_t printer_num , u8_t status)
 {
 	//status宏，就是对应的发送状态
-	DEBUG_PRINT("SEND MESG : start to send printer status \r\n");
+	DEBUG_PRINT("SEND MESG : start to send printer %d status \r\n",printer_num + 1);
 	SendStatusToWifi(printer_status,status, PRINTER_MESG_IP,printer_num+1);
 	BASE_SEND_STATUS(printer_status,status,printer_num+1);
-	SendStatusToLocal(printer_status,status,printer_num+1); 	
+	SendStatusToLocal(printer_status,status,printer_num+1); 
+	DEBUG_PRINT("sadsadadasdasdas\r\n");
 	return ;
 }
 
@@ -504,7 +505,8 @@ void Health_Detect_Fun()
 		//状态监测
 			//发送要求检测打印机状态
 			if(PCMgr.cells[printer_num].status != PRINT_CELL_STATUS_BUSY){	
-//				DEBUG_PRINT("Health_Detect_Fun: Sending Status Cmd to PC: %u\r\n", PCMgr.cells[printer_num].no);
+				DEBUG_PRINT("Health_Detect_Fun: Sending Status Cmd to PC: %u\r\n", PCMgr.cells[printer_num].no);
+				DEBUG_PRINT("Health_Detect_Fun: Sending Status Cmd to PC: %u，stutas = %d\r\n", printer_num + 1,PCMgr.cells[printer_num].status);
 				SEND_STATUS_CMD_ONE(PCMgr.cells[printer_num].no);
 				//等待状态接受成功信号量。
 
@@ -519,7 +521,7 @@ void Health_Detect_Fun()
 						PCMgr.cells[printer_num].status = PRINT_CELL_STATUS_ERR;
 						value = PRINTER_HEALTH_UNHEALTHY;//要斟酌，是否要加个离线状态？
 						
-//						DEBUG_PRINT("\nPrint Cell %u Off-line\r\n", i+1);
+						//DEBUG_PRINT("\nPrint Cell %u Off-line\r\n", i+1);
 					}
 				}
 				else{	//打印机没有离线
