@@ -72,3 +72,39 @@ void Pack_Contract_Message(char *message,contract_type type,u16_t contract_numbe
 	SET_DATA_2B(&message[CONTRACT_CHECK_SUM_OFFSET], ((check_sum << 8) + (check_sum >> 8)));
 
 }
+
+/**
+ *  @name	    Pack_TransfTask_Message
+ *	@description   任务转移报文
+ *	@param			none
+ *	@return		  none
+ *  @notice
+ */
+void Pack_TransfTask_Message(char *message, req_type type, u8_t symbol, u32_t source_id, u32_t target_id, u32_t UNIX_time, u32_t preservation)
+{
+	u16_t check_sum;
+	
+	/*起始符*/
+	message[0] = '\xCF';
+	message[1] = '\xFC';
+	
+	/*设置类型和标志*/
+	message[2] = type;
+	message[3] = symbol;
+	
+	SET_DATA_4B(&message[4], source_id);//设置源主控板id
+	
+	SET_DATA_4B(&message[8], target_id);//设置目标主控版id
+
+	SET_DATA_4B(&message[12], UNIX_time);//设置Unix时间戳
+	
+	SET_DATA_4B(&message[16], preservation);//填充段
+	
+	/*终止符*/
+	message[22] = '\xFC';
+	message[23] = '\xCF';
+	
+	/*获取校验和*/
+	check_sum = Check_Sum((u16_t*)message, TRANSF_MESS_SIZE);
+	SET_DATA_2B(&message[20], ((check_sum << 8) + (check_sum >> 8)));
+}

@@ -20,23 +20,13 @@ extern OS_EVENT *Ack_Rec_Printer_Sem;	//本地接收对打印机状态应答的信号量
 static u32_t last_order_number = 0;		//上一次接收的订单号
 static u32_t current_order_number = 0;	//本次接收的订单号
 extern OS_EVENT *Print_Queue_Sem;
-extern  s8_t CheckPrintStatue(PrintCellNum cellno);
+
+extern u32 hour ,min ,sec ,msec;//时分秒 毫秒，用于获取网络时间
+extern INT32U StartTime[100];//起始时钟节拍
+extern InternetTime current_internet_time[100];
 /**************************************************************
 *	Function Define Section
 **************************************************************/
-
-//void USART3_Hook(u8_t ch)//将从串口3读取到的数据放入缓冲区
-//{
-//	extern OS_EVENT *Local_Rec_Data_Sem;
-//	if((usart_buf.write + 1) % usart_buf.MAX == usart_buf.read)
-//		return;
-//	
-//	usart_buf.base[usart_buf.write++] = ch;
-//	usart_buf.write = usart_buf.write % usart_buf.MAX;
-//	if(usart_buf.buf_empty)
-//		OSSemPost(Local_Rec_Data_Sem);
-//	usart_buf.buf_empty = BUF_IS_NOT_EMPTY;    //缓冲不为空
-//}
 
 
 //获取缓冲区长度
@@ -241,6 +231,8 @@ void DealAckFromLocal(char *ack)//解决来自本地的应答
 void recOrder(char *data, u16_t len)//接收订单
 {
 	u16_t order_len;
+	u32_t mcu_idno;
+	u32_t current_time;
 	u16_t order_total_len;			//订单总共长度
 	
 	u16_t timeCount = 0;
@@ -260,8 +252,7 @@ void recOrder(char *data, u16_t len)//接收订单
 	}
 	
 	if(timeCount < 40 && True == CheckRec((u8_t *)data, order_len)){//检测订单是否正确
-		ANALYZE_DATA_4B((data + ORDER_NUM_HEAD_OFFSET), current_order_number);//获取订单号
-		
+	
 		if(current_order_number != last_order_number){//判断订单号是否重复
 			put_in_buf((u8_t*)data, order_len, URGENT);//写入缓冲区
 			ClearBuf();
@@ -308,6 +299,7 @@ void local_receive(void)//接收本地的订单及应答
 	char readFromBuf[20];
 	u16_t len;//从缓冲区读取到的数据的长度
 	u8_t os_err = 0;
+	u32_t current_number;
 	extern OS_EVENT *Local_Rec_Data_Sem;
 	
 	while(1){//串口接收缓冲区不为空
@@ -335,6 +327,7 @@ void local_receive(void)//接收本地的订单及应答
 		len = GetBufLen(usart_buf);//缓冲区长度
 		find_substr_head(&data, "\x3e\x11", &len, 2);//寻找订单头
 		if(len > 0) {//检测到是订单头了
+					
 			recOrder(data, len);//接收订单
 		}else{//如果找不到订单或应答头，就清除缓冲区，并继续下一步
 			ClearBuf();

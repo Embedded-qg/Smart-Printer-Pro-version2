@@ -52,6 +52,9 @@ u32_t MesgQueIndex = 0;
 *	Global Variable Declare Section
 **************************************************************/
 extern OS_EVENT *Mesg_Queue;
+extern struct netconn *order_netconn;
+extern void ShowTime(u32_t order_time, INT32U startTime, INT32U OSTime);
+extern INT32U StartTime; //基准时间
 /**************************************************************
 *	File Static Variable Define Section
 **************************************************************/
@@ -91,7 +94,8 @@ void Batch_Status_Send(u16_t batch_num ,u8_t status)
  */
 void Order_QUEUE_Status_Send ( order_info* order , u8_t status )
 {
-
+	DEBUG_PRINT_TIMME("进入打印队列开始，订单编号为：%u，",order->serial_number);//1ms中断一次*时钟节拍
+	ShowTime(order->sever_send_time,StartTime,OSTimeGet()*TIME_INTERVAL);
 	MesgQueBuf[MesgQueIndex].flag = ORDER_QUEUE_MESG_QUE_FLAG;
 	MesgQueBuf[MesgQueIndex].mesgQueueData.order_QUEUE_Status.batch_num = order->batch_number;
 	MesgQueBuf[MesgQueIndex].mesgQueueData.order_QUEUE_Status.order_num = order->batch_within_number;
@@ -517,7 +521,15 @@ void Health_Detect_Fun()
 						continue ;//什么都不用干！~报文也不用发了
 					}
 					else{//打印机由正常变为异常（离线）
-						OSSemAccept(PCMgr.resrcSem);
+						if(printer_num == 0)
+						{
+							OSSemAccept(PCMgr.resrcSem1);
+						}
+						else if(printer_num == 1)
+						{
+							OSSemAccept(PCMgr.resrcSem2);
+						}
+						
 						PCMgr.cells[printer_num].status = PRINT_CELL_STATUS_ERR;
 						value = PRINTER_HEALTH_UNHEALTHY;//要斟酌，是否要加个离线状态？
 						

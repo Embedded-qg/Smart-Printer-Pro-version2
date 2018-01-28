@@ -32,9 +32,9 @@
 #define ORDER_SEVER_SEND_TIME_OFFSET	  8  //服务器发送时间偏移值
 #define ORDER_SERIAL_NUMBER_OFFSET		  12 //订单序号偏移值
 #define ORDER_BATCH_NUMBER_OFFSET		  16 //所属批次偏移值
-#define ORDER_BATCH_WITHIN_NUMBER_OFFSET 20 //批次内序号偏移值
-#define ORDER_CHECK_SUM_OFFSET			  22 //校验和偏移值
-#define ORDER_DATA_OFFSET				  24 //数据域偏移值
+#define ORDER_BATCH_WITHIN_NUMBER_OFFSET 18 //批次内序号偏移值
+#define ORDER_CHECK_SUM_OFFSET			  20 //校验和偏移值
+#define ORDER_DATA_OFFSET				  22 //数据域偏移值
 
 
 /******************批次头部格式各个字段的偏移量*****************/
@@ -49,6 +49,7 @@
 
 /***********************状态头部表格长度***********************/
 #define SEND_DATA_SIZE 				  	  20 //状态头部长度
+#define TRANSF_MESS_SIZE				24		//任务转移报文长度
 #define REC_DATA_SIZE					  20 //状态头部长度
 //原本应定义为STATUS_HEAD_SIZE的，但考虑接收与反馈的概念不同，故用这种方法
 

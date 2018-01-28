@@ -16,6 +16,7 @@
 #include "RequestHeap.h"
 #include "agent_udp.h"
 #include "agent_tcp.h"
+#include "transfer_task.h"
 
 #define GET_STATUS_01 putchar(0x10);putchar(0x04);putchar(0x01);
 #define GET_STATUS_02 putchar(0x10);putchar(0x04);putchar(0x02);
@@ -31,15 +32,15 @@ void UART4_Hook(void);
 /******************************************USART,DMA related Area******************/
 
 /* Private function prototypes -----------------------------------------------*/
-static  OS_STK LWIP_TaskStartStk[LWIP_TASK_START_STK_SIZE];
-static  OS_STK PRINT_TaskStk[PRINT_TASK_STK_SIZE];
-static  OS_STK REQ_BATCH_TaskStk[REQ_BATCH_TASK_STK_SIZE];
-static  OS_STK PRINT_QUEUE_TaskStk[PRINT_QUEUE_TASK_STK_SIZE];
-static  OS_STK HEALTH_DETECT_TaskStk[HEALTH_DETECT_TASK_STK_SIZE];
-static  OS_STK LOCAL_REC_TaskStk[LOCAL_REC_STK_SIZE];
-static  OS_STK WIFI_REC_TaskStk[WIFI_REC_STK_SIZE];
-static  OS_STK WIFI_REC_Req_TaskStk[WIFI_REC_REQ_STK_SIZE];
-static  OS_STK MESG_QUE_TaskStk[MESG_QUE_STK_SIZE];
+__align(8) static  OS_STK LWIP_TaskStartStk[LWIP_TASK_START_STK_SIZE];
+__align(8) static  OS_STK PRINT_TaskStk[PRINT_TASK_STK_SIZE];
+__align(8) static  OS_STK REQ_BATCH_TaskStk[REQ_BATCH_TASK_STK_SIZE];
+__align(8) static  OS_STK PRINT_QUEUE_TaskStk[PRINT_QUEUE_TASK_STK_SIZE];
+__align(8) static  OS_STK HEALTH_DETECT_TaskStk[HEALTH_DETECT_TASK_STK_SIZE];
+__align(8) static  OS_STK LOCAL_REC_TaskStk[LOCAL_REC_STK_SIZE];
+__align(8) static  OS_STK WIFI_REC_TaskStk[WIFI_REC_STK_SIZE];
+__align(8) static  OS_STK WIFI_REC_Req_TaskStk[WIFI_REC_REQ_STK_SIZE];
+__align(8) static  OS_STK MESG_QUE_TaskStk[MESG_QUE_STK_SIZE];
 
 // 打印传输单元线程，负责实际的订单传输工作
 static  OS_STK TRANSMITTER_TaskStk[MAX_CELL_NUM][TRANSMITTER_STK_SIZE];
@@ -176,7 +177,7 @@ int main(void)
                		      (OS_STK *) &PRINT_TaskStk[PRINT_TASK_STK_SIZE - 1],	//分配给任务的堆栈的栈顶指针   从顶向下递减
                           (INT8U) PRINT_TASK_PRIO);								//分配给任务的优先级															
 					
-	/*任务功能：建立订次接收*/
+	/*任务功能：建立批次接收*/
 	os_err = OSTaskCreate((void (*) (void *))Recv_Batch_Task,               		//指向任务代码的指针
                           (void *) 0,												//任务开始执行时，传递给任务的参数的指针
                		      (OS_STK *) &REQ_BATCH_TaskStk[REQ_BATCH_TASK_STK_SIZE - 1],//分配给任务的堆栈的栈顶指针   从顶向下递减
@@ -304,18 +305,28 @@ static  void Print_Task(void* p_arg)
 {
 	INT8U err;
 	u8_t entry;
-	order_info *orderp;
+	extern order_print_queue_info order_print_table;
 	(void) p_arg;
-
+	
 	while(1)
 	{
 		DEBUG_PRINT("Print_Task: ORDER  WAITING\n");			
 		OSSemPend(Print_Sem, 0, &err);		
 		DEBUG_PRINT("Print_Task: ORDER  GET\n");
-		
+		DEBUG_PRINT_STATEGY("\r\nPrint_Task: ORDER  GET\n");
+		printf("\n---aaaaa----\n");		
 		if(GetRestoredOrder(&entry) == 1 || GetOrderFromQueue(&entry) ==  ORDER_QUEUE_OK) {	// 成功获取订单
-			if(CheckOrderData(entry) == ORDER_DATA_OK) {	// 订单数据正确，下发打印任务
+			if(CheckOrderData(entry) == ORDER_DATA_OK){	// 订单数据正确，下发打印任务
 				DEBUG_PRINT("Print_Task: ORDER DATA CHECK OK\n");
+				if(if_printer_all_error() == ALL_ERROR){		//打印机异常无法打印，需要任务转移，提前结束
+					printf(ERROR_PRINTER_ALL_ERROR);
+//					Init_Queue();
+					printf("\n--------xxxxxxxx-------\n batch_number:%u \n", order_print_table.order_node[entry].batch_number);
+					printf("\n--------xxxxxxxx-------\n batch_within_number:%u \n", order_print_table.order_node[entry].batch_within_number);				
+					transf_task(order_netconn,order_status,TRANSFER_BATCH_STARTORDER,Get_TARGET_ID(),
+					order_print_table.order_node[entry].batch_number<<16|(u32_t)order_print_table.order_node[entry].batch_within_number);
+					continue	;
+				}
 				DispensePrintJob(entry);	
 			}else {		// 订单数据错误，丢弃订单
 				Delete_Order(entry);
@@ -498,6 +509,9 @@ static void TCP_Task(void *p_arg)
 
 		(void) p_arg;
 		agent_tcp_server();
+	
+	
+	
 //		if(!NORMAL)		//这里实际上需要一个信号量
 //		{
 //			con_to_agent();

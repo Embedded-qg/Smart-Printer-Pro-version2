@@ -585,7 +585,7 @@ int fgetc(FILE *fp)
 {
 	int ch = 0;
 
-	ch = (int)USART1->DR & 0xFF;
+	ch = (int)USART3->DR & 0xFF;
 	
 	putchar(ch); //╩ьот
 	

@@ -38,6 +38,7 @@
 #include "print_queue.h"
 #include "app_cfg.h"
 #include "wifi_conf.h"
+#include "transfer_task.h"
 
 /**************************************************************
 *        Macro Define Section
@@ -120,6 +121,7 @@
 #define EX_ORDER_ENQUE_SUC		7		//前异常订单进入打印队列
 #define EX_ORDER_PRINT_START	8		//前异常订单开始打印
 #define EX_ORDER_DATA_ERR			9		//前异常顶大订单数据解析错误
+#define TRANSFER_BATCH_STARTORDER		12	//此订单开始进行本批次（任务）转移
 
 /*
 	Printer_Status_Send函数所用宏

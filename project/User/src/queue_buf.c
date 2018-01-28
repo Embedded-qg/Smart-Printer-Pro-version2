@@ -2,6 +2,10 @@
 #include "queue_buf.h"
 #include "print_queue.h"
 
+extern INT32U StartTime[100];//起始时钟节拍
+extern InternetTime current_internet_time[100];
+
+
 ElemType Qbuf[MAXQSIZE];        //循环缓冲区的建立
 ElemType Ubuf[MAXUSIZE];        //加急缓冲区的建立
 ElemType UsBuf[MAXUSIZE];		//串口缓冲区的建立
@@ -75,6 +79,7 @@ s8_t Write_Buf(SqQueue *buf,ElemType *e,u32_t len)
 		OS_CPU_SR cpu_sr;
 #endif
 	INT8U err;
+	u32_t current_number;
 	s8_t buf_err = BUF_OK;
 	
 	DEBUG_PRINT("-----------------------ready to pend a mutex of buf\n");
