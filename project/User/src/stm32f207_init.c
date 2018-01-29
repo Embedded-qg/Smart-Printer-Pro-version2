@@ -563,7 +563,7 @@ int fputc(int ch, FILE *f)
 
     /* e.g. write a character to the USART */
 //    USART_SendData(USART2, (uint8_t) ch);
-		USART_SendData(UART4, (uint8_t) ch);
+		USART_SendData(USART3, (uint8_t) ch);
     return ch;
 }
 

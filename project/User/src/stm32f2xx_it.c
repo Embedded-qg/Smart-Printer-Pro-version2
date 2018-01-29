@@ -258,7 +258,7 @@ extern void USART1_Hook(void);
 
 #include"print_cells.h"
 
-static INT8U sus_print_task[MAX_CELL_NUM] = {0xFF,0xFF,0xFF,0xFF};
+static INT8U sus_print_task[MAX_CELL_NUM] = {0xFF,0xFF,0xFF};
 
 void USART1_IRQHandler(void)
 {

@@ -13,6 +13,7 @@
     <tExt>*.txt; *.h; *.inc</tExt>
     <pExt>*.plm</pExt>
     <CppX>*.cpp</CppX>
+    <nMigrate>0</nMigrate>
   </Extensions>
 
   <DaveTm>
@@ -31,6 +32,7 @@
         <BeepAtEnd>1</BeepAtEnd>
         <RunSim>1</RunSim>
         <RunTarget>0</RunTarget>
+        <RunAbUc>0</RunAbUc>
       </OPTTT>
       <OPTHX>
         <HexSelection>1</HexSelection>
@@ -170,6 +172,7 @@
       </DebugFlag>
       <LintExecutable></LintExecutable>
       <LintConfigFile></LintConfigFile>
+      <bLintAuto>0</bLintAuto>
     </TargetOption>
   </Target>
 
@@ -222,7 +225,7 @@
       <GroupNumber>1</GroupNumber>
       <FileNumber>4</FileNumber>
       <FileType>1</FileType>
-      <tvExp>1</tvExp>
+      <tvExp>0</tvExp>
       <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
@@ -868,7 +871,7 @@
 
   <Group>
     <GroupName>LWIP_CORE</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1084,7 +1087,7 @@
 
   <Group>
     <GroupName>LWIP_CORE_IPv4</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1196,7 +1199,7 @@
 
   <Group>
     <GroupName>LWIP_API</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1308,7 +1311,7 @@
 
   <Group>
     <GroupName>LWIP_NETIF</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

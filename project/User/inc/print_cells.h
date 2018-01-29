@@ -41,7 +41,7 @@
 /**************************************************************
 *        Macro Define Section
 **************************************************************/
-#define MAX_CELL_NUM	4/* 最大打印单元数量，应小于等于4 */
+#define MAX_CELL_NUM	3/* 最大打印单元数量，应小于等于4 */
 
 /**
  * 打印单元编号定义
@@ -102,18 +102,13 @@ typedef struct {
 }PrintCellInfo;	/* 打印单元数据结构 */
 
 typedef struct {
-	OS_EVENT *resrcSem1;					//打印单元1
-	OS_EVENT *resrcSem2;					//打印单元2
-
+//	OS_EVENT *resrcSem1;					//打印单元1
+//	OS_EVENT *resrcSem2;					//打印单元2
+	OS_EVENT *resrcSem;
 	PrintCellInfo cells[MAX_CELL_NUM];	//可使用的打印单元表
 }PrintCellsMgrInfo;	/* 打印单元管理结构 */
 
-typedef struct {
-	u32 hour;
-	u32 min;
-	u32 sec;
-	u32 msec;
-}InternetTime;
+
 
 /**************************************************************
 *        Prototype Declare Section

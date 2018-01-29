@@ -10,7 +10,6 @@
 
 u32 hour = 0, min = 0, sec = 0,msec = 0;//时分秒 毫秒，用于获取网络时间
 INT32U StartTime = 0; //基准时间
-InternetTime current_internet_time[100];
 
 /**
  * @name   	Find_Entry

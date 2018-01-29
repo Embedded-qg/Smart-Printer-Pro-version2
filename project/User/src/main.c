@@ -313,16 +313,15 @@ static  void Print_Task(void* p_arg)
 		DEBUG_PRINT("Print_Task: ORDER  WAITING\n");			
 		OSSemPend(Print_Sem, 0, &err);		
 		DEBUG_PRINT("Print_Task: ORDER  GET\n");
-		DEBUG_PRINT_STATEGY("\r\nPrint_Task: ORDER  GET\n");
-		printf("\n---aaaaa----\n");		
+		DEBUG_PRINT_STATEGY("\r\nPrint_Task: ORDER  GET\n");	
 		if(GetRestoredOrder(&entry) == 1 || GetOrderFromQueue(&entry) ==  ORDER_QUEUE_OK) {	// 成功获取订单
 			if(CheckOrderData(entry) == ORDER_DATA_OK){	// 订单数据正确，下发打印任务
 				DEBUG_PRINT("Print_Task: ORDER DATA CHECK OK\n");
 				if(if_printer_all_error() == ALL_ERROR){		//打印机异常无法打印，需要任务转移，提前结束
-					printf(ERROR_PRINTER_ALL_ERROR);
+					DEBUG_PRINT(ERROR_PRINTER_ALL_ERROR);
 //					Init_Queue();
-					printf("\n--------xxxxxxxx-------\n batch_number:%u \n", order_print_table.order_node[entry].batch_number);
-					printf("\n--------xxxxxxxx-------\n batch_within_number:%u \n", order_print_table.order_node[entry].batch_within_number);				
+					DEBUG_PRINT("\n--------xxxxxxxx-------\n batch_number:%u \n", order_print_table.order_node[entry].batch_number);
+					DEBUG_PRINT("\n--------xxxxxxxx-------\n batch_within_number:%u \n", order_print_table.order_node[entry].batch_within_number);				
 					transf_task(order_netconn,order_status,TRANSFER_BATCH_STARTORDER,Get_TARGET_ID(),
 					order_print_table.order_node[entry].batch_number<<16|(u32_t)order_print_table.order_node[entry].batch_within_number);
 					continue	;
@@ -480,7 +479,6 @@ static void Transmit_Task(void * p_arg)
 	while(1) 
 	{
 		OSSemPend(cellp->printBeginSem, 0, &err);
-		DEBUG_PRINT("cellno = %d\r\n",cellno);
 		Print_Order(cellno);
 	}
 	

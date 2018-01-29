@@ -521,15 +521,7 @@ void Health_Detect_Fun()
 						continue ;//什么都不用干！~报文也不用发了
 					}
 					else{//打印机由正常变为异常（离线）
-						if(printer_num == 0)
-						{
-							OSSemAccept(PCMgr.resrcSem1);
-						}
-						else if(printer_num == 1)
-						{
-							OSSemAccept(PCMgr.resrcSem2);
-						}
-						
+						OSSemAccept(PCMgr.resrcSem);
 						PCMgr.cells[printer_num].status = PRINT_CELL_STATUS_ERR;
 						value = PRINTER_HEALTH_UNHEALTHY;//要斟酌，是否要加个离线状态？
 						

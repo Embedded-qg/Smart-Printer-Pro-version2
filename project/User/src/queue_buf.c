@@ -3,7 +3,6 @@
 #include "print_queue.h"
 
 extern INT32U StartTime[100];//起始时钟节拍
-extern InternetTime current_internet_time[100];
 
 
 ElemType Qbuf[MAXQSIZE];        //循环缓冲区的建立
