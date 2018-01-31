@@ -400,11 +400,10 @@ void Order_Print_Status_Mesg_Queue_Send ( u16_t batch_num , u16_t order_num , u8
 void Printer_Status_Mesg_Queue_Send(u32_t printer_num , u8_t status)
 {
 	//status宏，就是对应的发送状态
-	DEBUG_PRINT("SEND MESG : start to send printer %d status \r\n",printer_num + 1);
+//	DEBUG_PRINT("SEND MESG : start to send printer %d status \r\n",printer_num + 1);
 	SendStatusToWifi(printer_status,status, PRINTER_MESG_IP,printer_num+1);
 	BASE_SEND_STATUS(printer_status,status,printer_num+1);
 	SendStatusToLocal(printer_status,status,printer_num+1); 
-	DEBUG_PRINT("sadsadadasdasdas\r\n");
 	return ;
 }
 
@@ -422,7 +421,7 @@ void MesgQue_Deal()
 	
 	while(1){
 		receiveMesg = (MesgQueueNode *)OSQPend(Mesg_Queue,0,&err);
-//		DEBUG_PRINT("\n order num is %d",receiveMesg->mesgQueueData.order_Print_Status.order_num);
+//		DEBUG_PRINT("\n order num is %d\r\n",receiveMesg->mesgQueueData.order_Print_Status.order_num);
 		switch(receiveMesg->flag){
 			case BATCH_MESG_QUE_FLAG:{
 				Batch_Status_Mesg_Queue_Send(receiveMesg->mesgQueueData.batch_Status.batch_num,receiveMesg->status);				
@@ -445,8 +444,7 @@ void MesgQue_Deal()
 				break;
 			}
 			case PRINTER_MESG_QUE_FLAG:{
-				Printer_Status_Mesg_Queue_Send(receiveMesg->mesgQueueData.printer_Status.printer_num,receiveMesg->status);	
-					
+				Printer_Status_Mesg_Queue_Send(receiveMesg->mesgQueueData.printer_Status.printer_num,receiveMesg->status);					
 				break;
 			}		
 			default:
@@ -509,8 +507,8 @@ void Health_Detect_Fun()
 		//状态监测
 			//发送要求检测打印机状态
 			if(PCMgr.cells[printer_num].status != PRINT_CELL_STATUS_BUSY){	
-				DEBUG_PRINT("Health_Detect_Fun: Sending Status Cmd to PC: %u\r\n", PCMgr.cells[printer_num].no);
-				DEBUG_PRINT("Health_Detect_Fun: Sending Status Cmd to PC: %u，stutas = %d\r\n", printer_num + 1,PCMgr.cells[printer_num].status);
+//				DEBUG_PRINT("Health_Detect_Fun: Sending Status Cmd to PC: %u\r\n", PCMgr.cells[printer_num].no);
+//				DEBUG_PRINT("Health_Detect_Fun: Sending Status Cmd to PC: %u，stutas = %d\r\n", printer_num + 1,PCMgr.cells[printer_num].status);
 				SEND_STATUS_CMD_ONE(PCMgr.cells[printer_num].no);
 				//等待状态接受成功信号量。
 

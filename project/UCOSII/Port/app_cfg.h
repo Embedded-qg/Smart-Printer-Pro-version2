@@ -47,7 +47,7 @@
 #define TIME_INTERVAL 20//Ê±¼ä¼ä¸ô
 #define DEBUG_PRINT_ON 0
 #define DEBUG_PRINT_TIMME_ON 1
-#define DEBUG_PRINT_STATEGY_ON 0
+#define DEBUG_PRINT_STATEGY_ON 1
 
 #if DEBUG_PRINT_STATEGY_ON 
 	#define DEBUG_PRINT_STATEGY(fmt,args...) printf (fmt ,##args)

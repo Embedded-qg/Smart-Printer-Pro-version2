@@ -194,15 +194,16 @@ void deal_with_batch_order(char *batch_buf)
 	ANALYZE_DATA_2B((batch + BATCH_NUMBER_OFFSET), batch_number);//获取批次号
 	ANALYZE_DATA_2B((batch + BATCH_ORDER_NUMBER_OFFSET),order_number);//获取订单数目
 	
-	NET_DEBUG_PRINT("order number = %d\r\n",order_number);
 	printf("接收批次数据，该批次有%d份订单\r\n", order_number); //订单数目
 //	NET_DEBUG_PRINT("batch read success ,batch_length is %x %x\r\n", *(batch + BATCH_TOTAL_LENGTH_OFFSET), *(batch + BATCH_TOTAL_LENGTH_OFFSET + 1));		
-
+	Count_Accuracy();//计算批次数据下打印机单元精确度和所分配到的订单
+	PrioritySort();//打印单元按积分高低进行排序
+	
 	Analyze_Batch_Info_Table(batch, batch_number);//批次解包
 	batch_table_hash =  get_batch_hash(batch_number);
 	if(batch_number != last_bacth_number) batch_flag = 1;
 	batch_count++;
-//	NET_DEBUG_PRINT("接收批次数目为%d\r\n",batch_count);
+	printf("接收批次数目为%d\r\n",batch_count);
 }
 
 void deal_with_order_order(void)
@@ -219,7 +220,8 @@ void deal_with_order_order(void)
 		OSMutexPost(tempBuf->mutex);			//申请普通缓冲锁
 	}										
 	else{//订单数据正确						
-		NET_DEBUG_PRINT("接收订单成功!!\r\n");														
+		NET_DEBUG_PRINT("接收订单成功!!\r\n");
+		
 		OSSemPost(Print_Queue_Sem);
 		OSSemPost(Batch_Rec_Sem); 
 		NON_BASE_SEND_STATUS(batch_status, BATCH_ENTER_BUF, batch_number);//发送批次状态，进入缓冲区
@@ -282,16 +284,11 @@ void contract_response(struct netconn *conn,contract_type type)
 	Pack_Contract_Message(sent_data,type,contract_information.contract_number,Get_MCU_ID(),
 	Get_Current_Unix_Time(),Get_MCU_Speed(),Get_MCU_MaxBufSize(),Get_MCU_Status());
 #endif
-//	NET_DEBUG_PRINT("\r\n");
-//	for(i = 0;i < MAX_CONTRACT_HEAD_LENGTH;i++)
-//		NET_DEBUG_PRINT("%x ",sent_data[i]);
-//	NET_DEBUG_PRINT("\r\n");
 	while(0 != (err = netconn_write(conn, sent_data, MAX_CONTRACT_HEAD_LENGTH, NETCONN_COPY))){
 		if(ERR_IS_FATAL(err))//致命错误，表示没有连接
 			break;		
 		//当网络写入错误时，需要等待一段时间后继续写入该数据包，否则无法反馈给服务器
 		OSTimeDlyHMSM(0,0,++i,0);
-//		NET_DEBUG_PRINT("NETCONN WRITE ERR_T IS %d\r\n", err);
 	}	
 
 }
@@ -316,7 +313,7 @@ void write_connection(struct netconn *conn, req_type type, u8_t symbol, u32_t pr
 		Pack_Req_Or_Status_Message(sent_data, ORDER_REQ, symbol, Get_MCU_ID(), 
 									Get_Current_Unix_Time(), preservation);
 		order_req_num++;
-		NET_DEBUG_PRINT("阈值请求次数为%d\r\n",order_req_num);
+		printf("阈值请求次数为%d\r\n",order_req_num);
 	}
 	else if(type == batch_status){//此时的preservation高16位为批次号
 		Pack_Req_Or_Status_Message(sent_data, BATCH_STATUS, symbol, Get_MCU_ID(), 
@@ -349,7 +346,6 @@ void write_connection(struct netconn *conn, req_type type, u8_t symbol, u32_t pr
 			if(i > 3) break;
 		}else if(i > 10) break;//但等待多次后是无意义的
 	}
-	if(type == order_req) NET_DEBUG_PRINT("err = %d\r\n",err);	
 }
 
 /**

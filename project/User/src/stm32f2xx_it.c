@@ -334,24 +334,24 @@ void USART3_IRQHandler(void)
 	//The sentences are commented below are used to receive a byte one by one (in RXNE situation)
 	if(USART_GetITStatus(USART3, USART_IT_RXNE) != RESET)  //process the received byte
 	{
-		ch = USART_ReceiveData(USART3);
-		if(ch != Xoff && ch != Xon)
-		{
-			USART3_Hook();
-		}
-		else if(ch == Xoff)
-		{
-			sus_print_task[3] = OSPrioHighRdy;
-			OSTaskSuspend(OSPrioHighRdy);
-		}
-		else if(ch == Xon)
-		{
-			if(sus_print_task[3] != (INT8U)0xFF)   //检测之前是否已经挂起对应的打印线程
-			{
-				OSTaskResume(sus_print_task[3]);     //恢复打印线程
-				sus_print_task[3] = 0xFF;
-			}		
-		}
+//		ch = USART_ReceiveData(USART3);
+//		if(ch != Xoff && ch != Xon)
+//		{
+//			USART3_Hook();
+//		}
+//		else if(ch == Xoff)
+//		{
+//			sus_print_task[3] = OSPrioHighRdy;
+//			OSTaskSuspend(OSPrioHighRdy);
+//		}
+//		else if(ch == Xon)
+//		{
+//			if(sus_print_task[3] != (INT8U)0xFF)   //检测之前是否已经挂起对应的打印线程
+//			{
+//				OSTaskResume(sus_print_task[3]);     //恢复打印线程
+//				sus_print_task[3] = 0xFF;
+//			}		
+//		}
 	}
 	USART_ClearITPendingBit(USART3, USART_IT_RXNE);
 }

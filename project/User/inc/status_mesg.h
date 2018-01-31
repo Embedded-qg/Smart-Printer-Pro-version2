@@ -88,7 +88,7 @@
 	*/
 #define ENQUEUE_OK 0   //发送订单进入打印队列成功报文的宏
 #define ENQUEUE_ERR 1  //发送订单进入打印队列失败报文的宏
-#define ENQUQUE_START 2
+#define ENQUQUE_START 2 
 
 /* 
 	Order_Print_Status_Send中，判断订单状态的参数

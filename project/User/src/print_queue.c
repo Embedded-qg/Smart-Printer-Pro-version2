@@ -924,12 +924,11 @@ static s8_t OrderEnqueue(SqQueue* buf,s8_t entry_index , u16_t order_len,u8_t or
 	order_info *orderp = &order_print_table.order_node[entry_index];
 	u8_t *data = orderp->data;
 	
-
 	Add_Order_To_Print_Queue(buf,entry_index,order_prio_sigal); //分配内存					
 	DEBUG_PRINT_TIMME("订单批次内序号为：%u，订单编号为：%lu，订单长度为：%u，",orderp->batch_within_number,orderp->serial_number,orderp->size);//1ms中断一次*时钟节拍
 	ShowTime(orderp->sever_send_time,StartTime,OSTimeGet()*TIME_INTERVAL);
 	//发送订单进入打印队列的报文	
-	Order_QUEUE_Status_Send(&(order_print_table.order_node[entry_index]),ENQUEUE_OK	);						
+	Order_QUEUE_Status_Send(&(order_print_table.order_node[entry_index]),ENQUEUE_OK);						
 	ORDER_DEBUG_PRINT("-------ONE ORDER ENQUEUE---------\r\n");	
 
 	OSSemPost(Print_Sem);//产生打印信号

@@ -102,8 +102,6 @@ typedef struct {
 }PrintCellInfo;	/* 打印单元数据结构 */
 
 typedef struct {
-//	OS_EVENT *resrcSem1;					//打印单元1
-//	OS_EVENT *resrcSem2;					//打印单元2
 	OS_EVENT *resrcSem;
 	PrintCellInfo cells[MAX_CELL_NUM];	//可使用的打印单元表
 }PrintCellsMgrInfo;	/* 打印单元管理结构 */

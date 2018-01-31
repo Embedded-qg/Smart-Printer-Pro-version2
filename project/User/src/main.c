@@ -313,7 +313,7 @@ static  void Print_Task(void* p_arg)
 		DEBUG_PRINT("Print_Task: ORDER  WAITING\n");			
 		OSSemPend(Print_Sem, 0, &err);		
 		DEBUG_PRINT("Print_Task: ORDER  GET\n");
-		DEBUG_PRINT_STATEGY("\r\nPrint_Task: ORDER  GET\n");	
+		DEBUG_PRINT_STATEGY("Print_Task: ORDER  GET\r\n");	
 		if(GetRestoredOrder(&entry) == 1 || GetOrderFromQueue(&entry) ==  ORDER_QUEUE_OK) {	// 成功获取订单
 			if(CheckOrderData(entry) == ORDER_DATA_OK){	// 订单数据正确，下发打印任务
 				DEBUG_PRINT("Print_Task: ORDER DATA CHECK OK\n");

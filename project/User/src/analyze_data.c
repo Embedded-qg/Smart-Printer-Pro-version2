@@ -94,12 +94,12 @@ void Analyze_Batch_Info_Table(char *batch_data, u16_t batch_number)
 	batch_info_table[hash].batch_number = batch_number;
 	ANALYZE_DATA_2B((batch_data + BATCH_ORDER_NUMBER_OFFSET), batch_info_table[hash].order_number);//设立订单数目
 	ANALYZE_DATA_2B((batch_data + BATCH_TOTAL_LENGTH_OFFSET), batch_info_table[hash].batch_length);//设立批次长度
-	DEBUG_PRINT_STATEGY("\r\n before batch_order_already_print = %d\r\n",batch_order_already_print);
+	DEBUG_PRINT_STATEGY("before batch_order_already_print = %d\r\n",batch_order_already_print);
 	Data_long = batch_info_table[hash].order_number + batch_order_already_print;//获取订单的数目
 	batch_order_already_print = Data_long;//将其记录在batch_order_already_print，打印完一份就减1
 	Flag_receive_order = 1;//说明已获取批次订单数目
-	DEBUG_PRINT_STATEGY("\r\nData_long = %d\r\n",Data_long);
-	DEBUG_PRINT_STATEGY("\r\n after  batch_order_already_print = %d\r\n",batch_order_already_print);
+//	DEBUG_PRINT_STATEGY("Data_long = %d\r\n",Data_long);
+	DEBUG_PRINT_STATEGY("after  batch_order_already_print = %d\r\n",batch_order_already_print);
 	ANALYZE_DATA_4B((batch_data + BATCH_SEVER_SEND_TIME_OFFSET), batch_info_table[hash].sever_send_time);//设立服务器发送时间
 	ANALYZE_DATA_4B((batch_data + BATCH_CHECK_SUM_OFFSET), batch_info_table[hash].check_sum);//设立校验和
 	ANALYZE_DATA_2B((batch_data + BATCH_PRESERVATION_OFFSET), batch_info_table[hash].preservation);//设立保留值
