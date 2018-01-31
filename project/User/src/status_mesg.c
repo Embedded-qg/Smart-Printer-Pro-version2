@@ -502,7 +502,7 @@ void Health_Detect_Fun()
 	while(1){
 		int i = 0 ;
 		//延时
-		OSTimeDlyHMSM(0,0,2,0);
+		OSTimeDlyHMSM(0,0,1,0); //原本是2s检测一次，现在改为1s检测一次
 		//轮询每台打印单元
 		for( i = 0 ; i < MAX_CELL_NUM ; ++i) {
 			printer_num = i;
@@ -538,6 +538,7 @@ void Health_Detect_Fun()
 					}
 				}
 			//反馈健康状态	
+				DEBUG_PRINT_TIMME("打印机健康状态：%#x\r\n",value);
 				if( PCMgr.cells[printer_num].health_status != value){				
 					Printer_Status_Send(printer_num,value);
 					PCMgr.cells[printer_num].health_status = value;

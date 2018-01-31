@@ -2,8 +2,6 @@
 #include "queue_buf.h"
 #include "print_queue.h"
 
-extern INT32U StartTime[100];//起始时钟节拍
-
 
 ElemType Qbuf[MAXQSIZE];        //循环缓冲区的建立
 ElemType Ubuf[MAXUSIZE];        //加急缓冲区的建立
@@ -15,6 +13,8 @@ SqQueue queue_buf;       //循环缓冲区
 SqQueue urgent_buf;      //加急缓冲区
 SqQueue usart_buf;		 //串口缓冲区
 SqQueue wifi_buf;		 //wifi缓冲区
+
+extern INT32U StartTime; //基准时间
 
 #define assert(expr, str)			 	\
 	do {								\
@@ -80,7 +80,7 @@ s8_t Write_Buf(SqQueue *buf,ElemType *e,u32_t len)
 	INT8U err;
 	u32_t current_number;
 	s8_t buf_err = BUF_OK;
-	
+
 	DEBUG_PRINT("-----------------------ready to pend a mutex of buf\n");
 	OSMutexPend(buf->mutex,0,&err);			//申请缓冲锁
 	DEBUG_PRINT("-----------------------get a mutex of buf\n");
@@ -107,10 +107,8 @@ s8_t Write_Buf(SqQueue *buf,ElemType *e,u32_t len)
 	}
 	
 	//更新打印队列订单信息表
-	
 	order_print_table.buf_node.common_buf_remain_capacity = order_print_table.buf_node.common_buf_remain_capacity - len;
-	
-	
+
 //	printf("Revieve Buf Start \n");
 	while(len-- > 0){           //插入队列
 		buf->base[buf->write] = *e++;
@@ -199,6 +197,7 @@ s8_t Read_Order_Queue(SqQueue *buf,ElemType *e)
 	u8_t leftBytes;
 	int i = 0;
 	char * orderDataPtr = (char *) e;
+		
 	Read_Order_Length_Queue(*buf,&order_len);   //获得该份订单长度
 	//去除订单头部
 	buf->read = (buf->read+BUF_HEAD) % buf->MAX;//清除订单头
@@ -218,8 +217,12 @@ s8_t Read_Order_Queue(SqQueue *buf,ElemType *e)
 		DEBUG_PRINT ("Buf is empty\n");
 	}
 
-			//更新缓冲区剩余容量
+
+	
+	//更新缓冲区剩余容量
 	order_print_table.buf_node.common_buf_remain_capacity = order_print_table.buf_node.common_buf_remain_capacity  + order_len + BUF_HEAD + BUF_END;
+
+	
 	return BUF_OK;
 }
 

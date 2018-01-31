@@ -22,7 +22,6 @@ static u32_t current_order_number = 0;	//本次接收的订单号
 extern OS_EVENT *Print_Queue_Sem;
 
 extern u32 hour ,min ,sec ,msec;//时分秒 毫秒，用于获取网络时间
-extern INT32U StartTime[100];//起始时钟节拍
 /**************************************************************
 *	Function Define Section
 **************************************************************/

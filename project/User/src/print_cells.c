@@ -29,8 +29,10 @@
 #include "print_cells.h"
 
 
-extern INT32U StartTime[100];//起始时钟节拍
 extern u16_t batch_order_already_print;//一个批次订单数目剩下未打印的份数
+extern int PrinterErrorCount;//打印机故障次数
+extern int OrderCount; //系统总打印订单份数
+extern INT32U StartTime; //基准时间
 
 u16_t Flag_receive_order;//接收批次订单的标志
 PrintCellsMgrInfo Prior;//排序后的打印单元数组
@@ -603,6 +605,8 @@ void OutputErrorTag(PrintCellNum cellno)
 					"          This was a invalid order :(          \n"
 					" ;) But don't worry.I may try it again lagter  \n\n";
 	
+	PrinterErrorCount++; //打印机故障次数
+
 	outputData(errMsg, sizeof(errMsg), cellno); 	
 }
 
@@ -636,6 +640,7 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 			orderp = &order_print_table.order_node[cellp->entryIndex];
 			if(orderp->status == ORDER_DATA_OK) {		
 				if(status == NORMAL_STATE) {	// 打印机状态正常，成功打印
+					DEBUG_PRINT_TIMME("当前状态：正常\r\n");
 					cellStatus = PRINT_CELL_STATUS_IDLE;
 					orderp->status = PRINT_STATUS_OK;				
 					DEBUG_PRINT_TIMME("打印成功，订单编号为%lu，",orderp->serial_number);
@@ -650,6 +655,7 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 					batch_order_already_print--;
 					DEBUG_PRINT("DealwithOrder: Order Print OK.\n");
 				}else {							// 打印机状态异常，订单打印失败
+					DEBUG_PRINT_TIMME("当前状态：异常\r\n");
 					cellStatus = PRINT_CELL_STATUS_ERR;
 					orderp->status = PRINT_STATUS_MACHINE_ERR;
 					DEBUG_PRINT_TIMME("打印失败，订单编号为%lu，",orderp->serial_number);
@@ -685,6 +691,7 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 				OSSemPost(cellp->printDoneSem);	// 发送订单打印完成信号
 			}
 		}else {	// 打印单元非忙碌，状态检测指令来自健康检测线程
+			DEBUG_PRINT_TIMME("当前状态：空闲\r\n");
 			if(cellp->status == PRINT_CELL_STATUS_ERR) {
 				if(status == NORMAL_STATE) {	// 打印机从异常恢复
 //					DEBUG_PRINT("\nPrint Cell %u Restore from exception.\n", cellp->no);

@@ -10,6 +10,8 @@
 
 u32 hour = 0, min = 0, sec = 0,msec = 0;//时分秒 毫秒，用于获取网络时间
 INT32U StartTime = 0; //基准时间
+int PrinterErrorCount = 0;//打印机故障次数
+int OrderCount = 0; //系统总打印订单份数
 
 /**
  * @name   	Find_Entry
@@ -127,17 +129,20 @@ void GetTime(u8_t *data)
  * @param	time-增加的毫秒
  * @return	执行结果
  */
-void ShowTime(u32_t order_time, INT32U startTime, INT32U OSTime)
+void ShowTime(u32_t order_time, u32_t startTime, u32_t OSTime)
 {
 	u32_t hour,min,sec,msec,tmp;
+	u32_t subTime = 0;
 	hour = order_time/10000000;//时
 	min = (order_time/100000)%100;//分
 	sec = (order_time/1000)%100;//秒
 	msec = order_time%1000;//毫秒
 	
+	subTime = OSTime - startTime;
+	
 	tmp = msec;
-	msec = (tmp + OSTime)%1000;
-	tmp = (tmp + OSTime)/1000;
+	msec = (tmp + subTime)%1000;
+	tmp = (tmp + subTime)/1000;
 	
 	sec = sec + tmp;
 	tmp = sec;
@@ -620,7 +625,6 @@ s8_t Delete_Order(s8_t entry_index)
 	u8 err;
 	order_info *orderp = &order_print_table.order_node[entry_index];
 	u8_t *data = orderp->data;
-	u32_t current_number = orderp->mcu_id;
 	
 	OSMutexPend(order_print_table.mutex, 0, &err);	
 	orderp->data = NULL;
@@ -650,7 +654,7 @@ s8_t Delete_Order(s8_t entry_index)
 		OSMemPut(queue_10K, data);			
 		OSSemPost(Block_10K_Sem);
 	}
-	DEBUG_PRINT_TIMME("释放内存块，订单编号为，");//1ms中断一次*时钟节拍
+	DEBUG_PRINT_TIMME("释放内存块，订单编号为：%u，",orderp->serial_number);//1ms中断一次*时钟节拍
 	ShowTime(orderp->sever_send_time,StartTime,OSTimeGet()*TIME_INTERVAL);
 	return ORDER_QUEUE_OK;
 }
@@ -926,7 +930,7 @@ static s8_t OrderEnqueue(SqQueue* buf,s8_t entry_index , u16_t order_len,u8_t or
 	
 
 	Add_Order_To_Print_Queue(buf,entry_index,order_prio_sigal); //分配内存					
-	DEBUG_PRINT_TIMME("订单批次内序号为：%u，订单编号为：%lu，订单长度为：%u，",orderp->batch_within_number,orderp->serial_number,orderp->size);//1ms中断一次*时钟节拍
+	DEBUG_PRINT_TIMME("订单所属批次号为：%u，订单编号为：%lu，订单长度为：%u，",orderp->batch_number,orderp->serial_number,orderp->size);//1ms中断一次*时钟节拍
 	ShowTime(orderp->sever_send_time,StartTime,OSTimeGet()*TIME_INTERVAL);
 	//发送订单进入打印队列的报文	
 	Order_QUEUE_Status_Send(&(order_print_table.order_node[entry_index]),ENQUEUE_OK	);						

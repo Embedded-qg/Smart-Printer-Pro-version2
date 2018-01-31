@@ -8,6 +8,8 @@ USART_TypeDef * portSelect[5] = {0,USART1,UART4,USART6,USART3};
 /* static function declaration */
 static unsigned char stateCheck(u8_t option, u8_t deviceNum);
 
+extern int PrinterErrorCount;//打印机故障次数
+extern int OrderCount; //系统总打印订单份数
 
 /*********************************************************************************************************
 *                                             mySendData
@@ -147,6 +149,8 @@ void cutPaper(u8_t deviceNum)
 	u8_t cmd1[] = {0x1b, 0x69};
 	u8_t cmd2[] = {0x1b, 0x4a, 0xff}; //打印并向前走纸n点行
 	u8_t cmd3[] = {0x1b, 0x40};
+	u8_t i = 0;
+	u32_t cutSum = 0;
 	
 	PCMgr.cells[deviceNum-1].cutCnt++;	// 切刀次数加一
 	
@@ -155,6 +159,21 @@ void cutPaper(u8_t deviceNum)
 	outputData(cmd1, sizeof(cmd1), deviceNum);
 
 	outputData(cmd3, sizeof(cmd3), deviceNum);
+
+	OrderCount++; //系统总打印订单份数
+	if(OrderCount != 0)
+	{
+		DEBUG_PRINT_TIMME("打印机错误次数%d 订单总份数%d 故障率：%f\r\n",PrinterErrorCount,OrderCount,(float)PrinterErrorCount/OrderCount);
+	}
+	
+	DEBUG_PRINT_TIMME("切刀次数：%u\r\n",PCMgr.cells[deviceNum-1].cutCnt);
+//	for(i = PRINT_CELL_NUM_ONE; i <= MAX_CELL_NUM; i++)
+//	{
+//		cutSum = cutSum + PCMgr.cells[i-1].cutCnt;
+//	}
+//	DEBUG_PRINT_TIMME("主控板包含的打印机的总切刀次数和：%u\r\n",cutSum);
+	
+
 }
 
 void initialPrinter(u8_t deviceNum)

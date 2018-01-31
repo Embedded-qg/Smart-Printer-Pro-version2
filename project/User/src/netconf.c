@@ -9,6 +9,7 @@ extern OS_EVENT *Print_Sem;
 extern batch_info batch_info_table[];	//批次表
 extern OS_EVENT *Batch_Rec_Sem;			//完成一次批次读取的二值信号量
 extern OS_EVENT *Print_Queue_Sem;		//数据存入打印队列的信号量
+extern INT32U StartTime; //基准时间
 
 struct ip_addr localhost_ip;
 struct ip_addr localhost_netmask;
@@ -33,6 +34,11 @@ void put_in_buf(u8_t *data, u16_t len, u16_t urg)
 	SqQueue *buf;
 	u8_t err;
 	s8_t buf_err;
+	
+	u32_t serial_number = 0;
+	u32_t order_time = 0;
+	u8_t *order_head = NULL;
+	
 	extern OS_EVENT *Print_Queue_Sem;
 	
 	if(urg)
@@ -46,6 +52,13 @@ void put_in_buf(u8_t *data, u16_t len, u16_t urg)
 			OSSemPost(Print_Queue_Sem);//释放
 			OSTimeDlyHMSM(0, 0, 1, 0);
 		}else{
+			order_head = buf->base + buf->read;// 获取订单头
+			ANALYZE_DATA_4B((order_head + ORDER_SERIAL_NUMBER_OFFSET), serial_number);//获取订单编号
+			ANALYZE_DATA_4B((order_head + ORDER_SEVER_SEND_TIME_OFFSET), order_time);//获取订单下发时间
+			DEBUG_PRINT_TIMME("订单下发");
+			ShowTime(order_time,0,0);	
+			DEBUG_PRINT_TIMME("缓冲区剩余容量：%lu，",order_print_table.buf_node.common_buf_remain_capacity);
+			ShowTime(order_time,StartTime,OSTimeGet()*TIME_INTERVAL);			
 			return;
 		}
 	}

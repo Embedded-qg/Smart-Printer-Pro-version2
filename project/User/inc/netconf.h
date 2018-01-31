@@ -68,12 +68,6 @@ extern struct netconn *order_netconn;	//È«¾ÖTCPÁ´½Ó
 	#define BASE_SEND_STATUS(type, symbol, serverid_or_preservation) 
 #endif
 
-#define NET_DEBUG_PRINT_ON 0
-#if NET_DEBUG_PRINT_ON
-	#define NET_DEBUG_PRINT(fmt,args...) printf (fmt ,##args)
-#else
-	#define NET_DEBUG_PRINT(fmt,args...)
-#endif
 
 void LwIP_Init(void);
 void lwip_demo(void);
