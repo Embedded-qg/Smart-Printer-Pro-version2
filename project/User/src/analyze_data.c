@@ -11,7 +11,7 @@ extern contract_info contract_information;
 extern u8_t batch_flag;
 extern u8_t batch_table_hash;
 
-extern INT32U StartTime; //基准时间
+extern INT32U StartTime[100]; //基准时间
 /**
  * @brief 	获取批次序号哈希值
  */
@@ -131,7 +131,6 @@ u8_t find_order_head(char **data,u16_t *len)
 		{
 			netbuf_type = NETORDER_TYPE_ORDER;
 			ANALYZE_DEBUG_PRINT("这是一个订单数据报文\r\n");
-			StartTime = OSTimeGet()*TIME_INTERVAL; //记录基准时间值
 			break;
 		}
 	}

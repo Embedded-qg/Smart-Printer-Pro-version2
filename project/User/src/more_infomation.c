@@ -1,7 +1,7 @@
 #include "more_infomation.h"
 
 u16_t cell_cutCnt[MAX_CELL_NUM] = {0};
-extern INT32U StartTime; //基准时间
+extern INT32U StartTime[100]; //基准时间
 
 //udp校验和算法
 u16_t Check_Sum(u16_t *data, int len)
@@ -158,9 +158,10 @@ s8_t checkBufData(SqQueue *buf , u32_t writePtr)
 	order_head = buf->base + buf->read;// 获取订单头
 	ANALYZE_DATA_4B((order_head + ORDER_SERIAL_NUMBER_OFFSET), serial_number);//获取订单编号
 	ANALYZE_DATA_4B((order_head + ORDER_SEVER_SEND_TIME_OFFSET), order_time);//获取订单下发时间
+	ANALYZE_DATA_2B((order_head + ORDER_BATCH_NUMBER_OFFSET), order_batch_number);//获取订单所属批次号
 
 	DEBUG_PRINT_TIMME("校验订单数据，");
-	ShowTime(order_time,StartTime,OSTimeGet()*TIME_INTERVAL);
+	ShowTime(order_time,StartTime[order_batch_number%100],OSTimeGet()*TIME_INTERVAL);
 
 	while(index != buf->write){
 		if(buf->base[index] != 0x3e && buf->base[index+1]%buf->MAX != 0x11){			

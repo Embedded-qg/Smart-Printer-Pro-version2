@@ -32,7 +32,7 @@
 extern u16_t batch_order_already_print;//一个批次订单数目剩下未打印的份数
 extern int PrinterErrorCount;//打印机故障次数
 extern int OrderCount; //系统总打印订单份数
-extern INT32U StartTime; //基准时间
+extern INT32U StartTime[100]; //基准时间
 
 u16_t Flag_receive_order;//接收批次订单的标志
 PrintCellsMgrInfo Prior;//排序后的打印单元数组
@@ -643,8 +643,8 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 					DEBUG_PRINT_TIMME("当前状态：正常\r\n");
 					cellStatus = PRINT_CELL_STATUS_IDLE;
 					orderp->status = PRINT_STATUS_OK;				
-					DEBUG_PRINT_TIMME("打印成功，订单编号为%lu，",orderp->serial_number);
-					ShowTime(orderp->sever_send_time,StartTime,OSTimeGet()*TIME_INTERVAL);								
+					DEBUG_PRINT_TIMME("打印成功，订单编号为：[%lu]，",orderp->serial_number);
+					ShowTime(orderp->sever_send_time,StartTime[(orderp->batch_number)%100],OSTimeGet()*TIME_INTERVAL);								
 					Delete_Order(cellp->entryIndex);
 					
 					PCMgr.cells[cellno-1].sum_grade++;//打印正确分数加1
@@ -658,8 +658,8 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 					DEBUG_PRINT_TIMME("当前状态：异常\r\n");
 					cellStatus = PRINT_CELL_STATUS_ERR;
 					orderp->status = PRINT_STATUS_MACHINE_ERR;
-					DEBUG_PRINT_TIMME("打印失败，订单编号为%lu，",orderp->serial_number);
-					ShowTime(orderp->sever_send_time,StartTime,OSTimeGet()*TIME_INTERVAL);				
+					DEBUG_PRINT_TIMME("打印失败，订单编号为：[%lu]，",orderp->serial_number);
+					ShowTime(orderp->sever_send_time,StartTime[(orderp->batch_number)%100],OSTimeGet()*TIME_INTERVAL);				
 					cellp->exceptCnt[status]++;															
 					Printer_Status_Send(cellno, status);	// 打印机异常，发送打印机状态
 					WritePrintCellInfo(cellno);

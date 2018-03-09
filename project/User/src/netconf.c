@@ -9,7 +9,7 @@ extern OS_EVENT *Print_Sem;
 extern batch_info batch_info_table[];	//批次表
 extern OS_EVENT *Batch_Rec_Sem;			//完成一次批次读取的二值信号量
 extern OS_EVENT *Print_Queue_Sem;		//数据存入打印队列的信号量
-extern INT32U StartTime; //基准时间
+extern INT32U StartTime[100]; //基准时间
 
 struct ip_addr localhost_ip;
 struct ip_addr localhost_netmask;
@@ -37,6 +37,7 @@ void put_in_buf(u8_t *data, u16_t len, u16_t urg)
 	
 	u32_t serial_number = 0;
 	u32_t order_time = 0;
+	u16_t batch_number = 0;
 	u8_t *order_head = NULL;
 	
 	extern OS_EVENT *Print_Queue_Sem;
@@ -55,10 +56,11 @@ void put_in_buf(u8_t *data, u16_t len, u16_t urg)
 			order_head = buf->base + buf->read;// 获取订单头
 			ANALYZE_DATA_4B((order_head + ORDER_SERIAL_NUMBER_OFFSET), serial_number);//获取订单编号
 			ANALYZE_DATA_4B((order_head + ORDER_SEVER_SEND_TIME_OFFSET), order_time);//获取订单下发时间
-			DEBUG_PRINT_TIMME("订单下发");
-			ShowTime(order_time,0,0);	
+			ANALYZE_DATA_2B((order_head + ORDER_BATCH_NUMBER_OFFSET), batch_number);//获取所属批次号码
+//			DEBUG_PRINT_TIMME("订单下发");
+//			ShowTime(order_time,0,0);	
 			DEBUG_PRINT_TIMME("缓冲区剩余容量：%lu，",order_print_table.buf_node.common_buf_remain_capacity);
-			ShowTime(order_time,StartTime,OSTimeGet()*TIME_INTERVAL);			
+			ShowTime(order_time,StartTime[batch_number%100],OSTimeGet()*TIME_INTERVAL);			
 			return;
 		}
 	}
@@ -203,12 +205,24 @@ void deal_with_batch_order(char *batch_buf)
 {
 	u16_t preservation;
 	u16_t order_number;
+	u32_t order_time;
+	u32_t batch_time;
+	
+	
 	last_bacth_number = batch_number;
 	ANALYZE_DATA_2B((batch + BATCH_NUMBER_OFFSET), batch_number);//获取批次号
 	ANALYZE_DATA_2B((batch + BATCH_ORDER_NUMBER_OFFSET),order_number);//获取订单数目
+	ANALYZE_DATA_4B((batch + ORDER_SEVER_SEND_TIME_OFFSET), order_time);//获取订单下发时间
+	ANALYZE_DATA_4B((batch + BATCH_SEVER_SEND_TIME_OFFSET), batch_time);//获取批次下发时间
+	StartTime[batch_number%100] = OSTimeGet()*TIME_INTERVAL; //记录基准时间值
 	
 	NET_DEBUG_PRINT("order number = %d\r\n",order_number);
-	printf("接收批次数据，该批次有%d份订单\r\n", order_number); //订单数目
+	
+//	printf("接收批次数据，该批次号为%d，该批次有%d份订单\r\n", batch_number,order_number);
+	printf("批次号为：[%u]，批次下发",batch_number);
+	ShowTime(batch_time,0,0);	
+	printf("批次号为：[%u]，批次接收",batch_number);
+	ShowTime(order_time,StartTime[batch_number%100],OSTimeGet()*TIME_INTERVAL);	
 //	NET_DEBUG_PRINT("batch read success ,batch_length is %x %x\r\n", *(batch + BATCH_TOTAL_LENGTH_OFFSET), *(batch + BATCH_TOTAL_LENGTH_OFFSET + 1));		
 
 	Analyze_Batch_Info_Table(batch, batch_number);//批次解包

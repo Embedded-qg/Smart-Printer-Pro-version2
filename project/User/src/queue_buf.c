@@ -14,7 +14,7 @@ SqQueue urgent_buf;      //加急缓冲区
 SqQueue usart_buf;		 //串口缓冲区
 SqQueue wifi_buf;		 //wifi缓冲区
 
-extern INT32U StartTime; //基准时间
+extern INT32U StartTime[100]; //基准时间
 
 #define assert(expr, str)			 	\
 	do {								\
