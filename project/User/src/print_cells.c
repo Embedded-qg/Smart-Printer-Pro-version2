@@ -640,7 +640,7 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 			orderp = &order_print_table.order_node[cellp->entryIndex];
 			if(orderp->status == ORDER_DATA_OK) {		
 				if(status == NORMAL_STATE) {	// 打印机状态正常，成功打印
-					DEBUG_PRINT_TIMME("当前状态：正常\r\n");
+//					DEBUG_PRINT_TIMME("当前状态：正常\r\n");
 					cellStatus = PRINT_CELL_STATUS_IDLE;
 					orderp->status = PRINT_STATUS_OK;				
 					DEBUG_PRINT_TIMME("打印成功，订单编号为：[%lu]，",orderp->serial_number);
@@ -691,7 +691,7 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 				OSSemPost(cellp->printDoneSem);	// 发送订单打印完成信号
 			}
 		}else {	// 打印单元非忙碌，状态检测指令来自健康检测线程
-			DEBUG_PRINT_TIMME("当前状态：空闲\r\n");
+//			DEBUG_PRINT_TIMME("当前状态：空闲\r\n");
 			if(cellp->status == PRINT_CELL_STATUS_ERR) {
 				if(status == NORMAL_STATE) {	// 打印机从异常恢复
 //					DEBUG_PRINT("\nPrint Cell %u Restore from exception.\n", cellp->no);

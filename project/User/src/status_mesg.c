@@ -538,7 +538,7 @@ void Health_Detect_Fun()
 					}
 				}
 			//·´À¡½¡¿µ×´Ì¬	
-				DEBUG_PRINT_TIMME("´òÓ¡»ú½¡¿µ×´Ì¬£º%#x\r\n",value);
+//				DEBUG_PRINT_TIMME("´òÓ¡»ú½¡¿µ×´Ì¬£º%#x\r\n",value);
 				if( PCMgr.cells[printer_num].health_status != value){				
 					Printer_Status_Send(printer_num,value);
 					PCMgr.cells[printer_num].health_status = value;

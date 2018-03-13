@@ -160,7 +160,7 @@ s8_t checkBufData(SqQueue *buf , u32_t writePtr)
 	ANALYZE_DATA_4B((order_head + ORDER_SEVER_SEND_TIME_OFFSET), order_time);//获取订单下发时间
 	ANALYZE_DATA_2B((order_head + ORDER_BATCH_NUMBER_OFFSET), order_batch_number);//获取订单所属批次号
 
-	DEBUG_PRINT_TIMME("校验订单数据，");
+	DEBUG_PRINT_TIMME("批次号为：[%u]，校验订单数据，",order_batch_number);
 	ShowTime(order_time,StartTime[order_batch_number%100],OSTimeGet()*TIME_INTERVAL);
 
 	while(index != buf->write){
