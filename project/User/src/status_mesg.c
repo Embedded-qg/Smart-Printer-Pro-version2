@@ -94,8 +94,8 @@ void Batch_Status_Send(u16_t batch_num ,u8_t status)
  */
 void Order_QUEUE_Status_Send ( order_info* order , u8_t status )
 {
-	DEBUG_PRINT_TIMME("进入打印队列开始，订单编号为：%u，",order->serial_number);//1ms中断一次*时钟节拍
-	ShowTime(order->sever_send_time,StartTime,OSTimeGet()*TIME_INTERVAL);
+//	DEBUG_PRINT_TIMME("进入打印队列开始，订单编号为：%u，",order->serial_number);//1ms中断一次*时钟节拍
+//	ShowTime(order->sever_send_time,StartTime,OSTimeGet()*TIME_INTERVAL);
 	MesgQueBuf[MesgQueIndex].flag = ORDER_QUEUE_MESG_QUE_FLAG;
 	MesgQueBuf[MesgQueIndex].mesgQueueData.order_QUEUE_Status.batch_num = order->batch_number;
 	MesgQueBuf[MesgQueIndex].mesgQueueData.order_QUEUE_Status.order_num = order->batch_within_number;

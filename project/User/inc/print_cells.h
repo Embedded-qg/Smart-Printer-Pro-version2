@@ -135,6 +135,13 @@ AllPrinterStatus if_printer_all_error(void);
  */
 void Count_Accuracy(void);
 
+/**
+ *  @fn		orderOfCellsNull
+ *	@brief	判断是不是所有打印机的待打印订单份数都为0
+ *	@param	None
+ *	@ret	如果所有打印机的待打印订单份数都为0，那么返回1；否则返回0
+ */
+int orderOfCellsNull(void);
 
 /**
  *  @fn		ReadPrintCellsInfo

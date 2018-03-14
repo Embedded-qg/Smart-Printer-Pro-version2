@@ -194,16 +194,18 @@ void deal_with_batch_order(char *batch_buf)
 	ANALYZE_DATA_2B((batch + BATCH_NUMBER_OFFSET), batch_number);//获取批次号
 	ANALYZE_DATA_2B((batch + BATCH_ORDER_NUMBER_OFFSET),order_number);//获取订单数目
 	
-	printf("接收批次数据，该批次有%d份订单\r\n", order_number); //订单数目
-//	NET_DEBUG_PRINT("batch read success ,batch_length is %x %x\r\n", *(batch + BATCH_TOTAL_LENGTH_OFFSET), *(batch + BATCH_TOTAL_LENGTH_OFFSET + 1));		
-	Count_Accuracy();//计算批次数据下打印机单元精确度和所分配到的订单
-	PrioritySort();//打印单元按积分高低进行排序
-	
+	NET_DEBUG_PRINT("接收批次数据，该批次有%d份订单\r\n", order_number); //订单数目
+//	NET_DEBUG_PRINT("batch read success ,batch_length is %x %x\r\n", *(batch + BATCH_TOTAL_LENGTH_OFFSET), *(batch + BATCH_TOTAL_LENGTH_OFFSET + 1));			
 	Analyze_Batch_Info_Table(batch, batch_number);//批次解包
+	if(GRADE_SYSTEM_ON && orderOfCellsNull())
+	{
+		PrioritySort();//打印单元按积分高低进行排序
+		Count_Accuracy();//计算批次数据下打印机单元精确度和所分配到的订单
+	}
 	batch_table_hash =  get_batch_hash(batch_number);
 	if(batch_number != last_bacth_number) batch_flag = 1;
 	batch_count++;
-	printf("接收批次数目为%d\r\n",batch_count);
+//	NET_DEBUG_PRINT("接收批次数目为%d\r\n",batch_count);
 }
 
 void deal_with_order_order(void)
@@ -221,7 +223,6 @@ void deal_with_order_order(void)
 	}										
 	else{//订单数据正确						
 		NET_DEBUG_PRINT("接收订单成功!!\r\n");
-		
 		OSSemPost(Print_Queue_Sem);
 		OSSemPost(Batch_Rec_Sem); 
 		NON_BASE_SEND_STATUS(batch_status, BATCH_ENTER_BUF, batch_number);//发送批次状态，进入缓冲区
@@ -313,7 +314,6 @@ void write_connection(struct netconn *conn, req_type type, u8_t symbol, u32_t pr
 		Pack_Req_Or_Status_Message(sent_data, ORDER_REQ, symbol, Get_MCU_ID(), 
 									Get_Current_Unix_Time(), preservation);
 		order_req_num++;
-		printf("阈值请求次数为%d\r\n",order_req_num);
 	}
 	else if(type == batch_status){//此时的preservation高16位为批次号
 		Pack_Req_Or_Status_Message(sent_data, BATCH_STATUS, symbol, Get_MCU_ID(), 

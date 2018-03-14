@@ -130,14 +130,17 @@ void GetTime(u8_t *data)
 void ShowTime(u32_t order_time, INT32U startTime, INT32U OSTime)
 {
 	u32_t hour,min,sec,msec,tmp;
+	u32_t subTime = 0;
 	hour = order_time/10000000;//时
 	min = (order_time/100000)%100;//分
 	sec = (order_time/1000)%100;//秒
 	msec = order_time%1000;//毫秒
 	
+	subTime = OSTime - startTime;
+	
 	tmp = msec;
-	msec = (tmp + OSTime)%1000;
-	tmp = (tmp + OSTime)/1000;
+	msec = (tmp + subTime)%1000;
+	tmp = (tmp + subTime)/1000;
 	
 	sec = sec + tmp;
 	tmp = sec;
@@ -298,8 +301,11 @@ static s8_t	Add_Order_To_Print_Queue(SqQueue *buf,s8_t entry_index , u8_t order_
 	u8_t *order_head = NULL;
 	INT8U err;
 	u8_t time_index = 0;
+	u8_t hash;
+	u16_t bacth_number;
 	u32_t current_number;
 	u32_t serial_number;
+	u32_t order_startTime;
 	u32_t order_time;
 	order_head = buf->base + buf->read;// 获取订单头//  这里用于存放buf的订单缓冲数据流的头部
 	
@@ -314,8 +320,8 @@ static s8_t	Add_Order_To_Print_Queue(SqQueue *buf,s8_t entry_index , u8_t order_
 		order_time = ((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET)) << 24) 				+ 	((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +1 )) << 16 ) 						
 										+	((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +2 )) << 8) 	+		((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +3 )));	//下发时间		
 		
-		DEBUG_PRINT_TIMME("分配内存大小：1K，订单编号为：%u，",serial_number);
-		ShowTime(order_time,StartTime,OSTimeGet()*TIME_INTERVAL);
+		DEBUG_PRINT_TIMME("分配内存大小：1K，订单编号为：%u\r\n",serial_number);
+//		ShowTime(order_time,StartTime,OSTimeGet()*TIME_INTERVAL);
 	}
 	else if(entry_index < BLOCK_2K_INDEX_END){
 		ORDER_DEBUG_PRINT("\nQUEUE DEBUG----GOT 2K BLOCK----\r\n");
@@ -325,8 +331,8 @@ static s8_t	Add_Order_To_Print_Queue(SqQueue *buf,s8_t entry_index , u8_t order_
 		order_time = ((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET)) << 24) 				+ 	((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +1 )) << 16 ) 						
 										+	((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +2 )) << 8) 	+		((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +3 )));	//下发时间		
 		
-		DEBUG_PRINT_TIMME("分配内存大小：2K，订单编号为：%u，",serial_number);
-		ShowTime(order_time,StartTime,OSTimeGet()*TIME_INTERVAL);		
+		DEBUG_PRINT_TIMME("分配内存大小：2K，订单编号为：%u\r\n",serial_number);
+//		ShowTime(order_time,StartTime,OSTimeGet()*TIME_INTERVAL);		
 	}
 	else if(entry_index < BLOCK_4K_INDEX_END){
 		ORDER_DEBUG_PRINT("\nQUEUE DEBUG----GOT 4K BLOCK----\r\n");
@@ -336,8 +342,8 @@ static s8_t	Add_Order_To_Print_Queue(SqQueue *buf,s8_t entry_index , u8_t order_
 		order_time = ((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET)) << 24) 				+ 	((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +1 )) << 16 ) 						
 										+	((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +2 )) << 8) 	+		((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +3 )));	//下发时间		
 		
-		DEBUG_PRINT_TIMME("分配内存大小：4K，订单编号为：%u，",serial_number);
-		ShowTime(order_time,StartTime,OSTimeGet()*TIME_INTERVAL);
+		DEBUG_PRINT_TIMME("分配内存大小：4K，订单编号为：%u\r\n",serial_number);
+//		ShowTime(order_time,StartTime,OSTimeGet()*TIME_INTERVAL);
 	}
 	else if(entry_index < BLOCK_10K_INDEX_END){	
 		ORDER_DEBUG_PRINT("\nQUEUE DEBUG----GOT 10K BLOCK----\r\n");
@@ -348,8 +354,8 @@ static s8_t	Add_Order_To_Print_Queue(SqQueue *buf,s8_t entry_index , u8_t order_
 		order_time = ((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET)) << 24) 				+ 	((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +1 )) << 16 ) 						
 										+	((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +2 )) << 8) 	+		((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +3 )));	//下发时间		
 		
-		DEBUG_PRINT_TIMME("分配内存大小：10K，订单编号为：%u，",serial_number);
-		ShowTime(order_time,StartTime,OSTimeGet()*TIME_INTERVAL);	
+		DEBUG_PRINT_TIMME("分配内存大小：10K，订单编号为：%u\r\n",serial_number);
+//		ShowTime(order_time,StartTime,OSTimeGet()*TIME_INTERVAL);	
 	}
 	
 	/*解析读取订单头部数据*/
@@ -371,6 +377,10 @@ static s8_t	Add_Order_To_Print_Queue(SqQueue *buf,s8_t entry_index , u8_t order_
 	DEBUG_PRINT("QUEUE DEBUG :id number :%u", order_print_table.order_node[entry_index].batch_number);
 	DEBUG_PRINT("QUEUE DEBUG :id number :%u", order_print_table.order_node[entry_index].batch_within_number);
 	
+	bacth_number = order_print_table.order_node[entry_index].batch_number;
+	hash = get_batch_hash(bacth_number);
+	order_startTime = batch_info_table[hash].startTime;
+	order_print_table.order_node[entry_index].arrTime = order_startTime;
 	
 	order_print_table.order_node[entry_index].check_sum = 					(*(order_head+ORDER_CHECK_SUM_OFFSET)<<8)						+ *(order_head + ORDER_CHECK_SUM_OFFSET + 1);									//校验码						//保留
 	order_print_table.order_node[entry_index].data_source = 	order_print_table.order_node[entry_index].preservation;
@@ -650,8 +660,8 @@ s8_t Delete_Order(s8_t entry_index)
 		OSMemPut(queue_10K, data);			
 		OSSemPost(Block_10K_Sem);
 	}
-	DEBUG_PRINT_TIMME("释放内存块，订单编号为，");//1ms中断一次*时钟节拍
-	ShowTime(orderp->sever_send_time,StartTime,OSTimeGet()*TIME_INTERVAL);
+//	DEBUG_PRINT_TIMME("释放内存块，订单编号为，");//1ms中断一次*时钟节拍
+//	ShowTime(orderp->sever_send_time,StartTime,OSTimeGet()*TIME_INTERVAL);
 	return ORDER_QUEUE_OK;
 }
 
@@ -738,8 +748,8 @@ s8_t CheckOrderData(u8_t entry_index)
 	
 	if(NULL == datap) {
 		orderp->status = PRINT_STATUS_DATA_ERR;	/* 订单数据错误 */
-		DEBUG_PRINT_TIMME("打印失败，订单数据错误，\r\n");
-		ShowTime(orderp->sever_send_time,StartTime,OSTimeGet()*TIME_INTERVAL);
+		DEBUG_PRINT_TIMME("打印失败，订单数据错误\r\n");
+//		ShowTime(orderp->sever_send_time,StartTime,OSTimeGet()*TIME_INTERVAL);
 		Order_Print_Status_Send(orderp,PRINT_STATUS_DATA_ERR);
 		ORDER_DEBUG_PRINT("CheckOrderData: checking empty block!\r\n");
 		return ORDER_DATA_ERR;		
@@ -811,8 +821,8 @@ s8_t Print_Order(u8_t cellno)
 		cellp->workedTime = 0;
 
 	pbytes = 0;		
-	DEBUG_PRINT_TIMME("开始打印，订单编号为：%u，",orderp->serial_number);
-	ShowTime(orderp->sever_send_time,StartTime,OSTimeGet()*TIME_INTERVAL);
+//	DEBUG_PRINT_TIMME("开始打印，订单编号为：%u，",orderp->serial_number);
+//	ShowTime(orderp->sever_send_time,StartTime,OSTimeGet()*TIME_INTERVAL);
 	while(pbytes < orderp->size) {	//解析订单内容并打印
 		length = GetDataLength(datap);
 		type = GetDataType(datap);
@@ -925,8 +935,8 @@ static s8_t OrderEnqueue(SqQueue* buf,s8_t entry_index , u16_t order_len,u8_t or
 	u8_t *data = orderp->data;
 	
 	Add_Order_To_Print_Queue(buf,entry_index,order_prio_sigal); //分配内存					
-	DEBUG_PRINT_TIMME("订单批次内序号为：%u，订单编号为：%lu，订单长度为：%u，",orderp->batch_within_number,orderp->serial_number,orderp->size);//1ms中断一次*时钟节拍
-	ShowTime(orderp->sever_send_time,StartTime,OSTimeGet()*TIME_INTERVAL);
+//	DEBUG_PRINT_TIMME("订单批次内序号为：%u，订单编号为：%lu，订单长度为：%u，",orderp->batch_within_number,orderp->serial_number,orderp->size);//1ms中断一次*时钟节拍
+//	ShowTime(orderp->sever_send_time,StartTime,OSTimeGet()*TIME_INTERVAL);
 	//发送订单进入打印队列的报文	
 	Order_QUEUE_Status_Send(&(order_print_table.order_node[entry_index]),ENQUEUE_OK);						
 	ORDER_DEBUG_PRINT("-------ONE ORDER ENQUEUE---------\r\n");	
