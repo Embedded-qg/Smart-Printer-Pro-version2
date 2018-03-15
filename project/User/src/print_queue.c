@@ -131,8 +131,10 @@ void GetTime(u8_t *data)
  */
 void ShowTime(u32_t order_time, u32_t startTime1, u32_t OSTime)
 {
+	OS_CPU_SR cpu_sr;
 	u32_t hour,min,sec,msec,tmp;
 	u32_t subTime = 0;
+	OS_ENTER_CRITICAL();
 	hour = order_time/10000000;//时
 	min = (order_time/100000)%100;//分
 	sec = (order_time/1000)%100;//秒
@@ -160,6 +162,7 @@ void ShowTime(u32_t order_time, u32_t startTime1, u32_t OSTime)
 		hour = 0;
 	
 	DEBUG_PRINT_TIMME("时间为：%u:%u:%u:%u\r\n",hour, min, sec, msec);
+	OS_EXIT_CRITICAL();
 }
 
 
@@ -315,55 +318,31 @@ static s8_t	Add_Order_To_Print_Queue(SqQueue *buf,s8_t entry_index , u8_t order_
 	if(entry_index < BLOCK_1K_INDEX_END){
 		ORDER_DEBUG_PRINT("\nQUEUE DEBUG----GOT 1K BLOCK----\r\n");
 		order_print_table.order_node[entry_index].data = OSMemGet(queue_1K,&os_err);
-		serial_number = ((u32_t)(*(order_head + ORDER_SERIAL_NUMBER_OFFSET)) << 24) 				+ 	((u32_t)(*(order_head + ORDER_SERIAL_NUMBER_OFFSET +1 )) << 16 ) 						
-										+	((u32_t)(*(order_head + ORDER_SERIAL_NUMBER_OFFSET +2 )) << 8) 	+		((u32_t)(*(order_head + ORDER_SERIAL_NUMBER_OFFSET +3 )));	//订单序号
-		order_time = ((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET)) << 24) 				+ 	((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +1 )) << 16 ) 						
-										+	((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +2 )) << 8) 	+		((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +3 )));	//下发时间		
-		ANALYZE_DATA_2B((order_head + ORDER_BATCH_NUMBER_OFFSET), batch_number);//获取所属批次
+			
+		DEBUG_PRINT_TIMME("分配内存大小：1K，");
 		
-		
-		DEBUG_PRINT_TIMME("分配内存大小：1K，订单编号为：[%lu]，",serial_number);
-		ShowTime(order_time,StartTime[batch_number%100],OSTimeGet()*TIME_INTERVAL);
 	}
 	else if(entry_index < BLOCK_2K_INDEX_END){
 		ORDER_DEBUG_PRINT("\nQUEUE DEBUG----GOT 2K BLOCK----\r\n");
 		order_print_table.order_node[entry_index].data = OSMemGet(queue_2K,&os_err);
-		serial_number = ((u32_t)(*(order_head + ORDER_SERIAL_NUMBER_OFFSET)) << 24) 				+ 	((u32_t)(*(order_head + ORDER_SERIAL_NUMBER_OFFSET +1 )) << 16 ) 						
-										+	((u32_t)(*(order_head + ORDER_SERIAL_NUMBER_OFFSET +2 )) << 8) 	+		((u32_t)(*(order_head + ORDER_SERIAL_NUMBER_OFFSET +3 )));	//订单序号
-		order_time = ((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET)) << 24) 				+ 	((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +1 )) << 16 ) 						
-										+	((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +2 )) << 8) 	+		((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +3 )));	//下发时间		
-		ANALYZE_DATA_2B((order_head + ORDER_BATCH_NUMBER_OFFSET), batch_number);//获取所属批次
-		
-		
-		DEBUG_PRINT_TIMME("分配内存大小：2K，订单编号为：[%lu]，",serial_number);
-		ShowTime(order_time,StartTime[batch_number%100],OSTimeGet()*TIME_INTERVAL);		
+		DEBUG_PRINT_TIMME("分配内存大小：2K，");
+	
 	}
 	else if(entry_index < BLOCK_4K_INDEX_END){
 		ORDER_DEBUG_PRINT("\nQUEUE DEBUG----GOT 4K BLOCK----\r\n");
 		order_print_table.order_node[entry_index].data = OSMemGet(queue_4K,&os_err);
-		serial_number = ((u32_t)(*(order_head + ORDER_SERIAL_NUMBER_OFFSET)) << 24) 				+ 	((u32_t)(*(order_head + ORDER_SERIAL_NUMBER_OFFSET +1 )) << 16 ) 						
-										+	((u32_t)(*(order_head + ORDER_SERIAL_NUMBER_OFFSET +2 )) << 8) 	+		((u32_t)(*(order_head + ORDER_SERIAL_NUMBER_OFFSET +3 )));	//订单序号
-		order_time = ((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET)) << 24) 				+ 	((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +1 )) << 16 ) 						
-										+	((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +2 )) << 8) 	+		((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +3 )));	//下发时间		
-		ANALYZE_DATA_2B((order_head + ORDER_BATCH_NUMBER_OFFSET), batch_number);//获取所属批次
-		
-		
-		DEBUG_PRINT_TIMME("分配内存大小：4K，订单编号为：[%lu]，",serial_number);
-		ShowTime(order_time,StartTime[batch_number%100],OSTimeGet()*TIME_INTERVAL);
+		DEBUG_PRINT_TIMME("分配内存大小：4K，");
+
 	}
 	else if(entry_index < BLOCK_10K_INDEX_END){	
 		ORDER_DEBUG_PRINT("\nQUEUE DEBUG----GOT 10K BLOCK----\r\n");
 		order_print_table.order_node[entry_index].data = OSMemGet(queue_10K,&os_err);
 		ORDER_DEBUG_PRINT("ORDER DATA POINTER: %p\r\n", order_print_table.order_node[entry_index].data);
-		serial_number = ((u32_t)(*(order_head + ORDER_SERIAL_NUMBER_OFFSET)) << 24) 				+ 	((u32_t)(*(order_head + ORDER_SERIAL_NUMBER_OFFSET +1 )) << 16 ) 						
-										+	((u32_t)(*(order_head + ORDER_SERIAL_NUMBER_OFFSET +2 )) << 8) 	+		((u32_t)(*(order_head + ORDER_SERIAL_NUMBER_OFFSET +3 )));	//订单序号
-		order_time = ((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET)) << 24) 				+ 	((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +1 )) << 16 ) 						
-										+	((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +2 )) << 8) 	+		((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +3 )));	//下发时间		
-		ANALYZE_DATA_2B((order_head + ORDER_BATCH_NUMBER_OFFSET), batch_number);//获取所属批次
-		
-		
-		DEBUG_PRINT_TIMME("分配内存大小：10K，订单编号为：[%lu]，",serial_number);
-		ShowTime(order_time,StartTime[batch_number%100],OSTimeGet()*TIME_INTERVAL);	
+//		ANALYZE_DATA_4B((order_head + ORDER_SERIAL_NUMBER_OFFSET), serial_number);//获取订单号
+//		ANALYZE_DATA_4B((order_head + ORDER_SEVER_SEND_TIME_OFFSET), order_time);//获取下发时间
+//		ANALYZE_DATA_2B((order_head + ORDER_BATCH_NUMBER_OFFSET), batch_number);//获取所属批次
+		DEBUG_PRINT_TIMME("分配内存大小：10K，");
+
 	}
 	
 	/*解析读取订单头部数据*/
@@ -391,6 +370,9 @@ static s8_t	Add_Order_To_Print_Queue(SqQueue *buf,s8_t entry_index , u8_t order_
 	order_print_table.order_node[entry_index].priority = order_prio_sigal;
   order_print_table.order_node[entry_index].next_print_node = -1;
 	
+	
+	DEBUG_PRINT_TIMME("订单编号为：[%lu]，",order_print_table.order_node[entry_index].serial_number);
+	ShowTime(order_print_table.order_node[entry_index].sever_send_time,StartTime[(order_print_table.order_node[entry_index].batch_number)%100],OSTimeGet()*TIME_INTERVAL);
 	
 	if(order_print_table.empty == 1){//若原先打印队列为空
 		order_print_table.head = entry_index;

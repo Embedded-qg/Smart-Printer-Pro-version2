@@ -95,6 +95,7 @@ void Batch_Status_Send(u16_t batch_num ,u8_t status)
 void Order_QUEUE_Status_Send ( order_info* order , u8_t status )
 {
 	DEBUG_PRINT_TIMME("进入打印队列开始，订单编号为：[%lu]，",order->serial_number);//1ms中断一次*时钟节拍
+	
 	ShowTime(order->sever_send_time,StartTime[(order->batch_number)%100],OSTimeGet()*TIME_INTERVAL);
 	MesgQueBuf[MesgQueIndex].flag = ORDER_QUEUE_MESG_QUE_FLAG;
 	MesgQueBuf[MesgQueIndex].mesgQueueData.order_QUEUE_Status.batch_num = order->batch_number;
@@ -538,7 +539,6 @@ void Health_Detect_Fun()
 					}
 				}
 			//反馈健康状态	
-//				DEBUG_PRINT_TIMME("打印机健康状态：%#x\r\n",value);
 				if( PCMgr.cells[printer_num].health_status != value){				
 					Printer_Status_Send(printer_num,value);
 					PCMgr.cells[printer_num].health_status = value;

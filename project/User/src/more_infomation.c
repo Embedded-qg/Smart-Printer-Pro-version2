@@ -2,6 +2,7 @@
 
 u16_t cell_cutCnt[MAX_CELL_NUM] = {0};
 extern INT32U StartTime[100]; //基准时间
+extern void ShowTime(u32_t order_time, u32_t startTime1, u32_t OSTime);
 
 //udp校验和算法
 u16_t Check_Sum(u16_t *data, int len)

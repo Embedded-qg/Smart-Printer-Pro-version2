@@ -57,8 +57,6 @@ void put_in_buf(u8_t *data, u16_t len, u16_t urg)
 			ANALYZE_DATA_4B((order_head + ORDER_SERIAL_NUMBER_OFFSET), serial_number);//获取订单编号
 			ANALYZE_DATA_4B((order_head + ORDER_SEVER_SEND_TIME_OFFSET), order_time);//获取订单下发时间
 			ANALYZE_DATA_2B((order_head + ORDER_BATCH_NUMBER_OFFSET), batch_number);//获取所属批次号码
-//			DEBUG_PRINT_TIMME("订单下发");
-//			ShowTime(order_time,0,0);	
 			DEBUG_PRINT_TIMME("缓冲区剩余容量：%lu，",order_print_table.buf_node.common_buf_remain_capacity);
 			ShowTime(order_time,StartTime[batch_number%100],OSTimeGet()*TIME_INTERVAL);			
 			return;

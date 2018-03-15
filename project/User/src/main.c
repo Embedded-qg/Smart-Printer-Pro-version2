@@ -153,8 +153,6 @@ int main(void)
 	System_Setup();    	//系统初始化
 	OSInit();			/* UCOSII 操作系统初始化 */
 	InitSemAndMutex();	//初始化信号量
-	 
-
 	/*任务功能：LWIP初始化*/
 	os_err = OSTaskCreate((void (*) (void *)) Lwip_TaskStart,               		 //指向任务代码的指针
                           (void *) 0,												 //任务开始执行时，传递给任务的参数的指针

@@ -655,7 +655,7 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 					batch_order_already_print--;
 					DEBUG_PRINT("DealwithOrder: Order Print OK.\n");
 				}else {							// ´òÓ¡»ú×´Ì¬Òì³££¬¶©µ¥´òÓ¡Ê§°Ü
-					DEBUG_PRINT_TIMME("µ±Ç°×´Ì¬£ºÒì³£\r\n");
+//					DEBUG_PRINT_TIMME("µ±Ç°×´Ì¬£ºÒì³£\r\n");
 					cellStatus = PRINT_CELL_STATUS_ERR;
 					orderp->status = PRINT_STATUS_MACHINE_ERR;
 					DEBUG_PRINT_TIMME("´òÓ¡Ê§°Ü£¬¶©µ¥±àºÅÎª£º[%lu]£¬",orderp->serial_number);
