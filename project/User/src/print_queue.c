@@ -381,7 +381,8 @@ static s8_t	Add_Order_To_Print_Queue(SqQueue *buf,s8_t entry_index , u8_t order_
 	hash = get_batch_hash(bacth_number);
 	order_startTime = batch_info_table[hash].startTime;
 	order_print_table.order_node[entry_index].arrTime = order_startTime;
-	
+	order_print_table.order_node[entry_index].errorTime = 0;
+	order_print_table.order_node[entry_index].finishTime = 0;
 	order_print_table.order_node[entry_index].check_sum = 					(*(order_head+ORDER_CHECK_SUM_OFFSET)<<8)						+ *(order_head + ORDER_CHECK_SUM_OFFSET + 1);									//校验码						//保留
 	order_print_table.order_node[entry_index].data_source = 	order_print_table.order_node[entry_index].preservation;
 	order_print_table.order_node[entry_index].priority = order_prio_sigal;
@@ -794,6 +795,7 @@ s8_t Print_Order(u8_t cellno)
 	
 	orderp = &order_print_table.order_node[cellp->entryIndex];
 	datap = orderp->data;	
+	orderp->mcu_id = cellno;
 	length = GetDataLength(datap);
 
 	if(needCutPaper[cellno]) {	// 切除打印过程中由于打印机连接断开或电源故障等异常而打印的错误订单
@@ -821,8 +823,6 @@ s8_t Print_Order(u8_t cellno)
 		cellp->workedTime = 0;
 
 	pbytes = 0;		
-//	DEBUG_PRINT_TIMME("开始打印，订单编号为：%u，",orderp->serial_number);
-//	ShowTime(orderp->sever_send_time,StartTime,OSTimeGet()*TIME_INTERVAL);
 	while(pbytes < orderp->size) {	//解析订单内容并打印
 		length = GetDataLength(datap);
 		type = GetDataType(datap);

@@ -64,7 +64,6 @@ u8_t netbuf_type = 0;
 u8_t batch_flag = 0;//批次标记
 u8_t batch_table_hash = 0;
 static u16_t order_req_num = 0;
-static u16_t batch_count = 0;
 
 /****************************************************************************************
 *@Name............: read_message_from_netbuf
@@ -142,9 +141,7 @@ u8_t read_message_from_netbuf(char **netbuf,char ** data,u8_t netbuf_type,u16_t 
 	}
 	*data = sub_data;
 	*len = sub_len;
-	if(read_symbol)
-	{
-		batch_flag = 0;
+	if(read_symbol){
 		NET_DEBUG_PRINT("读取报文数据成功!!!\r\n");
 	}
 	else NET_DEBUG_PRINT("读取报文数据失败!!!\r\n");
@@ -197,15 +194,8 @@ void deal_with_batch_order(char *batch_buf)
 	NET_DEBUG_PRINT("接收批次数据，该批次有%d份订单\r\n", order_number); //订单数目
 //	NET_DEBUG_PRINT("batch read success ,batch_length is %x %x\r\n", *(batch + BATCH_TOTAL_LENGTH_OFFSET), *(batch + BATCH_TOTAL_LENGTH_OFFSET + 1));			
 	Analyze_Batch_Info_Table(batch, batch_number);//批次解包
-	if(GRADE_SYSTEM_ON && orderOfCellsNull())
-	{
-		PrioritySort();//打印单元按积分高低进行排序
-		Count_Accuracy();//计算批次数据下打印机单元精确度和所分配到的订单
-	}
 	batch_table_hash =  get_batch_hash(batch_number);
 	if(batch_number != last_bacth_number) batch_flag = 1;
-	batch_count++;
-//	NET_DEBUG_PRINT("接收批次数目为%d\r\n",batch_count);
 }
 
 void deal_with_order_order(void)
@@ -341,7 +331,6 @@ void write_connection(struct netconn *conn, req_type type, u8_t symbol, u32_t pr
 		//当网络写入错误时，需要等待一段时间后继续写入该数据包，否则无法反馈给服务器
 		OSTimeDlyHMSM(0,0,++i,0);
 		NET_DEBUG_PRINT("NETCONN WRITE ERR_T IS %d\r\n", err);
-
 		if(type != order_req){//订单请求需持续发送，否则服务器将无法下达订单
 			if(i > 3) break;
 		}else if(i > 10) break;//但等待多次后是无意义的

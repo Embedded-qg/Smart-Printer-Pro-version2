@@ -111,8 +111,6 @@ typedef struct batch_information {
 	u16_t batch_number;		  //所属批次
 	u16_t check_sum;		  //校验和
 	u16_t preservation;		  //保留字段，最后一位是紧急指针
-	u8_t  num_printed_order;  //已打印完成订单数量
-	u8_t  num_order_que;
 	u32_t startTime; //该批次的到达时间
 }batch_info;
 
