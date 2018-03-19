@@ -4,7 +4,7 @@
 
 struct netif DM9161_netif;
 struct netconn *order_netconn;	//全局TCP链接
-
+extern u16_t allOrderNum;
 extern OS_EVENT *Print_Sem;
 extern batch_info batch_info_table[];	//批次表
 extern OS_EVENT *Batch_Rec_Sem;			//完成一次批次读取的二值信号量
@@ -190,12 +190,14 @@ void deal_with_batch_order(char *batch_buf)
 	last_bacth_number = batch_number;
 	ANALYZE_DATA_2B((batch + BATCH_NUMBER_OFFSET), batch_number);//获取批次号
 	ANALYZE_DATA_2B((batch + BATCH_ORDER_NUMBER_OFFSET),order_number);//获取订单数目
-	
+	allOrderNum += order_number;
 	NET_DEBUG_PRINT("接收批次数据，该批次有%d份订单\r\n", order_number); //订单数目
 //	NET_DEBUG_PRINT("batch read success ,batch_length is %x %x\r\n", *(batch + BATCH_TOTAL_LENGTH_OFFSET), *(batch + BATCH_TOTAL_LENGTH_OFFSET + 1));			
 	Analyze_Batch_Info_Table(batch, batch_number);//批次解包
 	batch_table_hash =  get_batch_hash(batch_number);
 	if(batch_number != last_bacth_number) batch_flag = 1;
+	PrioritySort();//打印单元按积分高低进行排序
+	Count_Accuracy();//计算批次数据下打印机单元精确度和所分配到的订单
 }
 
 void deal_with_order_order(void)

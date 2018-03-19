@@ -33,7 +33,7 @@ extern INT32U StartTime[100];//起始时钟节拍
 
 PrintCellsMgrInfo Prior;//排序后的打印单元数组
 u16_t exception_printer_set_normal_flag;//打印机从异常恢复标志
-u16_t totalPrintedOrder = 0;
+u16_t allOrderNum = 0;
 
 
 /**************************************************************
@@ -305,6 +305,7 @@ void Count_Accuracy(void)
 	double dispend_number;
 	float grade = 0;	 //计算每个批次打印单元所加的分数
 	PrintCellInfo *cellp;
+
 	for(i=0;i<MAX_CELL_NUM;i++)//计算打印单元加起来的总分数
 	{
 		cellp = &PCMgr.cells[i];
@@ -324,11 +325,11 @@ void Count_Accuracy(void)
 			cellp = &PCMgr.cells[i];
 			if(cellp->status == PRINT_CELL_STATUS_ERR) continue;
 			cellp -> accuracy = cellp -> sum_grade / grade;//计算打印单元积分所占总积分的比例
-			dispend_number = cellp -> accuracy * BATCH_INIT_NUMBER;
-			cellp -> dispend_order_number = (int)((cellp -> accuracy) * BATCH_INIT_NUMBER);
+			dispend_number = cellp -> accuracy * allOrderNum;
+			cellp -> dispend_order_number = (int)((cellp -> accuracy) * allOrderNum);
 			all_dispend_number += cellp -> dispend_order_number;
 		}//进行订单分配
-		if(all_dispend_number < BATCH_INIT_NUMBER) remain_order_num = BATCH_INIT_NUMBER - all_dispend_number;
+		if(all_dispend_number < allOrderNum) remain_order_num = allOrderNum - all_dispend_number;
 	}
 	else{//说明至少有一台积分大于10分
 		for(i=0;i<MAX_CELL_NUM;i++)
@@ -344,12 +345,12 @@ void Count_Accuracy(void)
 			else if(cellp -> sum_grade >= 10)
 			{
 				cellp -> accuracy = cellp -> sum_grade / grade;
-				dispend_number = cellp -> accuracy * BATCH_INIT_NUMBER;
-				cellp -> dispend_order_number = (int)((cellp -> accuracy) * BATCH_INIT_NUMBER);
+				dispend_number = cellp -> accuracy * allOrderNum;
+				cellp -> dispend_order_number = (int)((cellp -> accuracy) * allOrderNum);
 				all_dispend_number += cellp -> dispend_order_number;
 			}
 		}
-		if(all_dispend_number < BATCH_INIT_NUMBER) remain_order_num = BATCH_INIT_NUMBER - all_dispend_number;
+		if(all_dispend_number < allOrderNum) remain_order_num = allOrderNum - all_dispend_number;
 	}
 	for(i=0;i<MAX_CELL_NUM && remain_order_num;i++)
 	{
@@ -357,10 +358,6 @@ void Count_Accuracy(void)
 			if(cellp->status == PRINT_CELL_STATUS_ERR) continue;
 			cellp->dispend_order_number++;
 			remain_order_num--;
-	}
-	for(i = 0; i < MAX_CELL_NUM; i++)//打印各个打印机单元分配到的订单数
-	{
-		printf("打印机%d的打印份数为%d\r\n",i+1,PCMgr.cells[i].dispend_order_number);
 	}
 }
 
@@ -413,10 +410,6 @@ void PrioritySort(void)
 			Prior.cells[i]=t;
 		}		
 	}
-	for(i = 0; i < MAX_CELL_NUM; i++)//打印各个打印机单元分配到的订单数
-	{
-		printf("打印机%d的积分为%d\r\n",i+1,PCMgr.cells[i].sum_grade);
-	}
 }
 
 /**
@@ -438,15 +431,11 @@ static PrintCellInfo *GetIdlePrintCell(void)
 //	printf("GetIdlePrintCell: Trying to get a usable print cell.\n");
 	OSSemPend(PCMgr.resrcSem, 0, &err);
 //	printf("GetIdlePrintCell: Got a usable print cell.\n");
-	OS_ENTER_CRITICAL();			  
-	if(GRADE_SYSTEM_ON && totalPrintedOrder % BATCH_INIT_NUMBER == 0)
-	{
-		PrioritySort();//打印单元按积分高低进行排序
-  	Count_Accuracy();//计算批次数据下打印机单元精确度和所分配到的订单
-	}
+	OS_ENTER_CRITICAL();
+
 	for(i = 0; i < MAX_CELL_NUM; i++) {		
 		if(PCMgr.cells[i].status == PRINT_CELL_STATUS_IDLE) {
-//			if(PCMgr.cells[i].dispend_order_number == 0) continue;
+			if(PCMgr.cells[i].dispend_order_number == 0) continue;	
 			PCMgr.cells[i].status = PRINT_CELL_STATUS_BUSY;		
  			OS_EXIT_CRITICAL();
 			DEBUG_PRINT("GetIdlePrintCell: Print Cell %u: Set Busy\n", i+1);
@@ -468,7 +457,6 @@ static PrintCellInfo *GetIdlePrintCell(void)
 void DispensePrintJob(u8_t entryIndex)
 {
 	PrintCellInfo *cellp;
-	
 	if((cellp = GetIdlePrintCell()) == NULL) {	//获取一个打印单元
 		DEBUG_PRINT("BUG DETECT: DispensePrintJob: None Usable Print Cell Exits\n");
 		return;
@@ -566,7 +554,6 @@ void OutputErrorTag(PrintCellNum cellno)
 static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 {
 	extern OS_EVENT *Printer_Status_Rec_Sem;
-
 	u8_t status;
 	PrintCellStatus cellStatus;
 	PrintCellInfo *cellp = &PCMgr.cells[cellno-1];
@@ -582,10 +569,9 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 			if(orderp->status == ORDER_DATA_OK) {		
 				if(status == NORMAL_STATE) {	// 打印机状态正常，成功打印
 					cellStatus = PRINT_CELL_STATUS_IDLE;
-
-					PCMgr.cells[cellno-1].sum_grade++;//打印正确分数加1
+	
 					PCMgr.cells[cellno-1].dispend_order_number--;
-					totalPrintedOrder++;
+					allOrderNum--;
 					if(PCMgr.cells[cellno-1].sum_grade < 100)  PCMgr.cells[cellno-1].sum_grade++;
 		
 					orderp->status = PRINT_STATUS_OK;				

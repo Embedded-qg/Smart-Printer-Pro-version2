@@ -50,7 +50,6 @@
 #define DEBUG_PRINT_STATEGY_ON 0
 
 #define GRADE_SYSTEM_ON 1
-#define BATCH_INIT_NUMBER 5
 
 #if DEBUG_PRINT_STATEGY_ON 
 	#define DEBUG_PRINT_STATEGY(fmt,args...) printf (fmt ,##args)

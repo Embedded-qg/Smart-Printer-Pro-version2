@@ -307,7 +307,6 @@ static  void Print_Task(void* p_arg)
 	u8_t entry;
 	extern order_print_queue_info order_print_table;
 	(void) p_arg;
-	
 	while(1)
 	{
 		DEBUG_PRINT("Print_Task: ORDER  WAITING\n");			
