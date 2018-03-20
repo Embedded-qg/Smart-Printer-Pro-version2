@@ -98,7 +98,6 @@ typedef struct {
 	s16_t sum_grade;							//该打印单元的积分
 	double accuracy;						//打印单元的精确度
 
-	
 }PrintCellInfo;	/* 打印单元数据结构 */
 
 typedef struct {

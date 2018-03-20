@@ -309,53 +309,25 @@ void Count_Accuracy(void)
 	for(i=0;i<MAX_CELL_NUM;i++)//计算打印单元加起来的总分数
 	{
 		cellp = &PCMgr.cells[i];
-		if(cellp->status == PRINT_CELL_STATUS_ERR) continue;
-		if(cellp -> sum_grade >= 10)  grade += cellp -> sum_grade;
+		grade += cellp -> sum_grade;
 	}
-	if(grade == 0)//说明打印单元积分都是小于10分的，都小于十分则按照分数占总分数的比例获取订单数目
+	for(i=0;i<MAX_CELL_NUM;i++)
 	{
-		for(i=0;i<MAX_CELL_NUM;i++)
-		{
 			cellp = &PCMgr.cells[i];
-			if(cellp->status == PRINT_CELL_STATUS_ERR) continue;
-			grade += cellp -> sum_grade;
-		}//计算出总积分
-		for(i=0;i<MAX_CELL_NUM;i++)//进行订单分配
-		{
-			cellp = &PCMgr.cells[i];
-			if(cellp->status == PRINT_CELL_STATUS_ERR) continue;
-			cellp -> accuracy = cellp -> sum_grade / grade;//计算打印单元积分所占总积分的比例
+		  if(cellp -> sum_grade < 10 && grade >= 30) 
+			{
+				cellp -> dispend_order_number = 1;
+				continue;
+			}
+			cellp -> accuracy = cellp -> sum_grade / grade;
 			dispend_number = cellp -> accuracy * allOrderNum;
 			cellp -> dispend_order_number = (int)((cellp -> accuracy) * allOrderNum);
 			all_dispend_number += cellp -> dispend_order_number;
-		}//进行订单分配
-		if(all_dispend_number < allOrderNum) remain_order_num = allOrderNum - all_dispend_number;
 	}
-	else{//说明至少有一台积分大于10分
-		for(i=0;i<MAX_CELL_NUM;i++)
-		{
-			cellp = &PCMgr.cells[i];
-			if(cellp->status == PRINT_CELL_STATUS_ERR) continue;
-			if(cellp -> sum_grade < 10)//积分小于10分，只能获得一份订单
-			{
-				cellp -> accuracy = 0;
-				cellp -> dispend_order_number = 1;
-				all_dispend_number++;
-			}
-			else if(cellp -> sum_grade >= 10)
-			{
-				cellp -> accuracy = cellp -> sum_grade / grade;
-				dispend_number = cellp -> accuracy * allOrderNum;
-				cellp -> dispend_order_number = (int)((cellp -> accuracy) * allOrderNum);
-				all_dispend_number += cellp -> dispend_order_number;
-			}
-		}
-		if(all_dispend_number < allOrderNum) remain_order_num = allOrderNum - all_dispend_number;
-	}
-	for(i=0;i<MAX_CELL_NUM && remain_order_num;i++)
+	if(all_dispend_number < allOrderNum) remain_order_num = allOrderNum - all_dispend_number;
+	for(i=0;i<MAX_CELL_NUM && remain_order_num > 0 && remain_order_num < MAX_CELL_NUM;i++)
 	{
 			cellp = &PCMgr.cells[i];	
-			if(cellp->status == PRINT_CELL_STATUS_ERR) continue;
 			cellp->dispend_order_number++;
 			remain_order_num--;
 	}
@@ -377,39 +349,6 @@ int orderOfCellsNull(void)
 		if(cellp->dispend_order_number) return 0;
 	}
 	return 1;
-}
-/**
- *  @fn		PrioritySort
- *	@brief	将每个打印单元按精确度高低进行排序
- *	@param	None
- *	@ret	NULL 
-			
- */
-void PrioritySort(void)
-{
-	int i,k,j;
-	PrintCellInfo t;
-	for(i=0;i<MAX_CELL_NUM;i++)
-	{
-		Prior.cells[i]=PCMgr.cells[i];
-	}
-	for(i=0;i<MAX_CELL_NUM;i++) 
-	{
-		k=i;
-		for(j=i+1;j<MAX_CELL_NUM;j++)
-		{
-			if(Prior.cells[k].accuracy<Prior.cells[j].accuracy)
-			{
-				k=j;
-			}
-		}
-		if(k!=j)
-		{
-			t=Prior.cells[k];
-			Prior.cells[k]=Prior.cells[i];
-			Prior.cells[i]=t;
-		}		
-	}
 }
 
 /**
@@ -435,8 +374,7 @@ static PrintCellInfo *GetIdlePrintCell(void)
 
 	for(i = 0; i < MAX_CELL_NUM; i++) {		
 		if(PCMgr.cells[i].status == PRINT_CELL_STATUS_IDLE) {
-			if(PCMgr.cells[i].dispend_order_number == 0) continue;	
-			PCMgr.cells[i].status = PRINT_CELL_STATUS_BUSY;		
+			if(PCMgr.cells[i].dispend_order_number > 0) 	PCMgr.cells[i].status = PRINT_CELL_STATUS_BUSY;		
  			OS_EXIT_CRITICAL();
 			DEBUG_PRINT("GetIdlePrintCell: Print Cell %u: Set Busy\n", i+1);
 			return &PCMgr.cells[i];
