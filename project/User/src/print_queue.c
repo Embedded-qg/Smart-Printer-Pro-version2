@@ -305,7 +305,6 @@ static s8_t	Add_Order_To_Print_Queue(SqQueue *buf,s8_t entry_index , u8_t order_
 	u16_t bacth_number;
 	u32_t current_number;
 	u32_t serial_number;
-	u32_t order_startTime;
 	u32_t order_time;
 	order_head = buf->base + buf->read;// 获取订单头//  这里用于存放buf的订单缓冲数据流的头部
 	
@@ -379,10 +378,10 @@ static s8_t	Add_Order_To_Print_Queue(SqQueue *buf,s8_t entry_index , u8_t order_
 	
 	bacth_number = order_print_table.order_node[entry_index].batch_number;
 	hash = get_batch_hash(bacth_number);
-	order_startTime = batch_info_table[hash].startTime;
-	order_print_table.order_node[entry_index].arrTime = order_startTime;
+	order_print_table.order_node[entry_index].arrTime = batch_info_table[hash].startTime;;
 	order_print_table.order_node[entry_index].errorTime = 0;
 	order_print_table.order_node[entry_index].finishTime = 0;
+	
 	order_print_table.order_node[entry_index].check_sum = 					(*(order_head+ORDER_CHECK_SUM_OFFSET)<<8)						+ *(order_head + ORDER_CHECK_SUM_OFFSET + 1);									//校验码						//保留
 	order_print_table.order_node[entry_index].data_source = 	order_print_table.order_node[entry_index].preservation;
 	order_print_table.order_node[entry_index].priority = order_prio_sigal;

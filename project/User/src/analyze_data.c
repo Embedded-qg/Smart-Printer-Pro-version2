@@ -5,8 +5,6 @@
 **************************************************************/
 
 extern contract_info contract_information;
-extern u8_t batch_flag;
-extern u8_t batch_table_hash;
 
 extern INT32U StartTime; //基准时间
 /**
