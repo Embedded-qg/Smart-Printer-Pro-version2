@@ -263,14 +263,25 @@ void receive_connection(struct netconn *conn)
 	{	
 		NET_DEBUG_PRINT("从以太网接收数据!!\r\n");
 		netbuf_data(order_netbuf,(void **)&data,&len);//从网络缓冲区读取数据
+		//JockJo
 start:
-		NET_DEBUG_PRINT("数据接收成功,长度为%d,netbuf_type = %d\r\n",len,netbuf_type);
+		if( (netbuf_type=find_order_head(&data,&len)) != NETORDER_TYPE_NULL)
+		{
+				NET_DEBUG_PRINT("JockJo:数据接收成功,报文头部分析成功，长度为%d,netbuf_type = %d\r\n",len,netbuf_type);
+				read_message_symbol = read_message_from_netbuf(&netbuf,&data,netbuf_type,&len);//读取整个报文数据长度																																
+				NET_DEBUG_PRINT("JockJo:数据读取完后，网络缓冲区剩余长度：len = %d\r\n",len);
+				if(read_message_symbol) deal_with_order(netbuf);//对数据报文进行处理
+				if(len) goto start; //如有多余数据，重新进行报文判断
+				if(!(netbuf_next(order_netbuf) > 0)) netbuf_delete(order_netbuf);
+		}		
+/*		NET_DEBUG_PRINT("数据接收成功,长度为%d,netbuf_type = %d\r\n",len,netbuf_type);
 		if(netbuf_type == NETORDER_TYPE_NULL) netbuf_type = find_order_head(&data,&len); //从网络缓冲区中读取第一个报文种类，分析报文种类
 		if(netbuf_type != NETORDER_TYPE_NULL) read_message_symbol = read_message_from_netbuf(&netbuf,&data,netbuf_type,&len);//读取整个报文数据长度	
 		NET_DEBUG_PRINT("数据读取完后，网络缓冲区剩余长度：len = %d\r\n",len);
 		if(read_message_symbol) deal_with_order(netbuf);//对数据报文进行处理
 		if(len) goto start; //如有多余数据，重新进行报文判断
 		if(!(netbuf_next(order_netbuf) > 0)) netbuf_delete(order_netbuf);
+*/	
 	}
 	OSTimeDlyHMSM(0, 0, 0, 50);
 }
@@ -359,7 +370,6 @@ void write_connection(struct netconn *conn, req_type type, u8_t symbol, u32_t pr
 void con_to_server(void)
 {
 	struct ip_addr server_ip;
-	extern struct netconn *order_netconn;	//全局TCP链接
 	extern OS_EVENT *Recon_To_Server_Sem;
 	if((order_netconn = netconn_new(NETCONN_TCP)) != NULL){
 		NET_DEBUG_PRINT("Connection build.\r\n");

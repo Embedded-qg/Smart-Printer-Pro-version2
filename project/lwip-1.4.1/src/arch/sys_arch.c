@@ -291,7 +291,7 @@ u32_t sys_arch_mbox_fetch(sys_mbox_t *q, void **msg, u32_t timeout)
   }
   else if(Err == OS_ERR_TIMEOUT)
   {
-    //printf("mbox fetch time out error");
+    printf("mbox fetch time out error");
     if(msg != NULL) {
       *msg  = NULL;
     }
@@ -302,8 +302,7 @@ u32_t sys_arch_mbox_fetch(sys_mbox_t *q, void **msg, u32_t timeout)
 	  printf("mbox fetch uknow error [%u]", Err);
 	  if(msg != NULL) {
 			*msg  = NULL;
-	  }
-	  
+	  } 
 	  return SYS_ARCH_TIMEOUT;
   }
 

@@ -267,7 +267,7 @@ static void Lwip_TaskStart(void* p_arg)
 	DEBUG_PRINT("Go to LWIP_Init()!\r\n");
 	LwIP_Init();
 	
-	//此步骤抽离比较合适
+	//此步骤抽离比较合适,改为发送一个信号，然后再连接服务器
 	while(1)
 	{
 		con_to_server();

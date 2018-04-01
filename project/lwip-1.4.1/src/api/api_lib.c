@@ -89,6 +89,10 @@ netconn_new_with_proto_and_callback(enum netconn_type t, u8_t proto, netconn_cal
       return NULL;
     }
   }
+	else
+	{
+		DEBUG_PRINT("JockJo:netcoon_alloc is failed.\n");
+	}
   return conn;
 }
 
