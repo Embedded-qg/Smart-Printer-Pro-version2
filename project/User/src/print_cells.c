@@ -316,9 +316,10 @@ void Count_Accuracy(void)
 	{
 			cellp = &PCMgr.cells[i];
 			if(cellp->status == PRINT_CELL_STATUS_ERR) continue;
-		  if(cellp -> sum_grade < 10 && grade >= 30) 
+		  if(cellp -> sum_grade < 10 && grade >= MAX_CELL_NUM * 10) 
 			{
 				cellp -> dispend_order_number = 1;
+				all_dispend_number++;
 				allOrderNum--;
 				continue;
 			}
@@ -328,12 +329,19 @@ void Count_Accuracy(void)
 			all_dispend_number += cellp -> dispend_order_number;
 	}
 	if(all_dispend_number < allOrderNum) remain_order_num = allOrderNum - all_dispend_number;
-	for(i=0;i<MAX_CELL_NUM && remain_order_num > 0 && remain_order_num < MAX_CELL_NUM;i++)
+	for(i = 0;i < MAX_CELL_NUM && remain_order_num > 0;i++)
 	{
 			cellp = &PCMgr.cells[i];	
+			if(cellp->status == PRINT_CELL_STATUS_ERR) continue;
 			cellp->dispend_order_number++;
 			remain_order_num--;
 	}
+	for(i = 0;i < MAX_CELL_NUM && remain_order_num > 0;i++)
+	{
+			cellp = &PCMgr.cells[i];	
+			printf("打印机%d需要打印的份数为%d\r\n",i + 1,cellp->dispend_order_number);
+	}
+
 }
 
 /**
@@ -377,6 +385,7 @@ static PrintCellInfo *GetIdlePrintCell(void)
 
 	for(i = 0; i < MAX_CELL_NUM; i++) {		
 		if(PCMgr.cells[i].status == PRINT_CELL_STATUS_IDLE && PCMgr.cells[i].dispend_order_number) {
+//		if(PCMgr.cells[i].status == PRINT_CELL_STATUS_IDLE) {
 			PCMgr.cells[i].status = PRINT_CELL_STATUS_BUSY;		
  			OS_EXIT_CRITICAL();
 			DEBUG_PRINT("GetIdlePrintCell: Print Cell %u: Set Busy\n", i+1);

@@ -775,6 +775,21 @@ s8_t CheckOrderData(u8_t entry_index)
 	return ORDER_DATA_OK;
 }
 
+/**
+ * @brief	计算一份订单所需的打印时间
+ * @param	订单数据
+ * @return	订单打印所需时间值，单位为毫秒
+ */
+u16_t orderNeedTime(order_info *orderp)
+{
+	u8_t *orderdata = orderp->data;
+	u16_t i,lineNum = 0;
+	for(i = 0;i < orderp->size;i++)
+	{
+		if(*(orderdata + i) == '\n') lineNum++;
+	}
+	return lineNum * 38 + 1000;
+}
 
 /**
  * @brief	打印一份订单，并修改其状态
@@ -783,7 +798,7 @@ s8_t CheckOrderData(u8_t entry_index)
  */
 s8_t Print_Order(u8_t cellno)
 {
-	u16_t length, pbytes;
+	u16_t length, pbytes,orderTime;
 	order_info *orderp;
 	u8_t *datap;
 	u8_t type;
@@ -851,9 +866,11 @@ s8_t Print_Order(u8_t cellno)
 		datap = MoveToNextData(datap, length);
 	}
 	orderp->status = ORDER_DATA_OK;	// 订单数据解析正确
+	orderTime = orderNeedTime(orderp);
 	
-	// 发送检测打印机状态的指令，以决定本订单是否打印成功
-	OSTimeDlyHMSM(0,0,(u8)((orderp->size / 512) + (orderp->size / 2048)), 500);
+	// 发送检测打印机状态的指令，以决定本订单是否打印成功	
+//	OSTimeDlyHMSM(0,0,(u8)((orderp->size / 512) + (orderp->size / 2048)), 500);
+	OSTimeDlyHMSM(0,0,(u8)(orderTime / 1000), (u8)(orderTime % 1000));
 	ORDER_DEBUG_PRINT("Print_Order: Waiting for Printer's status.\r\n");
 	SEND_STATUS_CMD_ONE(cellno);
 	OSTimeDlyHMSM(0,0,1,0);//发送状态后延时
