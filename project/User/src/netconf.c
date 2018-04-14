@@ -63,8 +63,6 @@ static u16_t len = 0;	//从网络缓冲区读取到的数据的长度
 u8_t netbuf_type = 0;
 u8_t batch_flag = 0;//批次标记
 u8_t batch_table_hash = 0;
-static u16_t order_req_num = 0;
-static u16_t batch_count = 0;
 
 /****************************************************************************************
 *@Name............: read_message_from_netbuf
@@ -196,7 +194,6 @@ void deal_with_batch_order(char *batch_buf)
 	batch_table_hash =  get_batch_hash(batch_number);	
 	Count_Accuracy();//计算批次数据下打印机单元精确度和所分配到的订单
 	if(batch_number != last_bacth_number) batch_flag = 1;
-	batch_count++;
 }
 
 void deal_with_order_order(void)
@@ -304,7 +301,6 @@ void write_connection(struct netconn *conn, req_type type, u8_t symbol, u32_t pr
 	if(type == order_req){
 		Pack_Req_Or_Status_Message(sent_data, ORDER_REQ, symbol, Get_MCU_ID(), 
 									Get_Current_Unix_Time(), preservation);
-		order_req_num++;
 	}
 	else if(type == batch_status){//此时的preservation高16位为批次号
 		Pack_Req_Or_Status_Message(sent_data, BATCH_STATUS, symbol, Get_MCU_ID(), 
@@ -356,7 +352,8 @@ void con_to_server(void)
 	netconn_set_recvtimeout(order_netconn,10000);//设置接收延时时间 
 	
 #ifdef REMOTE//设置服务器ip地址
-	IP4_ADDR(&server_ip,10,21,48,11);//云服务器学校
+		IP4_ADDR(&server_ip,10,21,48,11);
+//	IP4_ADDR(&server_ip,47,106,74,67);//云服务器学校
 //	IP4_ADDR(&server_ip,123,207,228,117);		//云服务器_胖子
 //	IP4_ADDR(&server_ip,192,168,1,116);		//JockJo测试机
 //	IP4_ADDR(&server_ip, 192,168,1,119);	//工作室测试机

@@ -84,6 +84,7 @@ typedef enum contract_type{
 //订单数据表
 typedef struct order_information {
 	u32_t mcu_id;	 		   //主控板id
+	u32_t error_print_mcu_id;
 	u32_t sever_send_time;     //服务器发送时间
 	u32_t serial_number;	   //订单序号
 	u32_t arrTime;				//到达时间

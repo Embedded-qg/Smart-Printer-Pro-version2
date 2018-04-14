@@ -381,6 +381,7 @@ static s8_t	Add_Order_To_Print_Queue(SqQueue *buf,s8_t entry_index , u8_t order_
 	order_print_table.order_node[entry_index].arrTime = batch_info_table[hash].startTime;;
 	order_print_table.order_node[entry_index].errorTime = 0;
 	order_print_table.order_node[entry_index].finishTime = 0;
+	order_print_table.order_node[entry_index].error_print_mcu_id = -1;
 	
 	order_print_table.order_node[entry_index].check_sum = 					(*(order_head+ORDER_CHECK_SUM_OFFSET)<<8)						+ *(order_head + ORDER_CHECK_SUM_OFFSET + 1);									//Ð£ÑéÂë						//±£Áô
 	order_print_table.order_node[entry_index].data_source = 	order_print_table.order_node[entry_index].preservation;
@@ -788,7 +789,7 @@ u16_t orderNeedTime(order_info *orderp)
 	{
 		if(*(orderdata + i) == '\n') lineNum++;
 	}
-	return lineNum * 38 + 1000;
+	return lineNum * 38 + 200;
 }
 
 /**
