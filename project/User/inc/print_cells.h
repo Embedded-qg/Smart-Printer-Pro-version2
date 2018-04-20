@@ -96,6 +96,8 @@ typedef struct {
 	
 	u16_t printedNum;  //该打印机已打印的订单数
 	u16_t errorPrintedNum; //该打印机打印错误的订单数
+	float success_rate; //该打印机的打印成功率
+	
 	u16_t dispend_order_number;	 	//打印单元分配到的订单
 	s16_t sum_grade;							//该打印单元的积分
 	double accuracy;						//打印单元的精确度
@@ -136,6 +138,10 @@ AllPrinterStatus if_printer_all_error(void);
  */
 void Count_Accuracy(void);
 
+/*
+比例分配
+*/
+void ratio_alloc(void);
 /**
  *  @fn		orderOfCellsNull
  *	@brief	判断是不是所有打印机的待打印订单份数都为0

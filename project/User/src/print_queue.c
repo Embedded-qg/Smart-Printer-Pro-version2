@@ -1073,7 +1073,7 @@ void Print_Queue_Fun()
 				OSTimeDlyHMSM(0, 0, 1, 0);
 			}
 			else{																									//正常取得索引
-				ORDER_DEBUG_PRINT("ORDER_SUCCESS: ENQUEUE SUCCESS \r\n");					
+				ORDER_DEBUG_PRINT("ORDER_SUCCESS: ENQUEUE SUCCESS \r\n");			
 				OrderEnqueue(buf,entry_index , order_len,order_prio_sigal);
 				//这里进行7K判断，因为每入队一个订单，都有可能会让缓冲区减少一点。
 				Check_Buf_Request_Signal(queue_buf);

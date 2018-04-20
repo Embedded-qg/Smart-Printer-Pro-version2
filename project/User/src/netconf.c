@@ -192,7 +192,8 @@ void deal_with_batch_order(char *batch_buf)
 	allOrderNum += order_number;		//目前已有的总订单量
 	Analyze_Batch_Info_Table(batch, batch_number);//批次解包
 	batch_table_hash =  get_batch_hash(batch_number);	
-	Count_Accuracy();//计算批次数据下打印机单元精确度和所分配到的订单
+//	Count_Accuracy();//计算批次数据下打印机单元精确度和所分配到的订单
+	ratio_alloc();
 	if(batch_number != last_bacth_number) batch_flag = 1;
 }
 

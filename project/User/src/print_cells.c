@@ -293,6 +293,7 @@ void InitPrintCellsMgr(void)
 		cellp->health_status = PRINTER_HEALTH_UNHEALTHY ;
 		cellp->printedNum = 0;
 		cellp->errorPrintedNum = 0;
+		cellp->success_rate = 1.0;
 		cellp->sum_grade = 50;
 		cellp->printBeginSem = OSSemCreate(0);
 		cellp->printDoneSem = OSSemCreate(0);
@@ -349,12 +350,42 @@ void Count_Accuracy(void)
 			remain_order_num--;
 	}
 	OS_EXIT_CRITICAL();
-//	for(i = 0;i < MAX_CELL_NUM;i++)
-//	{
-//			cellp = &PCMgr.cells[i];	
-//			printf("打印机%d需要打印的份数为%d\r\n",i + 1,cellp->dispend_order_number);
-//	}
+}
 
+void ratio_alloc(void)
+{
+#if OS_CRITICAL_METHOD == 3u                               /* Allocate storage for CPU status register */
+    OS_CPU_SR  cpu_sr = 0u;
+#endif	
+	int i,all_dispend_number = 0,remain_order_num = 0;
+	double dispend_number = 0;
+	float rate = 0;
+	PrintCellInfo *cellp;
+	OS_ENTER_CRITICAL();
+	for(i = 0;i < MAX_CELL_NUM;i++)//计算打印单元加起来的总分数
+	{
+		cellp = &PCMgr.cells[i];
+		if(cellp->status == PRINT_CELL_STATUS_ERR) continue;
+		rate += cellp->success_rate;
+	}
+	for(i=0;i<MAX_CELL_NUM;i++)
+	{
+			cellp = &PCMgr.cells[i];
+			if(cellp->status == PRINT_CELL_STATUS_ERR) continue;
+			cellp -> accuracy = cellp -> success_rate / rate;
+			dispend_number = cellp -> accuracy * allOrderNum;
+			cellp -> dispend_order_number = (int)((cellp -> accuracy) * allOrderNum);
+			all_dispend_number += cellp -> dispend_order_number;
+	}
+	if(all_dispend_number < allOrderNum) remain_order_num = allOrderNum - all_dispend_number;
+	for(i = 0;i < MAX_CELL_NUM && remain_order_num > 0;i++)
+	{
+			cellp = &PCMgr.cells[i];	
+			if(cellp->status == PRINT_CELL_STATUS_ERR) continue;
+			cellp->dispend_order_number++;
+			remain_order_num--;
+	}
+	OS_EXIT_CRITICAL();
 }
 
 /**
@@ -397,8 +428,8 @@ static PrintCellInfo *GetIdlePrintCell(void)
 	OS_ENTER_CRITICAL();
 
 	for(i = 0; i < MAX_CELL_NUM; i++) {		
-		if(PCMgr.cells[i].status == PRINT_CELL_STATUS_IDLE && PCMgr.cells[i].dispend_order_number) {
-//		if(PCMgr.cells[i].status == PRINT_CELL_STATUS_IDLE) {
+		if(PCMgr.cells[i].status == PRINT_CELL_STATUS_IDLE) {
+			if(PCMgr.cells[i].dispend_order_number <= 0) continue;
 			PCMgr.cells[i].status = PRINT_CELL_STATUS_BUSY;		
  			OS_EXIT_CRITICAL();
 			DEBUG_PRINT("GetIdlePrintCell: Print Cell %u: Set Busy\n", i+1);
@@ -537,7 +568,7 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 					PCMgr.cells[cellno-1].printedNum++;
 					allOrderNum--;
 					if(PCMgr.cells[cellno-1].sum_grade < 100)  PCMgr.cells[cellno-1].sum_grade++;
-		
+					PCMgr.cells[cellno-1].success_rate = PCMgr.cells[cellno-1].printedNum * 1.0 / (PCMgr.cells[cellno-1].printedNum + PCMgr.cells[cellno-1].errorPrintedNum);
 					orderp->status = PRINT_STATUS_OK;				
 					orderp->finishTime = OSTimeGet();
 					printf("%d,%d,%d,%d,%d,%d,%d\r\n",orderp->serial_number,orderp->size,orderp->mcu_id,orderp->arrTime,orderp->finishTime,orderp->errorTime,orderp->error_print_mcu_id);
@@ -567,7 +598,7 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 					
 					if(PCMgr.cells[cellno-1].sum_grade >= 10) PCMgr.cells[cellno-1].sum_grade = PCMgr.cells[cellno-1].sum_grade - 10 ;//打印出错一份订单减10分	
 					PCMgr.cells[cellno-1].errorPrintedNum++;
-					
+					PCMgr.cells[cellno-1].success_rate = PCMgr.cells[cellno-1].printedNum * 1.0 / (PCMgr.cells[cellno-1].printedNum + PCMgr.cells[cellno-1].errorPrintedNum);
 					DEBUG_PRINT("DealwithOrder: Order Print Failedly.\n");
 				
 					if(if_printer_all_error() == ALL_ERROR){
