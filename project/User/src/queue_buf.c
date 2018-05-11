@@ -168,8 +168,6 @@ s8_t Check_Buf_Request_Signal(SqQueue buf)
 			write_connection(order_netconn, order_req, 0, 0); 
 			DEBUG_PRINT("<<<<<<<<<<<<<<<<<<<<<<<<<<--------------------------SEND ORDER REQ--------------------------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\r\n");
 		}
-		else
-			;	
 	}
 	
 	return 0;

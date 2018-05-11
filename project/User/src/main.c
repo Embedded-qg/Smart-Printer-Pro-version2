@@ -480,7 +480,6 @@ static void Transmit_Task(void * p_arg)
 		OSSemPend(cellp->printBeginSem, 0, &err);
 		Print_Order(cellno);
 	}
-	
 	return ;
 }
 

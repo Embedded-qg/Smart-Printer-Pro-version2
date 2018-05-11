@@ -108,13 +108,6 @@
 #define DATA_FOOTER_SIZE	4
 
 
-#define ORDER_DEBUG_PRINT_ON 0
-#if ORDER_DEBUG_PRINT_ON
-	#define ORDER_DEBUG_PRINT(fmt,args...) printf (fmt ,##args)
-#else
-	#define ORDER_DEBUG_PRINT(fmt,args...)
-#endif
-
 typedef struct buf_information
 {
 	u32_t common_buf_size;
@@ -195,7 +188,7 @@ void Order_QUEUE_Status_Send( order_info* order , u8_t status);
  * @param	
  * @return	
  */
-void Print_Queue_Fun();
+void Print_Queue_Fun(void);
 
 
 #endif

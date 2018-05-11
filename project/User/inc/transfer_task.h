@@ -54,7 +54,9 @@
 /**************************************************************
 *	Prototype Declare Section
 **************************************************************/
-u32_t Get_TARGET_ID();
+u32_t Get_TARGET_ID(void);
+
+
 void transf_task(struct netconn *conn, req_type type, u8_t symbol, u32_t target_id, u32_t preservation);
 
 

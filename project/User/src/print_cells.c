@@ -429,7 +429,7 @@ static PrintCellInfo *GetIdlePrintCell(void)
 
 	for(i = 0; i < MAX_CELL_NUM; i++) {		
 		if(PCMgr.cells[i].status == PRINT_CELL_STATUS_IDLE) {
-			if(PCMgr.cells[i].dispend_order_number <= 0) continue;
+//			if(PCMgr.cells[i].dispend_order_number <= 0) continue;
 			PCMgr.cells[i].status = PRINT_CELL_STATUS_BUSY;		
  			OS_EXIT_CRITICAL();
 			DEBUG_PRINT("GetIdlePrintCell: Print Cell %u: Set Busy\n", i+1);
@@ -571,18 +571,10 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 					PCMgr.cells[cellno-1].success_rate = PCMgr.cells[cellno-1].printedNum * 1.0 / (PCMgr.cells[cellno-1].printedNum + PCMgr.cells[cellno-1].errorPrintedNum);
 					orderp->status = PRINT_STATUS_OK;				
 					orderp->finishTime = OSTimeGet();
-					printf("%d,%d,%d,%d,%d,%d,%d\r\n",orderp->serial_number,orderp->size,orderp->mcu_id,orderp->arrTime,orderp->finishTime,orderp->errorTime,orderp->error_print_mcu_id);
+//					printf("%d,%d,%d,%d,%d,%d,%d\r\n",orderp->serial_number,orderp->size,orderp->mcu_id,orderp->arrTime,orderp->finishTime,orderp->errorTime,orderp->error_print_mcu_id);
 					Delete_Order(cellp->entryIndex);
 					DEBUG_PRINT("DealwithOrder: Order Print OK.\n");
-					if(allOrderNum == 0)
-					{
-						for(i = 0;i < MAX_CELL_NUM;i++)
-						{
-								cellp = &PCMgr.cells[i];	
-								printf("打印机%d的积分为%d\r\n",i + 1,cellp->sum_grade);
-							  printf("打印机%d的打印分数为为%d\r\n",i + 1,cellp->printedNum);
-						}
-					}
+					if(allOrderNum == 0) {}
 				
 				}else {							// 打印机状态异常，订单打印失败
 					cellStatus = PRINT_CELL_STATUS_ERR;
@@ -613,6 +605,7 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 				cutPaper(cellno);
 				PutPrintCell(cellno, cellStatus);					
 				Order_Print_Status_Send(orderp,orderp->status);	
+				STATUS_DEBUG_PRINT("order_status:The order is printed,the number of order is %d\r\n",orderp->batch_within_number);
 				OSSemPost(cellp->printDoneSem);	// 发送订单打印完成信号
 			}
 		}else {	// 打印单元非忙碌，状态检测指令来自健康检测线程
@@ -626,7 +619,7 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 				}
 			}else if(cellp->status == PRINT_CELL_STATUS_IDLE) {	
 				if(status != NORMAL_STATE){		// 打印机从正常到异常
-//					DEBUG_PRINT("\nPrint Cell %u fell into exception.\n", cellp->no);
+					DEBUG_PRINT("\nPrint Cell %u fell into exception.\n", cellp->no);
 					cellp->status = PRINT_CELL_STATUS_ERR;
 					OSSemAccept(PCMgr.resrcSem);
 					DEBUG_PRINT("printer_failed_and kill one sem\r\n");

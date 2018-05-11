@@ -320,7 +320,6 @@ static s8_t	Add_Order_To_Print_Queue(SqQueue *buf,s8_t entry_index , u8_t order_
 										+	((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +2 )) << 8) 	+		((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +3 )));	//下发时间		
 		
 		DEBUG_PRINT_TIMME("分配内存大小：1K，订单编号为：%u\r\n",serial_number);
-//		ShowTime(order_time,StartTime,OSTimeGet()*TIME_INTERVAL);
 	}
 	else if(entry_index < BLOCK_2K_INDEX_END){
 		ORDER_DEBUG_PRINT("\nQUEUE DEBUG----GOT 2K BLOCK----\r\n");
@@ -331,7 +330,6 @@ static s8_t	Add_Order_To_Print_Queue(SqQueue *buf,s8_t entry_index , u8_t order_
 										+	((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +2 )) << 8) 	+		((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +3 )));	//下发时间		
 		
 		DEBUG_PRINT_TIMME("分配内存大小：2K，订单编号为：%u\r\n",serial_number);
-//		ShowTime(order_time,StartTime,OSTimeGet()*TIME_INTERVAL);		
 	}
 	else if(entry_index < BLOCK_4K_INDEX_END){
 		ORDER_DEBUG_PRINT("\nQUEUE DEBUG----GOT 4K BLOCK----\r\n");
@@ -342,7 +340,6 @@ static s8_t	Add_Order_To_Print_Queue(SqQueue *buf,s8_t entry_index , u8_t order_
 										+	((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +2 )) << 8) 	+		((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +3 )));	//下发时间		
 		
 		DEBUG_PRINT_TIMME("分配内存大小：4K，订单编号为：%u\r\n",serial_number);
-//		ShowTime(order_time,StartTime,OSTimeGet()*TIME_INTERVAL);
 	}
 	else if(entry_index < BLOCK_10K_INDEX_END){	
 		ORDER_DEBUG_PRINT("\nQUEUE DEBUG----GOT 10K BLOCK----\r\n");
@@ -354,7 +351,6 @@ static s8_t	Add_Order_To_Print_Queue(SqQueue *buf,s8_t entry_index , u8_t order_
 										+	((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +2 )) << 8) 	+		((u32_t)(*(order_head + ORDER_SEVER_SEND_TIME_OFFSET +3 )));	//下发时间		
 		
 		DEBUG_PRINT_TIMME("分配内存大小：10K，订单编号为：%u\r\n",serial_number);
-//		ShowTime(order_time,StartTime,OSTimeGet()*TIME_INTERVAL);	
 	}
 	
 	/*解析读取订单头部数据*/
@@ -375,7 +371,7 @@ static s8_t	Add_Order_To_Print_Queue(SqQueue *buf,s8_t entry_index , u8_t order_
 	
 	DEBUG_PRINT("QUEUE DEBUG :id number :%u", order_print_table.order_node[entry_index].batch_number);
 	DEBUG_PRINT("QUEUE DEBUG :id number :%u", order_print_table.order_node[entry_index].batch_within_number);
-	
+	STATUS_DEBUG_PRINT("batch_within_number = %d\r\n",order_print_table.order_node[entry_index].batch_within_number);
 	bacth_number = order_print_table.order_node[entry_index].batch_number;
 	hash = get_batch_hash(bacth_number);
 	order_print_table.order_node[entry_index].arrTime = batch_info_table[hash].startTime;;
@@ -749,9 +745,8 @@ s8_t CheckOrderData(u8_t entry_index)
 	
 	if(NULL == datap) {
 		orderp->status = PRINT_STATUS_DATA_ERR;	/* 订单数据错误 */
-		DEBUG_PRINT_TIMME("打印失败，订单数据错误\r\n");
-//		ShowTime(orderp->sever_send_time,StartTime,OSTimeGet()*TIME_INTERVAL);
 		Order_Print_Status_Send(orderp,PRINT_STATUS_DATA_ERR);
+		STATUS_DEBUG_PRINT("order_status:The data of order is error,the number of order is %d\r\n",orderp->batch_within_number);
 		ORDER_DEBUG_PRINT("CheckOrderData: checking empty block!\r\n");
 		return ORDER_DATA_ERR;		
 	}
@@ -763,7 +758,7 @@ s8_t CheckOrderData(u8_t entry_index)
 		if(type == DATA_INVALID){	// 数据错误			
 			orderp->status = PRINT_STATUS_DATA_ERR;	/* 订单数据错误 */
 			Order_Print_Status_Send(orderp,PRINT_STATUS_DATA_ERR);
-
+			STATUS_DEBUG_PRINT("order_status:The data of order is error,the number of order is %d\r\n",orderp->batch_within_number);
 			ORDER_DEBUG_PRINT("CheckOrderData: Invalid type of data field!\r\n");
 			
 			return ORDER_DATA_ERR;
@@ -830,6 +825,7 @@ s8_t Print_Order(u8_t cellno)
 	
 	orderp->status = PRINT_STATUS_START;
 	Order_Print_Status_Send(orderp,	PRINT_STATUS_START);
+	STATUS_DEBUG_PRINT("order_status:Starting to print the order,the number of order is %d\r\n",orderp->batch_within_number);
 	
 	cellp->beginTick = sys_now();
 	
@@ -882,6 +878,7 @@ s8_t Print_Order(u8_t cellno)
 		ORDER_DEBUG_PRINT("Print_Order: Printer %u Off-line while Printing.\r\n", cellno);
 		needCutPaper[cellno] = 1;
 		Order_Print_Status_Send(orderp, PRINT_CELL_STATUS_ERR);	
+		STATUS_DEBUG_PRINT("order_status:Print order error because of print cell's error,the number of order is %d\r\n",orderp->batch_within_number);
 		PutPrintCell(cellno, PRINT_CELL_STATUS_ERR);
 	}
 	DEBUG_PRINT_TIMME("\r\n");
@@ -928,7 +925,7 @@ void Init_Order_Table(void)
 		orderp->status = 100;
 		orderp->mcu_id = 0;
 		orderp->next_print_node = 0;
-		
+
 		entry_index++;
 	}		
 }
@@ -946,16 +943,16 @@ void Init_Order_Table(void)
 static s8_t OrderEnqueue(SqQueue* buf,s8_t entry_index , u16_t order_len,u8_t order_prio_sigal)
 {		
 	extern OS_EVENT *Print_Sem;    
-	s8_t print_err = 0;	
-	u16_t order_num = 0;
+//	s8_t print_err = 0;	
+//	u16_t order_num = 0;
 	order_info *orderp = &order_print_table.order_node[entry_index];
 	u8_t *data = orderp->data;
 	
 	Add_Order_To_Print_Queue(buf,entry_index,order_prio_sigal); //分配内存					
-//	DEBUG_PRINT_TIMME("订单批次内序号为：%u，订单编号为：%lu，订单长度为：%u，",orderp->batch_within_number,orderp->serial_number,orderp->size);//1ms中断一次*时钟节拍
-//	ShowTime(orderp->sever_send_time,StartTime,OSTimeGet()*TIME_INTERVAL);
+
 	//发送订单进入打印队列的报文	
-	Order_QUEUE_Status_Send(&(order_print_table.order_node[entry_index]),ENQUEUE_OK);						
+	Order_QUEUE_Status_Send(&(order_print_table.order_node[entry_index]),ENQUEUE_OK);			
+	STATUS_DEBUG_PRINT("order_status:The order has been enqueued,the order number is %d\r\n",orderp->batch_within_number);
 	ORDER_DEBUG_PRINT("-------ONE ORDER ENQUEUE---------\r\n");	
 
 	OSSemPost(Print_Sem);//产生打印信号
@@ -1069,7 +1066,6 @@ void Print_Queue_Fun()
 				Change_Order_Seque(entry_index);//改变订单顺序，以让加急订单尽快加入到队列中)	
 				ORDER_DEBUG_PRINT("QUEUE DEBUG :After  Non block Change\r\n");
 				printOrderQueueSeque();				
-				
 				OSTimeDlyHMSM(0, 0, 1, 0);
 			}
 			else{																									//正常取得索引

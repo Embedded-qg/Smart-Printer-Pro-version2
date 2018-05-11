@@ -57,8 +57,6 @@ void Pack_Contract_Message(char *message,contract_type type,u16_t contract_numbe
 	SET_DATA_4B(&message[CONTRACT_MCU_ID_OFFSET],mcu_id);
 	SET_DATA_2B(&message[CONTRACT_CONTRACT_NUMBER_OFFSET],contract_number);
 	SET_DATA_2B(&message[CONTRACT_MCU_SPEED_OFFSET],mcu_speed);
-
-	printf("MCU_SPEED = %d\r\n",mcu_speed);
 	
 	SET_DATA_2B(&message[CONTRACT_MCU_MAX_BUFSIZE],mcu_maxBufSize);
 	SET_DATA_4B(&message[CONTRACT_MCU_HEALTH],mcu_health);

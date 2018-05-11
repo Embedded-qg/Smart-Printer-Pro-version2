@@ -48,6 +48,9 @@
 #define DEBUG_PRINT_ON 0
 #define DEBUG_PRINT_TIMME_ON 0
 #define DEBUG_PRINT_STATEGY_ON 0
+#define NET_DEBUG_PRINT_ON 0
+#define ORDER_DEBUG_PRINT_ON 0
+#define STATUS_DEBUG_PRINT_ON 1
 
 #define GRADE_SYSTEM_ON 1
 
@@ -67,6 +70,24 @@
 	#define DEBUG_PRINT(fmt,args...) printf (fmt ,##args)
 #else
 	#define DEBUG_PRINT(fmt,args...)
+#endif
+
+#if NET_DEBUG_PRINT_ON
+	#define NET_DEBUG_PRINT(fmt,args...) printf (fmt ,##args)
+#else
+	#define NET_DEBUG_PRINT(fmt,args...)
+#endif
+
+#if ORDER_DEBUG_PRINT_ON
+	#define ORDER_DEBUG_PRINT(fmt,args...) printf (fmt ,##args)
+#else
+	#define ORDER_DEBUG_PRINT(fmt,args...)
+#endif
+
+#if STATUS_DEBUG_PRINT_ON 
+	#define STATUS_DEBUG_PRINT(fmt,args...) printf (fmt ,##args)
+#else
+	#define STATUS_DEBUG_PRINT(fmt,args...)
 #endif
 
 #endif
