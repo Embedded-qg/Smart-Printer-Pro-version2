@@ -202,13 +202,13 @@ void deal_with_order_order(void)
 	oldWritePtr = ((tempBuf->write + tempBuf->MAX - (batch_info_table[batch_table_hash].batch_length - MAX_BATCH_HEAD_LENGTH) )%tempBuf->MAX );
 	if(checkBufData(tempBuf,oldWritePtr) == 1){	//订单数据错误				
 		INT8U err = 0;	
-		NET_DEBUG_PRINT("订单数据出错\r\n");
+		STATUS_DEBUG_PRINT("订单数据出错\r\n");
 		OSMutexPend(tempBuf->mutex,0,&err);			//申请普通缓冲锁
 		tempBuf->write = oldWritePtr;
 		OSMutexPost(tempBuf->mutex);			//申请普通缓冲锁
 	}										
 	else{//订单数据正确						
-		NET_DEBUG_PRINT("接收订单成功!!\r\n");
+		STATUS_DEBUG_PRINT("接收订单成功!!\r\n");
 		OSSemPost(Print_Queue_Sem);
 		OSSemPost(Batch_Rec_Sem); 
 		NON_BASE_SEND_STATUS(batch_status, BATCH_ENTER_BUF, batch_number);//发送批次状态，进入缓冲区
@@ -320,14 +320,14 @@ void write_connection(struct netconn *conn, req_type type, u8_t symbol, u32_t pr
 
 #endif
 	
-	if(type == order_status)
-	{
-		for(i = 0;i < SEND_DATA_SIZE;i++)
-		{
-			STATUS_DEBUG_PRINT("%x ",sent_data[i]);
-		}
-		STATUS_DEBUG_PRINT("\r\n");
-	}
+//	if(type == order_status)
+//	{
+//		for(i = 0;i < SEND_DATA_SIZE;i++)
+//		{
+//			STATUS_DEBUG_PRINT("%x ",sent_data[i]);
+//		}
+//		STATUS_DEBUG_PRINT("\r\n");
+//	}
 	
 	while(0 != (err = netconn_write(conn, sent_data, SEND_DATA_SIZE, NETCONN_COPY))){
 		if(ERR_IS_FATAL(err))//致命错误，表示没有连接

@@ -371,7 +371,9 @@ static s8_t	Add_Order_To_Print_Queue(SqQueue *buf,s8_t entry_index , u8_t order_
 	
 	DEBUG_PRINT("QUEUE DEBUG :id number :%u", order_print_table.order_node[entry_index].batch_number);
 	DEBUG_PRINT("QUEUE DEBUG :id number :%u", order_print_table.order_node[entry_index].batch_within_number);
-	STATUS_DEBUG_PRINT("batch_within_number = %d\r\n",order_print_table.order_node[entry_index].batch_within_number);
+
+//	STATUS_DEBUG_PRINT("batch_within_number = %d\r\n",order_print_table.order_node[entry_index].batch_within_number);
+
 	bacth_number = order_print_table.order_node[entry_index].batch_number;
 	hash = get_batch_hash(bacth_number);
 	order_print_table.order_node[entry_index].arrTime = batch_info_table[hash].startTime;;
@@ -746,7 +748,7 @@ s8_t CheckOrderData(u8_t entry_index)
 	if(NULL == datap) {
 		orderp->status = PRINT_STATUS_DATA_ERR;	/* 订单数据错误 */
 		Order_Print_Status_Send(orderp,PRINT_STATUS_DATA_ERR);
-		STATUS_DEBUG_PRINT("order_status:The data of order is error,the number of order is %d\r\n",orderp->batch_within_number);
+		STATUS_DEBUG_PRINT("order_status:The data of order is error,the number of order is %d\r\n",orderp->serial_number);
 		ORDER_DEBUG_PRINT("CheckOrderData: checking empty block!\r\n");
 		return ORDER_DATA_ERR;		
 	}
@@ -758,7 +760,7 @@ s8_t CheckOrderData(u8_t entry_index)
 		if(type == DATA_INVALID){	// 数据错误			
 			orderp->status = PRINT_STATUS_DATA_ERR;	/* 订单数据错误 */
 			Order_Print_Status_Send(orderp,PRINT_STATUS_DATA_ERR);
-			STATUS_DEBUG_PRINT("order_status:The data of order is error,the number of order is %d\r\n",orderp->batch_within_number);
+			STATUS_DEBUG_PRINT("order_status:The data of order is error,the number of order is %d\r\n",orderp->serial_number);
 			ORDER_DEBUG_PRINT("CheckOrderData: Invalid type of data field!\r\n");
 			
 			return ORDER_DATA_ERR;
@@ -825,7 +827,7 @@ s8_t Print_Order(u8_t cellno)
 	
 	orderp->status = PRINT_STATUS_START;
 	Order_Print_Status_Send(orderp,	PRINT_STATUS_START);
-	STATUS_DEBUG_PRINT("order_status:Starting to print the order,the number of order is %d\r\n",orderp->batch_within_number);
+	STATUS_DEBUG_PRINT("order_status:Starting to print the order,the number of order is %d\r\n",orderp->serial_number);
 	
 	cellp->beginTick = sys_now();
 	
@@ -878,7 +880,7 @@ s8_t Print_Order(u8_t cellno)
 		ORDER_DEBUG_PRINT("Print_Order: Printer %u Off-line while Printing.\r\n", cellno);
 		needCutPaper[cellno] = 1;
 		Order_Print_Status_Send(orderp, PRINT_CELL_STATUS_ERR);	
-		STATUS_DEBUG_PRINT("order_status:Print order error because of print cell's error,the number of order is %d\r\n",orderp->batch_within_number);
+		STATUS_DEBUG_PRINT("order_status:Print order error because of print cell's error,the number of order is %d\r\n",orderp->serial_number);
 		PutPrintCell(cellno, PRINT_CELL_STATUS_ERR);
 	}
 	DEBUG_PRINT_TIMME("\r\n");
@@ -952,7 +954,7 @@ static s8_t OrderEnqueue(SqQueue* buf,s8_t entry_index , u16_t order_len,u8_t or
 
 	//发送订单进入打印队列的报文	
 	Order_QUEUE_Status_Send(&(order_print_table.order_node[entry_index]),ENQUEUE_OK);			
-	STATUS_DEBUG_PRINT("order_status:The order has been enqueued,the order number is %d\r\n",orderp->batch_within_number);
+	STATUS_DEBUG_PRINT("order_status:The order has been enqueued,the order number is %d\r\n",orderp->serial_number);
 	ORDER_DEBUG_PRINT("-------ONE ORDER ENQUEUE---------\r\n");	
 
 	OSSemPost(Print_Sem);//产生打印信号

@@ -584,7 +584,7 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 					printf("订单打印错误\r\n");
 					cellp->exceptCnt[status]++;															
 					Printer_Status_Send(cellno, status);	// 打印机异常，发送打印机状态
-
+					STATUS_DEBUG_PRINT("printer_status:the printer %d is error\r\n",cellno);
 					WritePrintCellInfo(cellno);
 					OutputErrorTag(cellno);			
 					
@@ -605,7 +605,7 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 				cutPaper(cellno);
 				PutPrintCell(cellno, cellStatus);					
 				Order_Print_Status_Send(orderp,orderp->status);	
-				STATUS_DEBUG_PRINT("order_status:The order is printed,the number of order is %d\r\n",orderp->batch_within_number);
+				STATUS_DEBUG_PRINT("order_status:The order is printed,the number of order is %d\r\n",orderp->serial_number);
 				OSSemPost(cellp->printDoneSem);	// 发送订单打印完成信号
 			}
 		}else {	// 打印单元非忙碌，状态检测指令来自健康检测线程

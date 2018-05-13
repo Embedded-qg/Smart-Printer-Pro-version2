@@ -157,6 +157,8 @@ s8_t checkBufData(SqQueue *buf , u32_t writePtr)
 		
 		bufLength = buf->base[(index + ORDER_SIZE_OFFSET)%buf->MAX] << 8 | buf->base[(index+ ORDER_SIZE_OFFSET + 1)%buf->MAX];
 		
+		STATUS_DEBUG_PRINT("该订单长度为%d\r\n",bufLength);
+		
 		if(buf->base[(index + BUF_HEAD + bufLength + BUF_END - 2) % buf->MAX] != 0x11 || 
 			buf->base[(index + BUF_HEAD + bufLength + BUF_END - 1) % buf->MAX] != 0xe3)
 		{		
