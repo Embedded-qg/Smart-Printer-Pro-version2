@@ -538,6 +538,7 @@ void Health_Detect_Fun()
 			//·´À¡½¡¿µ×´Ì¬	
 				if( PCMgr.cells[printer_num].health_status != value){				
 					Printer_Status_Send(printer_num,value);
+					STATUS_DEBUG_PRINT("printer_status:the printer number is %s,the health value is %d\r\n",printer_num,value);
 					PCMgr.cells[printer_num].health_status = value;
 				}
 			}

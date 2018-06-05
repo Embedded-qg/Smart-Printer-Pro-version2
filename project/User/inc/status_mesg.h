@@ -264,7 +264,7 @@ void Printer_Status_Send(u32_t printer_num , u8_t status);
  *	@param			
  *	@ret	ans
  */
-void MesgQue_Deal();
+void MesgQue_Deal(void);
 
 /**
  *  @fn		getHealthValue
@@ -284,7 +284,7 @@ u8_t getHealthValue(u32_t printer_num);
  *	@param	
  *	@ret	ans	
  */
-void Health_Detect_Fun();
+void Health_Detect_Fun(void);
 /**************************************************************
 *        End-Multi-Include-Prevent Section
 **************************************************************/

@@ -511,11 +511,6 @@
               <FileType>1</FileType>
               <FilePath>..\User\src\transfer_task.c</FilePath>
             </File>
-            <File>
-              <FileName>transfer_task.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\User\inc\transfer_task.h</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>

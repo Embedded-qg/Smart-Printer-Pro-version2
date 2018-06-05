@@ -5,8 +5,8 @@
 struct netif DM9161_netif;
 struct netconn *order_netconn;	//全局TCP链接
 extern u16_t allOrderNum;
-extern OS_EVENT *Print_Sem;
 extern batch_info batch_info_table[];	//批次表
+extern OS_EVENT *Print_Sem;
 extern OS_EVENT *Batch_Rec_Sem;			//完成一次批次读取的二值信号量
 extern OS_EVENT *Print_Queue_Sem;		//数据存入打印队列的信号量
 
@@ -56,15 +56,12 @@ static u16_t contract_total_len = 0;//批次总共长度
 static u16_t contract_number = 0;	//合同号
 static u16_t batch_number = 0; //批次号
 static u16_t last_bacth_number = 0;
-static u32_t contract_partner = 0;
 static char contract[29] = {0};
 static char batch[21] = {0};
 static u16_t len = 0;	//从网络缓冲区读取到的数据的长度
 u8_t netbuf_type = 0;
 u8_t batch_flag = 0;//批次标记
 u8_t batch_table_hash = 0;
-static u16_t order_req_num = 0;
-static u16_t batch_count = 0;
 
 /****************************************************************************************
 *@Name............: read_message_from_netbuf
@@ -157,7 +154,7 @@ void deal_with_contract_order(char *contract_buf)
 		contract_type = contract_buf[CONTRACT_TYPE_OFFSET];		
 		if(contract_type == CONTRACT_DOCUMENT)//标书
 		{
-			if(contract_partner)			NET_DEBUG_PRINT("已签订合同，无需再签约！！！\r\n");
+			if(contract_information.contract_number)			NET_DEBUG_PRINT("已签订合同，无需再签约！！！\r\n");
 			else 
 			{
 				Analyze_Contract_Info_Table(contract_buf);
@@ -167,18 +164,18 @@ void deal_with_contract_order(char *contract_buf)
 		}
 		else if(contract_type == CONTRACT_SIGN)//签约
 		{
-			if(contract_partner)			NET_DEBUG_PRINT("已签订合同，无需再签约！！！\r\n");
+			if(contract_information.contract_number)			NET_DEBUG_PRINT("已签订合同，无需再签约！！！\r\n");
 			else{
 				Analyze_Contract_Info_Table(contract_buf);
-				contract_partner = 1;
+				contract_information.contract_number = 1;
 				contract_response(order_netconn,contract_type+1);
 				NET_DEBUG_PRINT("签约报文上发成功!!!\r\n");
 			}
 		}
 		else if(contract_type == CONTRACT_ESCAPE)//解约
 		{
-			contract_response(order_netconn,contract_type+1);	
-			contract_partner = contract_information.contract_number = 0;
+			contract_response(order_netconn,contract_type + 1);	
+			contract_information.contract_number = 0;
 			NET_DEBUG_PRINT("已解约\r\n");
 		}
 }
@@ -194,9 +191,7 @@ void deal_with_batch_order(char *batch_buf)
 	allOrderNum += order_number;		//目前已有的总订单量
 	Analyze_Batch_Info_Table(batch, batch_number);//批次解包
 	batch_table_hash =  get_batch_hash(batch_number);	
-	Count_Accuracy();//计算批次数据下打印机单元精确度和所分配到的订单
 	if(batch_number != last_bacth_number) batch_flag = 1;
-	batch_count++;
 }
 
 void deal_with_order_order(void)
@@ -207,16 +202,17 @@ void deal_with_order_order(void)
 	oldWritePtr = ((tempBuf->write + tempBuf->MAX - (batch_info_table[batch_table_hash].batch_length - MAX_BATCH_HEAD_LENGTH) )%tempBuf->MAX );
 	if(checkBufData(tempBuf,oldWritePtr) == 1){	//订单数据错误				
 		INT8U err = 0;	
-		NET_DEBUG_PRINT("订单数据出错\r\n");
+		STATUS_DEBUG_PRINT("订单数据出错\r\n");
 		OSMutexPend(tempBuf->mutex,0,&err);			//申请普通缓冲锁
 		tempBuf->write = oldWritePtr;
 		OSMutexPost(tempBuf->mutex);			//申请普通缓冲锁
 	}										
 	else{//订单数据正确						
-		NET_DEBUG_PRINT("接收订单成功!!\r\n");
+		STATUS_DEBUG_PRINT("接收订单成功!!\r\n");
 		OSSemPost(Print_Queue_Sem);
 		OSSemPost(Batch_Rec_Sem); 
 		NON_BASE_SEND_STATUS(batch_status, BATCH_ENTER_BUF, batch_number);//发送批次状态，进入缓冲区
+		STATUS_DEBUG_PRINT("batch status：The batch number is %d has entered the print queue\r\n",batch_number);
 		batch_flag  = 0;
 	}
 }
@@ -304,7 +300,6 @@ void write_connection(struct netconn *conn, req_type type, u8_t symbol, u32_t pr
 	if(type == order_req){
 		Pack_Req_Or_Status_Message(sent_data, ORDER_REQ, symbol, Get_MCU_ID(), 
 									Get_Current_Unix_Time(), preservation);
-		order_req_num++;
 	}
 	else if(type == batch_status){//此时的preservation高16位为批次号
 		Pack_Req_Or_Status_Message(sent_data, BATCH_STATUS, symbol, Get_MCU_ID(), 
@@ -324,7 +319,16 @@ void write_connection(struct netconn *conn, req_type type, u8_t symbol, u32_t pr
 	}
 
 #endif
-
+	
+//	if(type == order_status)
+//	{
+//		for(i = 0;i < SEND_DATA_SIZE;i++)
+//		{
+//			STATUS_DEBUG_PRINT("%x ",sent_data[i]);
+//		}
+//		STATUS_DEBUG_PRINT("\r\n");
+//	}
+	
 	while(0 != (err = netconn_write(conn, sent_data, SEND_DATA_SIZE, NETCONN_COPY))){
 		if(ERR_IS_FATAL(err))//致命错误，表示没有连接
 			break;
@@ -356,7 +360,8 @@ void con_to_server(void)
 	netconn_set_recvtimeout(order_netconn,10000);//设置接收延时时间 
 	
 #ifdef REMOTE//设置服务器ip地址
-	IP4_ADDR(&server_ip,10,21,48,11);//云服务器学校
+//	IP4_ADDR(&server_ip,10,21,48,11);
+		IP4_ADDR(&server_ip,47,106,74,67);//云服务器学校
 //	IP4_ADDR(&server_ip,123,207,228,117);		//云服务器_胖子
 //	IP4_ADDR(&server_ip,192,168,1,116);		//JockJo测试机
 //	IP4_ADDR(&server_ip, 192,168,1,119);	//工作室测试机
