@@ -60,7 +60,7 @@
 
 /**
  *  @name	    transf_task
- *	@description   进行任务
+ *	@description   进行任务转移
  *	@param			none
  *	@return		  none
  *  @notice
@@ -74,7 +74,7 @@ void transf_task(struct netconn *conn, req_type type, u8_t symbol, u32_t target_
 		
 		if(type == order_status){
 			Pack_TransfTask_Message(send_data, ORDER_STATUS, symbol, Get_MCU_ID(), target_id, 
-															Get_Current_Unix_Time(), preservation);	//订单状态种preservation为订单批次号和批次内序号
+															Get_Current_Unix_Time(), preservation);	//订单状态中preservation为订单批次号和批次内序号
 		}
 			printf("\nssssssssss\n");
 		
