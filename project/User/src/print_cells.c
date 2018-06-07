@@ -596,8 +596,9 @@ static void DealwithOrder(PrintCellNum cellno,u8_t *tmp)
 					if(if_printer_all_error() == ALL_ERROR){
 							DEBUG_PRINT(ERROR_PRINTER_ALL_ERROR);
 //							Init_Queue();
-							DEBUG_PRINT("\n--------xxxxxxxx-------\n batch_number:%u \n", orderp->batch_number);
-							transf_task(order_netconn,order_status,TRANSFER_BATCH_STARTORDER,Get_TARGET_ID(),
+							DEBUG_PRINT("\n--------transfer task-------\n batch_number:%u \n", orderp->batch_number);
+							NON_BASE_SEND_STATUS(batch_status, BATCH_TRANSFER, orderp->batch_number);//发送批次状态，有内容需要转移
+							transf_task(order_netconn,order_status,TRANSFER_BATCH_STARTORDER,Get_TARGET_ID(),	//发送订单状态， 转移内容起点，批次序号和批次内序号
 							(u32_t)orderp->batch_number<<16|(u32_t)orderp->batch_within_number);
 							return ;
 				}

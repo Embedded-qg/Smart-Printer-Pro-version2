@@ -37,6 +37,7 @@
 #include "print_queue.h"
 #include "status_mesg.h"
 #include "print_error.h"
+#include "netconf.h"
 
 /**************************************************************
 *        Macro Define Section

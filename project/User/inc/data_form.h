@@ -148,6 +148,7 @@ typedef enum Req_Type {
 #define BATCH_SUCCESS		0x00	//批次打印成功
 #define BATCH_ENTER_BUF 	0x01	//批次进入缓冲区
 #define	BATCH_FAIL			0x02	//批次打印失败
+#define BATCH_TRANSFER  0x03  //批次有一部分打印失败，需要转移
 
 #define OEDER_SUCCESS		0x00	//订单打印成功
 #define ORDER_FAIL			0x01	//订单打印失败
