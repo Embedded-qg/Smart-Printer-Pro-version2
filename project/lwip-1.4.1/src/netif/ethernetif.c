@@ -51,9 +51,9 @@
 #define M_DEV_MCU   1
 #define RMII_MODE  1
 /* MAC ADcontinue;continue;DRESS: MAC_ADDR0:MAC_ADDR1:MAC_ADDR2:MAC_ADDR3:MAC_ADDR4:MAC_ADDR5 */
-#define MAC_ADDR0   64
+#define MAC_ADDR0   8
 #define MAC_ADDR1   0
-#define MAC_ADDR2   0
+#define MAC_ADDR2   32
 #define MAC_ADDR3   0
 #define MAC_ADDR4   0
 #define MAC_ADDR5   0
